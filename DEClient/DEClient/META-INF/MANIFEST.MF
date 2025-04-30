@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Fabric-Jar-Type: classes
+Fabric-Loom-Client-Only-Entries: client-deatheffects-refmap.json;death/e
+ ffects/AuraClient.class;death/effects/ClickTP.class;death/effects/Death
+ effectsClient.class;death/effects/mixin/client/ExampleClientMixin.class
+ ;death/effects/utils/LOAura.class;death/effects/utils/TPPathfinder$Node
+ .class;death/effects/utils/TPPathfinder.class;deatheffects.client.mixin
+ s.json
+Fabric-Loom-Mixin-Remap-Type: mixin
+Fabric-Loom-Split-Environment: true
+Fabric-Gradle-Version: 8.12.1
+Fabric-Loom-Version: 1.10.5
+Fabric-Mixin-Compile-Extensions-Version: 0.6.0
+Fabric-Minecraft-Version: 1.21.1
+Fabric-Tiny-Remapper-Version: 0.11.1
+Fabric-Loader-Version: 0.16.13
+Fabric-Mixin-Version: 0.15.4+mixin.0.8.7
+Fabric-Mixin-Group: net.fabricmc
+Fabric-Mapping-Namespace: intermediary
+

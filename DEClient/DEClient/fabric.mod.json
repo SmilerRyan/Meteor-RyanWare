@@ -1,0 +1,43 @@
+{
+	"schemaVersion": 1,
+	"id": "deatheffects",
+	"version": "1.21.1",
+	"name": "deatheffects",
+	"description": "A test client DE",
+	"authors": [
+		"oTeknoVA"
+	],
+	"contact": {
+		"homepage": "*",
+		"sources": "*"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/deatheffects/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"death.effects.Deatheffects"
+		],
+		"client": [
+			"death.effects.DeatheffectsClient",
+			"death.effects.ClickTP",
+			"death.effects.AuraClient"
+		]
+	},
+	"mixins": [
+		"deatheffects.mixins.json",
+		{
+			"config": "deatheffects.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.13",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

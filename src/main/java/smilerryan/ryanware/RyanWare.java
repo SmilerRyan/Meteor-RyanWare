@@ -18,6 +18,8 @@ public class RyanWare extends MeteorAddon {
     public void onInitialize() {
         LOG.info("Initializing RyanWare Addon.");
         Modules.get().add(new CompletionCrash());
+        Modules.get().add(new Aura());
+        Modules.get().add(new ClickTP());
     }
 
     @Override

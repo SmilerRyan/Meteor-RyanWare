@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "death.effects.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ExampleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "deatheffects-refmap.json"
+}
