@@ -1,26 +1,23 @@
-package widecat.ryanware;
+package smilerryan.ryanware;
 
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
-import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Items;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import widecat.ryanware.commands.CrashItemCommand;
-import widecat.ryanware.modules.*;
+import smilerryan.ryanware.modules.*;
 
-public class CrashAddon extends MeteorAddon {
-    public static final Logger LOG = LoggerFactory.getLogger("CrashAddon");
+public class RyanWare extends MeteorAddon {
+    public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
     public static final Category CATEGORY = new Category("RyanWare", Items.TNT.getDefaultStack());
 
     @Override
     public void onInitialize() {
-        LOG.info("Initializing Meteor Crash Addon.");
+        LOG.info("Initializing RyanWare Addon.");
         Modules.get().add(new CompletionCrash());
-        Commands.add(new CrashItemCommand());
     }
 
     @Override
@@ -30,19 +27,19 @@ public class CrashAddon extends MeteorAddon {
 
     @Override
     public String getWebsite() {
-        return "https://github.com/AntiCope/meteor-crash-addon";
+        return "https://github.com/AntiCope/ryanware";
     }
 
     @Override
     public GithubRepo getRepo() {
-        return new GithubRepo("AntiCope", "meteor-crash-addon");
+        return new GithubRepo("AntiCope", "ryanware");
     }
 
     @Override
     public String getCommit() {
         String commit = FabricLoader
             .getInstance()
-            .getModContainer("meteor-crash-addon")
+            .getModContainer("ryanware")
             .get().getMetadata()
             .getCustomValue("github:sha")
             .getAsString();
@@ -51,6 +48,6 @@ public class CrashAddon extends MeteorAddon {
     }
 
     public String getPackage() {
-        return "widecat.ryanware";
+        return "smilerryan.ryanware";
     }
 }

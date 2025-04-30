@@ -1,4 +1,4 @@
-package widecat.ryanware.modules;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.IntSetting;
@@ -8,7 +8,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
-import widecat.ryanware.CrashAddon;
+import smilerryan.ryanware.RyanWare;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,7 +17,7 @@ public class CompletionCrash extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("Rate");
 
     public CompletionCrash() {
-        super(CrashAddon.CATEGORY, "CompletionCrash", "Funny Completion");
+        super(RyanWare.CATEGORY, "CompletionCrash", "Funny Completion");
     }
 
     private int length = 2032;
