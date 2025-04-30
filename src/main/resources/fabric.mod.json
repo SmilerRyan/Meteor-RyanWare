@@ -8,7 +8,6 @@
   "contact": {
     "repo": "https://github.com/smilerryan/meteor-ryanware"
   },
-  "icon": "assets/ryanware/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
