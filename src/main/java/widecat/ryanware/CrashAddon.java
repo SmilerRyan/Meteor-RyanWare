@@ -1,4 +1,4 @@
-package widecat.meteorcrashaddon;
+package widecat.ryanware;
 
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
@@ -9,12 +9,12 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Items;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import widecat.meteorcrashaddon.commands.CrashItemCommand;
-import widecat.meteorcrashaddon.modules.*;
+import widecat.ryanware.commands.CrashItemCommand;
+import widecat.ryanware.modules.*;
 
 public class CrashAddon extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("CrashAddon");
-    public static final Category CATEGORY = new Category("Crash", Items.TNT.getDefaultStack());
+    public static final Category CATEGORY = new Category("RyanWare", Items.TNT.getDefaultStack());
 
     @Override
     public void onInitialize() {
@@ -51,6 +51,6 @@ public class CrashAddon extends MeteorAddon {
     }
 
     public String getPackage() {
-        return "widecat.meteorcrashaddon";
+        return "widecat.ryanware";
     }
 }

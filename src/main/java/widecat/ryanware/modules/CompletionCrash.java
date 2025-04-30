@@ -1,4 +1,4 @@
-package widecat.meteorcrashaddon.modules;
+package widecat.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.IntSetting;
@@ -8,7 +8,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
-import widecat.meteorcrashaddon.CrashAddon;
+import widecat.ryanware.CrashAddon;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

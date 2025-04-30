@@ -1,4 +1,4 @@
-package widecat.meteorcrashaddon.commands;
+package widecat.ryanware.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import meteordevelopment.meteorclient.commands.Command;

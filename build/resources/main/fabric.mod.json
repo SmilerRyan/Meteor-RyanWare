@@ -11,15 +11,15 @@
   "contact": {
     "repo": "https://github.com/AntiCope/meteor-crash-addon"
   },
-  "icon": "assets/meteorcrashaddon/icon.png",
+  "icon": "assets/ryanware/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
-      "widecat.meteorcrashaddon.CrashAddon"
+      "widecat.ryanware.CrashAddon"
     ]
   },
   "mixins": [
-    "meteorcrashaddon.mixins.json"
+    "ryanware.mixins.json"
   ],
   "custom": {
     "meteor-client:color": "229,255,0",
