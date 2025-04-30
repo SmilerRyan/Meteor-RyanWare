@@ -27,12 +27,12 @@ public class RyanWare extends MeteorAddon {
 
     @Override
     public String getWebsite() {
-        return "https://github.com/AntiCope/ryanware";
+        return "https://github.com/SmilerRyan/ryanware";
     }
 
     @Override
     public GithubRepo getRepo() {
-        return new GithubRepo("AntiCope", "ryanware");
+        return new GithubRepo("SmilerRyan", "ryanware");
     }
 
     @Override

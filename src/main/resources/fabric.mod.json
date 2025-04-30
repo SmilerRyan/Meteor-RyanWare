@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "ryanware",
   "version": "${version}",
-  "name": "RyanWare Add-On",
+  "name": "Meteor Client (RyanWare Add-On)",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan"],
   "contact": {
