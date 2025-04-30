@@ -19,23 +19,7 @@ public class CrashAddon extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Meteor Crash Addon.");
-
-        Modules.get().add(new AACCrash());
-        Modules.get().add(new BookCrash());
-        Modules.get().add(new ContainerCrash());
         Modules.get().add(new CompletionCrash());
-        Modules.get().add(new CraftingCrash());
-        Modules.get().add(new CreativeCrash());
-        Modules.get().add(new EntityCrash());
-        Modules.get().add(new ErrorCrash());
-        Modules.get().add(new InteractCrash());
-        Modules.get().add(new LecternCrash());
-        Modules.get().add(new MessageLagger());
-        Modules.get().add(new MovementCrash());
-        Modules.get().add(new PacketSpammer());
-        Modules.get().add(new SequenceCrash());
-        Modules.get().add(new WindowCrash());
-
         Commands.add(new CrashItemCommand());
     }
 
