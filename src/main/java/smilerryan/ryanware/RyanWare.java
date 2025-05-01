@@ -12,7 +12,7 @@ import smilerryan.ryanware.modules.*;
 
 public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
-    public static final Category CATEGORY = new Category("RyanWare", Items.TNT.getDefaultStack());
+    public static final Category CATEGORY = new Category("RyanWare", Items.SPONGE.getDefaultStack());
 
     @Override
     public void onInitialize() {

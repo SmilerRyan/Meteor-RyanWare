@@ -9,6 +9,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
 import smilerryan.ryanware.RyanWare;
+import meteordevelopment.meteorclient.settings.BoolSetting;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,7 +18,7 @@ public class CompletionCrash extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("Rate");
 
     public CompletionCrash() {
-        super(RyanWare.CATEGORY, "CompletionCrash", "Funny Completion");
+        super(RyanWare.CATEGORY, "RyanWare-CompletionCrash", "Funny Completion");
     }
 
     private int length = 2032;
@@ -31,6 +32,13 @@ public class CompletionCrash extends Module {
         .build()
     );
 
+    private final Setting<Boolean> autoToggle = sgGeneral.add(new BoolSetting.Builder()
+        .name("auto-toggle")
+        .description("Automatically toggles off after sending the packets.")
+        .defaultValue(true)
+        .build()
+    );
+
     @EventHandler
     private void onTick(TickEvent.Post event) {
 
@@ -40,7 +48,9 @@ public class CompletionCrash extends Module {
         for (int i = 0; i < packets.get(); i++) {
             MinecraftClient.getInstance().player.networkHandler.sendPacket(new RequestCommandCompletionsC2SPacket(0, partialCommand));
         }
-        this.toggle();
+
+        if (autoToggle.get()) { this.toggle(); }
+        
     }
 
     private String generateJsonObject(int levels) {
