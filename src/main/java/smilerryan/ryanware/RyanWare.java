@@ -20,6 +20,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new Aura());
         Modules.get().add(new ClickTP());
+        Modules.get().add(new CommandAura());
     }
 
     @Override
