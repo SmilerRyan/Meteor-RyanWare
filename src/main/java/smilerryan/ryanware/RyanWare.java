@@ -5,8 +5,8 @@ import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.List;
 import java.util.Properties;
 
 public class RyanWare extends MeteorAddon {
@@ -59,20 +61,42 @@ public class RyanWare extends MeteorAddon {
             LOG.error("Failed to load or create ryanware.properties", e);
         }
 
-        // Runtime override of mod name (hacky)
+        // Runtime override of mod metadata (hacky)
         try {
             FabricLoader.getInstance().getModContainer("ryanware").ifPresent(container -> {
                 try {
                     LoaderModMetadata meta = (LoaderModMetadata) container.getMetadata();
-                    java.lang.reflect.Field nameField = meta.getClass().getDeclaredField("name");
-                    nameField.setAccessible(true);
-                    nameField.set(meta, addonName);
+
+                    // Set new name
+                    if (!addonName.equals("RyanWare")) {
+                        var nameField = meta.getClass().getDeclaredField("name");
+                        nameField.setAccessible(true);
+                        nameField.set(meta, addonName);
+
+                        // Clear authors if not the default, add current player's name as an author
+                        var authorsField = meta.getClass().getDeclaredField("authors");
+                        authorsField.setAccessible(true);
+
+                        // Get current player name
+                        String currentPlayerName = MinecraftClient.getInstance().getSession().getUsername();
+
+                        // Check authors and set current player name if necessary
+                        List<String> authors = (List<String>) authorsField.get(meta);
+                        if (authors.isEmpty()) {
+                            authorsField.set(meta, Collections.singletonList(currentPlayerName));
+                        }
+
+                        // Clear description if not default
+                        var descField = meta.getClass().getDeclaredField("description");
+                        descField.setAccessible(true);
+                        descField.set(meta, "");
+                    }
                 } catch (Exception e) {
-                    LOG.error("Failed to override addon name via reflection.", e);
+                    LOG.error("Failed to override mod metadata via reflection.", e);
                 }
             });
         } catch (Exception e) {
-            LOG.error("Mod name override failed", e);
+            LOG.error("Mod metadata override failed", e);
         }
 
         CATEGORY = new Category(addonName, iconItem.getDefaultStack());
