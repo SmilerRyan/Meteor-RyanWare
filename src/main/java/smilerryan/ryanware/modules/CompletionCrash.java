@@ -18,7 +18,7 @@ public class CompletionCrash extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("Rate");
 
     public CompletionCrash() {
-        super(RyanWare.CATEGORY, "RyanWare-CompletionCrash", "Funny Completion");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"CompletionCrash", "Funny Completion");
     }
 
     private int length = 2032;

@@ -5,18 +5,82 @@ import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
+import net.fabricmc.loader.impl.metadata.LoaderModMetadata;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 
+import java.io.*;
+import java.util.Locale;
+import java.util.Properties;
+
 public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
-    public static final Category CATEGORY = new Category("RyanWare", Items.SPONGE.getDefaultStack());
+
+    public static String addonName = "RyanWare";
+    public static String modulePrefix = "RyanWare";
+    public static Item iconItem = Items.SPONGE;
+    public static Category CATEGORY;
+
+    static {
+        try {
+            File cfgFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "ryanware.properties");
+
+            // Create default config if missing
+            if (!cfgFile.exists()) {
+                Properties defaultProps = new Properties();
+                defaultProps.setProperty("name", "RyanWare");
+                defaultProps.setProperty("icon", "sponge");
+                defaultProps.setProperty("module-prefix", "RyanWare-");
+                try (FileOutputStream out = new FileOutputStream(cfgFile)) {
+                    defaultProps.store(out, "RyanWare Addon Configuration");
+                }
+            }
+
+            // Load config
+            Properties props = new Properties();
+            try (FileInputStream in = new FileInputStream(cfgFile)) {
+                props.load(in);
+            }
+
+            if (props.containsKey("name")) addonName = props.getProperty("name");
+            if (props.containsKey("module-prefix")) modulePrefix = props.getProperty("module-prefix");
+
+            if (props.containsKey("icon")) {
+                Identifier id = Identifier.of("minecraft", props.getProperty("icon").toLowerCase(Locale.ROOT));
+                iconItem = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to load or create ryanware.properties", e);
+        }
+
+        // Runtime override of mod name (hacky)
+        try {
+            FabricLoader.getInstance().getModContainer("ryanware").ifPresent(container -> {
+                try {
+                    LoaderModMetadata meta = (LoaderModMetadata) container.getMetadata();
+                    java.lang.reflect.Field nameField = meta.getClass().getDeclaredField("name");
+                    nameField.setAccessible(true);
+                    nameField.set(meta, addonName);
+                } catch (Exception e) {
+                    LOG.error("Failed to override addon name via reflection.", e);
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("Mod name override failed", e);
+        }
+
+        CATEGORY = new Category(addonName, iconItem.getDefaultStack());
+    }
 
     @Override
     public void onInitialize() {
-        LOG.info("Initializing RyanWare Addon.");
+        LOG.info("Initializing {} Addon.", addonName);
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new Aura());
         Modules.get().add(new ClickTP());
@@ -43,14 +107,12 @@ public class RyanWare extends MeteorAddon {
 
     @Override
     public String getCommit() {
-        String commit = FabricLoader
+        return FabricLoader
             .getInstance()
             .getModContainer("ryanware")
             .get().getMetadata()
             .getCustomValue("github:sha")
-            .getAsString();
-        return commit.isEmpty() ? null : commit.trim();
-
+            .getAsString().trim();
     }
 
     public String getPackage() {

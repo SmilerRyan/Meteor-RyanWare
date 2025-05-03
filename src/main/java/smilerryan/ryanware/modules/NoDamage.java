@@ -27,7 +27,7 @@ public class NoDamage extends Module {
         .build());
 
     public NoDamage() {
-        super(RyanWare.CATEGORY, "RyanWare-no-damage", "Prevents dealing damage to others.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"no-damage", "Prevents dealing damage to others.");
     }
 
     @EventHandler

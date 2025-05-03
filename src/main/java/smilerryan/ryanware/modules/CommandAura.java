@@ -62,7 +62,7 @@ public class CommandAura extends Module {
     private final Set<PlayerEntity> trackedPlayers = new HashSet<>();
 
     public CommandAura() {
-        super(RyanWare.CATEGORY, "RyanWare-command-aura", "Sends commands when players enter or leave chunks.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"command-aura", "Sends commands when players enter or leave chunks.");
     }
 
     @EventHandler

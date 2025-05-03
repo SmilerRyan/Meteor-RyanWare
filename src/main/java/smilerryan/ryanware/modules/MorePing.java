@@ -36,7 +36,7 @@ public class MorePing extends Module {
     private final Random random = new Random();
 
     public MorePing() {
-        super(RyanWare.CATEGORY, "RyanWare-more-ping", "Spoofs a higher ping by delaying manually sent packets.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"more-ping", "Spoofs a higher ping by delaying manually sent packets.");
     }
 
     private static class DelayedPacket {
