@@ -82,9 +82,7 @@ public class RyanWare extends MeteorAddon {
 
                         // Check authors and set current player name if necessary
                         List<String> authors = (List<String>) authorsField.get(meta);
-                        if (authors.isEmpty()) {
-                            authorsField.set(meta, Collections.singletonList(currentPlayerName));
-                        }
+                        authorsField.set(meta, Collections.singletonList(currentPlayerName));
 
                         // Clear description if not default
                         var descField = meta.getClass().getDeclaredField("description");
@@ -110,8 +108,10 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ClickTP());
         Modules.get().add(new NoDamage());
         Modules.get().add(new MorePing());
+        Modules.get().add(new TabSortedByPing());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new CommandAura());
+        Modules.get().add(new NameMCLink());
     }
 
     @Override
