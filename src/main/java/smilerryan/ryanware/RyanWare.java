@@ -112,6 +112,8 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new FocusCommands());
         Modules.get().add(new CommandAura());
         Modules.get().add(new NameMCLink());
+        Modules.get().add(new CringeDetector());
+        Modules.get().add(new ChatCleanup());
     }
 
     @Override

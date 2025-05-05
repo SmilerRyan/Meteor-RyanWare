@@ -45,7 +45,7 @@ public class TabSortedByPing extends Module {
         for (PlayerListEntry entry : sortedPlayers) {
             String name = entry.getProfile().getName();
             int ping = entry.getLatency();
-            String line = String.format("%s - %dms", name, ping);
+            String line = String.format("%dms - %s", ping, name);
             
             // Find the longest line to determine background width
             double width = mc.textRenderer.getWidth(line) * SCALE;
