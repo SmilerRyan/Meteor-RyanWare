@@ -114,6 +114,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NameMCLink());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new ChatCleanup());
+        Modules.get().add(new ChatEncryption());
         Modules.get().add(new MaxMaceKill());
     }
 
