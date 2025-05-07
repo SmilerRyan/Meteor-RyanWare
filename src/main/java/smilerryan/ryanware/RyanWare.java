@@ -118,6 +118,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ChatEncryption());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new TotemBypass());
+        Modules.get().add(new FullBright());
     }
 
     @Override
