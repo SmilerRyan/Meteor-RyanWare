@@ -4,6 +4,7 @@ import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.commands.Commands;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata;
 import net.minecraft.client.MinecraftClient;
@@ -14,6 +15,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
+import smilerryan.ryanware.commands.*;
 
 import java.io.*;
 import java.util.Collections;
@@ -103,6 +105,8 @@ public class RyanWare extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing {} Addon.", addonName);
+
+        // Register modules
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new Aura());
         Modules.get().add(new ClickTP());
@@ -119,6 +123,9 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new TotemBypass());
         Modules.get().add(new FullBright());
+
+        // Register commands
+        Commands.add(new TAMsgCommand());
     }
 
     @Override
