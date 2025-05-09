@@ -7,9 +7,13 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.client.MinecraftClient;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
 public class TAMsgCommand extends Command {
+    
     public TAMsgCommand() {
         super("ta-msg", "Sends a fake TotalAnarchy-style message: PMs, public chat, join, leave, death coords, or teleport messages.");
     }
@@ -17,7 +21,8 @@ public class TAMsgCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder
-            .then(literal("to")
+            // msg-to
+            .then(literal("msg-to")
                 .then(argument("username", StringArgumentType.word())
                     .then(argument("message", StringArgumentType.greedyString())
                         .executes(context -> {
@@ -29,7 +34,8 @@ public class TAMsgCommand extends Command {
                     )
                 )
             )
-            .then(literal("from")
+            // msg-from
+            .then(literal("msg-from")
                 .then(argument("username", StringArgumentType.word())
                     .then(argument("message", StringArgumentType.greedyString())
                         .executes(context -> {
@@ -41,6 +47,7 @@ public class TAMsgCommand extends Command {
                     )
                 )
             )
+            // public
             .then(literal("public")
                 .then(argument("username", StringArgumentType.word())
                     .then(argument("message", StringArgumentType.greedyString())
@@ -53,6 +60,7 @@ public class TAMsgCommand extends Command {
                     )
                 )
             )
+            // join
             .then(literal("join")
                 .then(argument("username", StringArgumentType.word())
                     .executes(context -> {
@@ -62,6 +70,7 @@ public class TAMsgCommand extends Command {
                     })
                 )
             )
+            // leave
             .then(literal("leave")
                 .then(argument("username", StringArgumentType.word())
                     .executes(context -> {
@@ -71,7 +80,8 @@ public class TAMsgCommand extends Command {
                     })
                 )
             )
-            .then(literal("death")
+            // death
+            .then(literal("death-location")
                 .then(argument("x", StringArgumentType.word())
                     .then(argument("y", StringArgumentType.word())
                         .then(argument("z", StringArgumentType.word())
@@ -79,34 +89,67 @@ public class TAMsgCommand extends Command {
                                 String x = StringArgumentType.getString(context, "x");
                                 String y = StringArgumentType.getString(context, "y");
                                 String z = StringArgumentType.getString(context, "z");
-                                sendDeath(x, y, z);
+                                sendDeathLocation(x, y, z);
                                 return SINGLE_SUCCESS;
                             })
                         )
                     )
                 )
             )
-            .then(literal("tpa")
+            // tpa-request-from
+            .then(literal("tpa-request-from")
                 .then(argument("username", StringArgumentType.word())
                     .executes(context -> {
                         String username = StringArgumentType.getString(context, "username");
-                        sendTpaRequest(username);
+                        sendTpaFromRequest(username);
                         return SINGLE_SUCCESS;
                     })
                 )
             )
-            .then(literal("tpaccept")
+            // tpa-accept-from
+            .then(literal("tpa-accept-from")
                 .executes(context -> {
-                    sendTpaccept();
+                    sendTpaFromAccept();
                     return SINGLE_SUCCESS;
                 })
             )
-            .then(literal("tpdeny")
+            // tpa-from-deny
+            .then(literal("tpa-deny-from")
                 .executes(context -> {
-                    sendTpdeny();
+                    sendTpaFromDeny();
                     return SINGLE_SUCCESS;
                 })
+            )
+            // tpa-request-to
+            .then(literal("tpa-request-to")
+                .then(argument("username", StringArgumentType.word())
+                    .executes(context -> {
+                        String username = StringArgumentType.getString(context, "username");
+                        sendTpaToRequest(username);
+                        return SINGLE_SUCCESS;
+                    })
+                )
+            )
+            // tpa-deny-to
+            .then(literal("tpa-deny-to")
+                .then(argument("username", StringArgumentType.word())
+                    .executes(context -> {
+                        sendTpaToDeny();
+                        return SINGLE_SUCCESS;
+                    })
+                )
+            )
+            // tpa-accept-to
+            .then(literal("tpa-accept-to")
+                .then(argument("username", StringArgumentType.word())
+                    .executes(context -> {
+                        String username = StringArgumentType.getString(context, "username");
+                        sendTpaToAccept(username);
+                        return SINGLE_SUCCESS;
+                    })
+                )
             );
+
     }
 
     private void sendPrivate(String user, String message, boolean isTo) {
@@ -125,34 +168,31 @@ public class TAMsgCommand extends Command {
         if (user.length() > 2 && user.charAt(1) == '_') {
             char rankLetter = user.charAt(0);
             if (rankLetter == 'V') {
-                tag = "§6" + rankLetter; // Gold color for V prefix
+                tag = "§6" + rankLetter;
                 name = user.substring(2);
             } else if (rankLetter == 'M') {
-                tag = "§b" + rankLetter; // Blue color for M prefix
+                tag = "§b" + rankLetter;
                 name = user.substring(2);
             }
-            // Any other letter prefix is treated as part of the username
         }
         String formatted = String.format("§f<%s§f%s> §7%s", tag.isEmpty() ? "" : tag + " ", name, message);
         addMessageToChat(formatted);
     }
     
     private void sendJoin(String user) {
-        String formatted = "§8" + user + " joined the game.";
-        addMessageToChat(formatted);
+        addMessageToChat("§8" + user + " joined the game.");
     }
     
     private void sendLeave(String user) {
-        String formatted = "§8" + user + " left the game.";
-        addMessageToChat(formatted);
+        addMessageToChat("§8" + user + " left the game.");
     }
     
-    private void sendDeath(String x, String y, String z) {
-        String formatted = "§fYour death location is: §cX:" + x + " Y:" + y + " Z:" + z + "§6!";
-        addMessageToChat(formatted);
+    private void sendDeathLocation(String x, String y, String z) {
+        addMessageToChat("§fYour death location is: §cX:" + x + " Y:" + y + " Z:" + z + "§6!");
     }
     
-    private void sendTpaRequest(String username) {
+    // Tpa From Request
+    private void sendTpaFromRequest(String username) {
         addMessageToChat("§c" + username + " §6has sent you a teleport request!");
         addMessageToChat("§6You have §c60§6 seconds to accept or deny the request");
         addMessageToChat("§6To accept the teleport request, type §c/tpaccept");
@@ -160,33 +200,57 @@ public class TAMsgCommand extends Command {
         addMessageToChat("§a§lACCEPT §7§l| §c§lDENY");
     }
     
-    private void sendTpaccept() {
+    // Tpa From Accept
+    private void sendTpaFromAccept() {
         addMessageToChat("§6You §caccepted§6 the teleport request!");
-        
-        // Schedule the "Teleported!" message after 6 seconds
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc != null) {
             Thread delayThread = new Thread(() -> {
                 try {
-                    Thread.sleep(6000); // 6 seconds delay
-                    mc.execute(() -> {
-                        addMessageToChat("§6Teleported!");
-                    });
-                } catch (InterruptedException e) {
-                    // Ignore interruption
-                }
+                    Thread.sleep(6000);
+                    mc.execute(() -> { addMessageToChat("§6Teleported!"); });
+                } catch (InterruptedException e) { }
             });
             delayThread.setDaemon(true);
             delayThread.start();
         }
     }
-    
-    private void sendTpdeny() {
+
+    // Tpa From Deny
+    private void sendTpaFromDeny() {
         addMessageToChat("§6You have rejected the §crequest§6!");
     }
-   
+
+    // Tpa To Request
+    private void sendTpaToRequest(String username) {
+        addMessageToChat("§6Sending a teleport request to §c" + username + "§6. If you want to cancel it, type §c/tpcancel " + username);
+    }
+
+    // Tpa To Deny
+    private void sendTpaToDeny() {
+        addMessageToChat("§6The player has rejected your request!");
+    }
+
+    // Tpa To Accept
+    private void sendTpaToAccept(String username) {
+        addMessageToChat("§6You will be teleported in §c8§6 seconds!");
+        addMessageToChat("§c" + username + " §6has accepted your teleportation request.");
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc != null) {
+            Thread delayThread = new Thread(() -> {
+                try {
+                    Thread.sleep(6000);
+                    mc.execute(() -> { addMessageToChat("§6Teleported!"); });
+                } catch (InterruptedException e) { }
+            });
+            delayThread.setDaemon(true);
+            delayThread.start();
+        }
+    }
+
+
+
     private void addMessageToChat(String message) {
-        // This directly adds the message to the chat without the [Meteor] prefix
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.inGameHud != null && mc.inGameHud.getChatHud() != null) {
             mc.inGameHud.getChatHud().addMessage(Text.of(message));
