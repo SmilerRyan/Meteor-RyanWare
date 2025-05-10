@@ -163,19 +163,22 @@ public class TAMsgCommand extends Command {
     }
 
     private void sendPublic(String user, String message) {
-        String tag = "";
+        String tag = "§7";
         String name = user;
+        String chatColor = "§7";
         if (user.length() > 2 && user.charAt(1) == '_') {
             char rankLetter = user.charAt(0);
             if (rankLetter == 'V') {
-                tag = "§6" + rankLetter;
+                tag = "§6" + rankLetter + "§f ";
                 name = user.substring(2);
+                chatColor = "§f";
             } else if (rankLetter == 'M') {
-                tag = "§b" + rankLetter;
+                tag = "§b" + rankLetter + "§f ";
                 name = user.substring(2);
+                chatColor = "§f";
             }
         }
-        String formatted = String.format("§f<%s§f%s> §7%s", tag.isEmpty() ? "" : tag + " ", name, message);
+        String formatted = String.format("§f<%s%s§f> %s%s", tag, name, chatColor, message);
         addMessageToChat(formatted);
     }
     
@@ -247,8 +250,6 @@ public class TAMsgCommand extends Command {
             delayThread.start();
         }
     }
-
-
 
     private void addMessageToChat(String message) {
         MinecraftClient mc = MinecraftClient.getInstance();
