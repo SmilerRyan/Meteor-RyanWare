@@ -125,6 +125,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new FullBright());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new DeathCommands());
+        Modules.get().add(new BritishChat());
 
         // Register commands
         Commands.add(new TAMsgCommand());

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "ryanware",
+  "version": "${version}",
+  "name": "RyanWare",
+  "description": "Just another Addon for the Meteor Client.",
+  "authors": ["SmilerRyan"],
+  "contact": {
+    "repo": "https://github.com/smilerryan/meteor-ryanware"
+  },
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "smilerryan.ryanware.RyanWare"
+    ]
+  },
+  "mixins": [
+    "ryanware.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "229,255,0",
+    "github:sha": "@gh_hash@"
+  },
+  "depends": {
+    "java": ">=17",
+    "minecraft": ">=@mc_version@",
+    "meteor-client": "*"
+  }
+}
