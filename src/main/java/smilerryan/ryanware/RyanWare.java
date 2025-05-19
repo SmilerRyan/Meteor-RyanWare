@@ -17,11 +17,9 @@ import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 import smilerryan.ryanware.commands.*;
 
-import java.io.*;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.List;
-import java.util.Properties;
+import java.util.Locale;
 
 public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
@@ -33,70 +31,26 @@ public class RyanWare extends MeteorAddon {
 
     static {
         try {
-            File cfgFile = new File(FabricLoader.getInstance().getConfigDir().toFile(), "ryanware.properties");
-
-            // Create default config if missing
-            if (!cfgFile.exists()) {
-                Properties defaultProps = new Properties();
-                defaultProps.setProperty("name", "RyanWare");
-                defaultProps.setProperty("icon", "sponge");
-                defaultProps.setProperty("module-prefix", "RyanWare-");
-                try (FileOutputStream out = new FileOutputStream(cfgFile)) {
-                    defaultProps.store(out, "RyanWare Addon Configuration");
-                }
-            }
-
-            // Load config
-            Properties props = new Properties();
-            try (FileInputStream in = new FileInputStream(cfgFile)) {
-                props.load(in);
-            }
-
-            if (props.containsKey("name")) addonName = props.getProperty("name");
-            if (props.containsKey("module-prefix")) modulePrefix = props.getProperty("module-prefix");
-
-            if (props.containsKey("icon")) {
-                Identifier id = Identifier.of("minecraft", props.getProperty("icon").toLowerCase(Locale.ROOT));
-                iconItem = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
-            }
-        } catch (Exception e) {
-            LOG.error("Failed to load or create ryanware.properties", e);
-        }
-
-        // Runtime override of mod metadata (hacky)
-        try {
             FabricLoader.getInstance().getModContainer("ryanware").ifPresent(container -> {
                 try {
                     LoaderModMetadata meta = (LoaderModMetadata) container.getMetadata();
-
-                    // Set new name
-                    if (!addonName.equals("RyanWare")) {
-                        var nameField = meta.getClass().getDeclaredField("name");
-                        nameField.setAccessible(true);
-                        nameField.set(meta, addonName);
-
-                        // Clear authors if not the default, add current player's name as an author
-                        var authorsField = meta.getClass().getDeclaredField("authors");
-                        authorsField.setAccessible(true);
-
-                        // Get current player name
-                        String currentPlayerName = MinecraftClient.getInstance().getSession().getUsername();
-
-                        // Check authors and set current player name if necessary
-                        List<String> authors = (List<String>) authorsField.get(meta);
-                        authorsField.set(meta, Collections.singletonList(currentPlayerName));
-
-                        // Clear description if not default
-                        var descField = meta.getClass().getDeclaredField("description");
-                        descField.setAccessible(true);
-                        descField.set(meta, "");
+                    if (meta.getCustomValue("ryanware:addon-name") != null) {
+                        addonName = meta.getCustomValue("ryanware:addon-name").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:module-prefix") != null) {
+                        modulePrefix = meta.getCustomValue("ryanware:module-prefix").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:icon") != null) {
+                        String iconName = meta.getCustomValue("ryanware:icon").getAsString().toLowerCase(Locale.ROOT);
+                        Identifier id = Identifier.of("minecraft", iconName);
+                        iconItem = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
                     }
                 } catch (Exception e) {
-                    LOG.error("Failed to override mod metadata via reflection.", e);
+                    LOG.error("Failed to read mod metadata or override values.", e);
                 }
             });
         } catch (Exception e) {
-            LOG.error("Mod metadata override failed", e);
+            LOG.error("Failed to access mod container", e);
         }
 
         CATEGORY = new Category(addonName, iconItem.getDefaultStack());

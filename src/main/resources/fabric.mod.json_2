@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "ryanware",
+  "version": "0.1",
+  "name": "NovaCore",
+  "description": "The NovaCore Addon for Meteor Client.",
+  "authors": ["ChatGPT"],
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "smilerryan.ryanware.RyanWare"
+    ]
+  },
+  "mixins": [
+    "ryanware.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "229,255,0",
+    "github:sha": "",
+    "ryanware:addon-name": "NovaCore",
+    "ryanware:module-prefix": "Nova-",
+    "ryanware:icon": "nether_star"
+  },
+  "depends": {
+    "java": ">=17",
+    "minecraft": ">=1.20.6",
+    "meteor-client": "*"
+  }
+}
