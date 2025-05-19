@@ -124,6 +124,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TotemBypass());
         Modules.get().add(new FullBright());
         Modules.get().add(new BeehiveCoordLogger());
+        Modules.get().add(new DeathCommands());
 
         // Register commands
         Commands.add(new TAMsgCommand());
