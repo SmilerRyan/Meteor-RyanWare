@@ -81,6 +81,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new DeathCommands());
         Modules.get().add(new BritishChat());
         Modules.get().add(new NiceFlight());
+        Modules.get().add(new Excavator());
 
         // Register commands
         Commands.add(new TAMsgCommand());
