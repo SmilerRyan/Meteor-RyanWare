@@ -20,25 +20,24 @@ public class NiceFlight extends Module {
         .build()
     );
 
-    private final Setting<Boolean> holdToFly = sgGeneral.add(new BoolSetting.Builder()
-        .name("hold-to-fly")
-        .description("Only fly while holding jump.")
-        .defaultValue(false)
-        .build()
-    );
-
     private final MinecraftClient mc = MinecraftClient.getInstance();
-    private boolean flying = false;
     private boolean wasJumping = false;
+    private boolean isFlying = false;
+    private boolean canDoubleJump = true;
 
     public NiceFlight() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "nice-flight", "Allows you to fly like in creative mode with double-jump.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "nice-flight", "Toggle flying with double jump, like creative mode.");
     }
 
     @Override
     public void onActivate() {
-        flying = false;
         wasJumping = false;
+        isFlying = false;
+        canDoubleJump = true;
+        if (mc.player != null) {
+            mc.player.getAbilities().allowFlying = false;
+            mc.player.getAbilities().flying = false;
+        }
     }
 
     @Override
@@ -55,31 +54,30 @@ public class NiceFlight extends Module {
 
         boolean isJumping = mc.options.jumpKey.isPressed();
 
-        // Handle double jump detection
-        if (!wasJumping && isJumping && !mc.player.isOnGround()) {
-            // Double jump detected
-            flying = true;
+        // Only detect double jump when not flying and player is in air
+        if (!isFlying && !wasJumping && isJumping && !mc.player.isOnGround() && canDoubleJump) {
+            // Enable flying
+            isFlying = true;
             mc.player.getAbilities().allowFlying = true;
             mc.player.getAbilities().flying = true;
+            canDoubleJump = false;
         }
-
-        // Handle hold-to-fly mode
-        if (holdToFly.get() && flying) {
-            if (!isJumping) {
-                flying = false;
-                mc.player.getAbilities().flying = false;
-                mc.player.getAbilities().allowFlying = false;
-            }
-        }
-        // Handle normal mode - land to stop flying
-        else if (!holdToFly.get() && flying && mc.player.isOnGround()) {
-            flying = false;
+        // Detect double jump while flying to disable it
+        else if (isFlying && !wasJumping && isJumping && !mc.player.isOnGround() && canDoubleJump) {
+            // Disable flying
+            isFlying = false;
             mc.player.getAbilities().flying = false;
             mc.player.getAbilities().allowFlying = false;
+            canDoubleJump = false;
+        }
+
+        // Reset double jump ability when player touches ground
+        if (mc.player.isOnGround()) {
+            canDoubleJump = true;
         }
 
         // Apply flight speed when flying
-        if (flying) {
+        if (isFlying) {
             mc.player.getAbilities().setFlySpeed((float) (speed.get() * 0.05f));
         }
 
