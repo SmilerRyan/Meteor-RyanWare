@@ -80,6 +80,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new BritishChat());
+        Modules.get().add(new NiceFlight());
 
         // Register commands
         Commands.add(new TAMsgCommand());
