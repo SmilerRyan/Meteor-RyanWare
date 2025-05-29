@@ -1,73 +1,97 @@
 package smilerryan.ryanware.modules;
 
-import meteordevelopment.meteorclient.settings.*;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import meteordevelopment.meteorclient.settings.IntSetting;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.systems.modules.Categories;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.network.packet.Packet;
-import smilerryan.ryanware.RyanWare;
+import net.minecraft.network.packet.c2s.common.KeepAliveC2SPacket;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.HashSet;
 import java.util.Random;
 
 public class MorePing extends Module {
-    private final SettingGroup sgPing = settings.getDefaultGroup();
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
-    private final Setting<Integer> baseDelay = sgPing.add(new IntSetting.Builder()
-        .name("base-delay-ms")
-        .description("Minimum additional ping in milliseconds.")
+    // General
+    private final Setting<Integer> minPing = sgGeneral.add(new IntSetting.Builder()
+        .name("minimum-ping")
+        .description("The minimum ping in milliseconds to add.")
         .defaultValue(100)
-        .min(0)
-        .sliderMax(1000)
+        .min(1)
+        .sliderMin(50)
+        .sliderMax(500)
+        .noSlider()
         .build()
     );
 
-    private final Setting<Integer> randomExtra = sgPing.add(new IntSetting.Builder()
-        .name("random-extra-ms")
-        .description("Random extra delay added to base.")
+    private final Setting<Integer> randomExtra = sgGeneral.add(new IntSetting.Builder()
+        .name("random-extra")
+        .description("The maximum random extra ping in milliseconds to add on top of the minimum.")
         .defaultValue(50)
         .min(0)
-        .sliderMax(500)
+        .sliderMin(0)
+        .sliderMax(200)
+        .noSlider()
         .build()
     );
 
-    private final Queue<DelayedPacket> delayedPackets = new ConcurrentLinkedQueue<>();
+    // Variables
+    private final Object2LongMap<KeepAliveC2SPacket> packets = new Object2LongOpenHashMap<>();
     private final Random random = new Random();
 
+    // Constructor
     public MorePing() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"more-ping", "Spoofs a higher ping by delaying manually sent packets.");
+        super(Categories.Misc, "more-ping", "Modify your ping with minimum and random extra delay.");
     }
 
-    private static class DelayedPacket {
-        public final Packet<?> packet;
-        public final long sendTime;
-
-        public DelayedPacket(Packet<?> packet, long delayMs) {
-            this.packet = packet;
-            this.sendTime = System.currentTimeMillis() + delayMs;
-        }
-    }
-
-    public void sendWithPing(Packet<?> packet) {
-        int delay = baseDelay.get() + random.nextInt(randomExtra.get() + 1);
-        delayedPackets.add(new DelayedPacket(packet, delay));
-    }
-
-    @EventHandler
-    private void onRender(Render2DEvent event) {
-        long now = System.currentTimeMillis();
-        while (!delayedPackets.isEmpty()) {
-            DelayedPacket dp = delayedPackets.peek();
-            if (dp.sendTime <= now) {
-                mc.getNetworkHandler().sendPacket(dp.packet);
-                delayedPackets.poll();
-            } else break;
-        }
-    }
-
+    // Overrides
     @Override
+    public void onActivate() {
+        this.packets.clear();
+    }
+
     public void onDeactivate() {
-        delayedPackets.clear();
+        if (!this.packets.isEmpty()) {
+            for (KeepAliveC2SPacket packet : new HashSet<>(this.packets.keySet())) {
+                if (this.packets.getLong(packet) + getRandomPing() <= System.currentTimeMillis()) {
+                    mc.getNetworkHandler().sendPacket(packet);
+                }
+            }
+        }
+    }
+
+    // Helper method to get random ping
+    private long getRandomPing() {
+        return minPing.get() + (randomExtra.get() > 0 ? random.nextInt(randomExtra.get()) : 0);
+    }
+
+    // Packet Send Event
+    @EventHandler
+    private void onSendPacket(PacketEvent.Send event) {
+        if (event.packet instanceof KeepAliveC2SPacket packet) {
+            if (!this.packets.isEmpty() && new HashSet<>(this.packets.keySet()).contains(packet)) {
+                this.packets.removeLong(packet);
+                return;
+            }
+
+            this.packets.put(packet, System.currentTimeMillis());
+            event.cancel();
+        }
+    }
+
+    // Packet Receive Event
+    @EventHandler
+    private void onReceivePacket(PacketEvent.Receive event) {
+        for (KeepAliveC2SPacket packet : new HashSet<>(this.packets.keySet())) {
+            if (this.packets.getLong(packet) + getRandomPing() <= System.currentTimeMillis()) {
+                mc.getNetworkHandler().sendPacket(packet);
+                break;
+            }
+        }
     }
 }
