@@ -1,0 +1,104 @@
+package smilerryan.ryanware.commands;
+
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import meteordevelopment.meteorclient.commands.Command;
+import net.minecraft.command.CommandSource;
+import net.minecraft.text.Text;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
+import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+
+public class NoteCommand extends Command {
+    private static final String DEFAULT_PATH = System.getProperty("user.home") + File.separator + "notes.txt";
+    private static final String DEFAULT_FORMAT = "[yyyy/MM/dd HH:mm:ss] %s%n";
+    
+    private String currentPath = DEFAULT_PATH;
+    private String currentFormat = DEFAULT_FORMAT;
+
+    public NoteCommand() {
+        super("note", "Manage notes with customizable paths and formats.");
+    }
+
+    @Override
+    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+        builder.then(literal("path")
+            .then(argument("filepath", string())
+                .executes(context -> {
+                    String path = getString(context, "filepath");
+                    // Expand ~ to user home directory
+                    if (path.startsWith("~")) {
+                        path = System.getProperty("user.home") + path.substring(1);
+                    }
+                    currentPath = path;
+                    info("Note path set to: " + path);
+                    return SINGLE_SUCCESS;
+                })));
+
+        builder.then(literal("format")
+            .then(argument("format", string())
+                .executes(context -> {
+                    String format = getString(context, "format");
+                    // Validate format by trying to use it
+                    try {
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern(format.replace("%s", "test")));
+                        currentFormat = format;
+                        info("Note format set to: " + format);
+                    } catch (Exception e) {
+                        error("Invalid format. Use Java DateTimeFormatter patterns with %s for the note content.");
+                    }
+                    return SINGLE_SUCCESS;
+                })));
+
+        builder.then(literal("add")
+            .then(argument("content", greedyString())
+                .executes(context -> {
+                    String content = getString(context, "content");
+                    String path = currentPath;
+                    String format = currentFormat;
+
+                    try {
+                        // Create parent directories if they don't exist
+                        Path filePath = Paths.get(path);
+                        Files.createDirectories(filePath.getParent());
+
+                        // Format the note with current timestamp
+                        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+                        String formattedNote = format.replace("%s", content);
+
+                        // Write to file
+                        try (FileWriter writer = new FileWriter(path, true)) {
+                            writer.write(formattedNote);
+                        }
+
+                        info("Note added successfully to: " + path);
+                    } catch (IOException e) {
+                        error("Failed to write note: " + e.getMessage());
+                    }
+                    return SINGLE_SUCCESS;
+                })));
+    }
+
+    private String getString(CommandContext<CommandSource> context, String name) {
+        return StringArgumentType.getString(context, name);
+    }
+
+    private void info(String message) {
+        mc.player.sendMessage(Text.literal("§a[Note] " + message), false);
+    }
+
+    private void error(String message) {
+        mc.player.sendMessage(Text.literal("§c[Note] " + message), false);
+    }
+} 
