@@ -19,7 +19,10 @@
   ],
   "custom": {
     "meteor-client:color": "229,255,0",
-    "github:sha": "@gh_hash@"
+    "github:sha": "@gh_hash@",
+    "ryanware:addon-name": "RyanWare",
+    "ryanware:module-prefix": "RyanWare-",
+    "ryanware:icon": "sponge"
   },
   "depends": {
     "java": ">=17",
