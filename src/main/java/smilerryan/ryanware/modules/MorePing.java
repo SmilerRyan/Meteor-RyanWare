@@ -10,6 +10,7 @@ import meteordevelopment.meteorclient.systems.modules.Categories;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.packet.c2s.common.KeepAliveC2SPacket;
+import smilerryan.ryanware.RyanWare;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -46,7 +47,7 @@ public class MorePing extends Module {
 
     // Constructor
     public MorePing() {
-        super(Categories.Misc, "more-ping", "Modify your ping with minimum and random extra delay.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "more-ping", "Modify your ping with minimum and random extra delay.");
     }
 
     // Overrides

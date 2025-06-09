@@ -46,14 +46,14 @@ public class CoordNotifier extends Module {
             String rawCommand = wholeCommand.get();
 
             // replace [x], [y], [z] [tag] with coordinates and tag seperately
-            String x = String.valueOf(MeteorClient.mc.player.getX());
-            String y = String.valueOf(MeteorClient.mc.player.getY());
-            String z = String.valueOf(MeteorClient.mc.player.getZ());
+            String x = String.valueOf((int) MeteorClient.mc.player.getX());
+            String y = String.valueOf((int) MeteorClient.mc.player.getY());
+            String z = String.valueOf((int) MeteorClient.mc.player.getZ());
             rawCommand = rawCommand.replace("[x]", x).replace("[y]", y).replace("[z]", z).replace("[tag]", COORD_LEAK_TAG);
 
             // if it's a command send it as a command, if not send it as a chat message
             if (rawCommand.startsWith("/")) {
-                MeteorClient.mc.player.networkHandler.sendChatCommand(rawCommand);
+                MeteorClient.mc.player.networkHandler.sendChatCommand(rawCommand.substring(1));
             } else {
                 MeteorClient.mc.player.networkHandler.sendChatMessage(rawCommand);
             }
