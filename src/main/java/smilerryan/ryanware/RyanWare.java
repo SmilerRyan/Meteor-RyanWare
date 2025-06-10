@@ -91,6 +91,9 @@ public class RyanWare extends MeteorAddon {
         // Register commands
         // Commands.add(new TAMsgCommand());
         // Commands.add(new NoteCommand());
+        
+        Commands.add(new Command_RandomNumber());
+        
     }
 
     @Override
