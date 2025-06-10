@@ -86,6 +86,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TotemBypass());
 
         // Register Plus modules
+        Modules.get().add(new AutoResponder());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
 
