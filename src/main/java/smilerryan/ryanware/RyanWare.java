@@ -62,37 +62,37 @@ public class RyanWare extends MeteorAddon {
         LOG.info("Initializing {} Addon.", addonName);
 
         // Register modules
-        Modules.get().add(new CompletionCrash());
         Modules.get().add(new Aura());
-        Modules.get().add(new ClickTP());
-        Modules.get().add(new NoDamage());
-        Modules.get().add(new MorePing());
-        Modules.get().add(new TabSortedByPing());
-        Modules.get().add(new FocusCommands());
-        Modules.get().add(new CommandAura());
-        Modules.get().add(new NameMCLink());
-        Modules.get().add(new CringeDetector());
-        Modules.get().add(new ChatCleanup());
-        Modules.get().add(new RedirectPublicChat());
-        Modules.get().add(new ChatEncryption());
-        Modules.get().add(new MaxMaceKill());
-        Modules.get().add(new TotemBypass());
-        Modules.get().add(new FullBright());
         Modules.get().add(new BeehiveCoordLogger());
-        Modules.get().add(new DeathCommands());
         Modules.get().add(new BritishChat());
-        Modules.get().add(new NiceFlight());
-        Modules.get().add(new Excavator());
-        Modules.get().add(new PublicChatTags());
-        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new ChatCleanup());
+        Modules.get().add(new ChatEncryption());
+        Modules.get().add(new ClickTP());
+        Modules.get().add(new CommandAura());
+        Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
-        Modules.get().add(new AutoResponder());
+        Modules.get().add(new CringeDetector());
+        Modules.get().add(new DeathCommands());
+        Modules.get().add(new Excavator());
+        Modules.get().add(new FocusCommands());
+        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new FullBright());
+        Modules.get().add(new NameMCLink());
+        Modules.get().add(new NiceFlight());
+        Modules.get().add(new NoDamage());
+        Modules.get().add(new PublicChatTags());
+        Modules.get().add(new RedirectPublicChat());
+        Modules.get().add(new TabSortedByPing());
+        Modules.get().add(new TotemBypass());
+
+        // Register Plus modules
+        Modules.get().add(new MaxMaceKill());
+        Modules.get().add(new MorePing());
 
         // Register commands
-        // Commands.add(new TAMsgCommand());
         // Commands.add(new NoteCommand());
-        
         Commands.add(new Command_RandomNumber());
+        // Commands.add(new TAMsgCommand());        
         
     }
 
