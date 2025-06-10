@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_plus;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -47,7 +47,7 @@ public class MorePing extends Module {
 
     // Constructor
     public MorePing() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "more-ping", "Modify your ping with minimum and random extra delay.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-more-ping", "Modify your ping with minimum and random extra delay.");
     }
 
     // Overrides
