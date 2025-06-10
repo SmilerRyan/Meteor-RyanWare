@@ -85,9 +85,10 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new CoordNotifier());
+        Modules.get().add(new AutoResponder());
 
         // Register commands
-        Commands.add(new TAMsgCommand());
+        // Commands.add(new TAMsgCommand());
         // Commands.add(new NoteCommand());
     }
 
