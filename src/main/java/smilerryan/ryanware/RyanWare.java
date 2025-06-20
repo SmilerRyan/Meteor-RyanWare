@@ -77,7 +77,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new FullBright());
-        Modules.get().add(new NameMCLink());
+        Modules.get().add(new UserLookups());
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoDamage());
         Modules.get().add(new PublicChatTags());
