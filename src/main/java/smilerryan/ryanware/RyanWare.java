@@ -87,6 +87,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register Plus modules
         Modules.get().add(new AutoResponder());
+        Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
