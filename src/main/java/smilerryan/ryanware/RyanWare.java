@@ -80,6 +80,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new UserLookups());
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoDamage());
+        Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new TabSortedByPing());
@@ -89,8 +90,10 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoResponder());
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new CrystalAura());
+        Modules.get().add(new ElytraFly());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
+        Modules.get().add(new NoBlockDamage());
 
         // Register commands
         // Commands.add(new NoteCommand());
