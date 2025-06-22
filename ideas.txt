@@ -1,0 +1,30 @@
+Btw I managed the joinee rank on the abyss server so people from outside abyss cannot invite others, also they can make threads for each of their join requests it's all explained in the chat btw
+
+Imagine adding a tpa thing where you can fly kinda like using the vclip but in any direction with a air pocket for escaping traps and travel etc
+ - So fly with auto vclip?
+
+Kinda like the baconware tp aura but it just teleports you long distances
+Aka EnderTP like a enderman
+ - Nice idea! if I manage to get that working I can also do the Circling TP Aura idea someone else suggested too.
+
+
+Also a hack that sends multiple enderperls at once in different directions at once for escaping would also be fire
+ - Interesting idea. I'll need to make a list now lmao
+
+Btw to ryanware you need to add a packet limiter to block the player from getting kicked by capping your max exceeded packets 
+So people can use nuker without getting kicked but to its max efficiency
+Also anti crash like on meteor rejects iirc
+ - the NoTooManyPackets module lmao doubt that'd be too hard to make, just count them and if it's too many cancel it.
+ - probably.
+
+Could you work on a module that like makes you flicker/teleport all around you
+Some person said they made one themselves they named it quiver
+It would make them tp in and out my range like 15 times very quickly
+At least 4-5 times a sec
+Very confusing
+Quiver just teleports in a sphere around me randomly
+I assume you don't move but for the server (everyone else) you're teleporting in circles..?
+Far enough that you can leave an opponents vision range
+Honeestly what's the "AntiPeter" one? isn't that the same thing just not in circles?
+own1 modules? probably mace tp aura
+When you get near someone to attack it should be flying all over to get them, you won't see anything but i'm swear it's what monkes was using.
