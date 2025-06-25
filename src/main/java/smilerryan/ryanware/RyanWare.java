@@ -95,6 +95,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoBlockDamage());
+        Modules.get().add(new PlayerShapeESP());
 
         // Register commands
         // Commands.add(new NoteCommand());
