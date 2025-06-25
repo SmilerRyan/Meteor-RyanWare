@@ -96,6 +96,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new UserLookups());
 
         // Register Plus modules
+        Modules.get().add(new _example());
         // ...
 
         // Register commands
