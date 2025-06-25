@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_plus;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.entity.player.AttackEntityEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -32,7 +32,7 @@ public class MaxMaceKill extends Module {
     private static final int MAX_LAUNCH_TICKS = 20; // 1 second (20 ticks)
 
     public MaxMaceKill() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-max-mace-kill", "Launches you up and slams down with mace for max damage.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "max-mace-kill", "Launches you up and slams down with mace for max damage.");
     }
 
     @EventHandler

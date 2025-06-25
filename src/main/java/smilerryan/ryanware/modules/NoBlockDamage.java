@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_plus;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -12,7 +12,7 @@ import net.minecraft.block.BlockState;
 public class NoBlockDamage extends Module {
 
     public NoBlockDamage() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-no-block-damage", "Prevents all types of block-related damage.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "no-block-damage", "Prevents all types of block-related damage.");
     }
 
     @EventHandler

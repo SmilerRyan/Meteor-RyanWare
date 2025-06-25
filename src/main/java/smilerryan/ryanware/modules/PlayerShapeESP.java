@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_plus;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
@@ -91,7 +91,7 @@ public class PlayerShapeESP extends Module {
     );
 
     public PlayerShapeESP() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "player-shape-esp", "Renders 3D shapes around players.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "PS-esp", "Renders 3D shapes around players.");
     }
 
     @EventHandler

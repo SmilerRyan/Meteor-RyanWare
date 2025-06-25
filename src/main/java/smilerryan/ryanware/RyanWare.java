@@ -63,6 +63,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register modules
         Modules.get().add(new Aura());
+        Modules.get().add(new AutoResponder());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BritishChat());
         Modules.get().add(new ChatCleanup());
@@ -72,30 +73,30 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
         Modules.get().add(new CringeDetector());
+        Modules.get().add(new CrystalAura());
         Modules.get().add(new DeathCommands());
+        Modules.get().add(new ElytraFly());
         Modules.get().add(new Excavator());
+        Modules.get().add(new f3_number_hider());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new FullBright());
-        Modules.get().add(new UserLookups());
+        Modules.get().add(new MaxMaceKill());
+        Modules.get().add(new MorePing());
         Modules.get().add(new NiceFlight());
+        Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoDamage());
         Modules.get().add(new NoItemUsageCooldown());
+        Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
+        Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TotemBypass());
+        Modules.get().add(new UserLookups());
 
         // Register Plus modules
-        Modules.get().add(new AutoResponder());
-        Modules.get().add(new RedirectMsgCommands());
-        Modules.get().add(new CrystalAura());
-        Modules.get().add(new ElytraFly());
-        Modules.get().add(new f3_number_hider());
-        Modules.get().add(new MaxMaceKill());
-        Modules.get().add(new MorePing());
-        Modules.get().add(new NoBlockDamage());
-        Modules.get().add(new PlayerShapeESP());
+        // ...
 
         // Register commands
         // Commands.add(new NoteCommand());

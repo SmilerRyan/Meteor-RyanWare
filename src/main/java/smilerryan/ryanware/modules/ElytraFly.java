@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_plus;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -58,7 +58,7 @@ public class ElytraFly extends Module {
     private static final double CRASH_PITCH = 40; // degrees, if you're diving too steep
 
     public ElytraFly() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-elytra-fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "elytra-fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
     }
 
     @EventHandler
