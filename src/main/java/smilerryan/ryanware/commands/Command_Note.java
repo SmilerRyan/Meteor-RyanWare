@@ -20,14 +20,14 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
-public class NoteCommand extends Command {
+public class Command_Note extends Command {
     private static final String DEFAULT_PATH = System.getProperty("user.home") + File.separator + "notes.txt";
     private static final String DEFAULT_FORMAT = "[yyyy/MM/dd HH:mm:ss] %s%n";
     
     private String currentPath = DEFAULT_PATH;
     private String currentFormat = DEFAULT_FORMAT;
 
-    public NoteCommand() {
+    public Command_Note() {
         super("note", "Manage notes with customizable paths and formats.");
     }
 
@@ -71,11 +71,16 @@ public class NoteCommand extends Command {
                     try {
                         // Create parent directories if they don't exist
                         Path filePath = Paths.get(path);
-                        Files.createDirectories(filePath.getParent());
+                        Path parentDir = filePath.getParent();
+                        
+                        // Only create directories if parent exists (not null)
+                        if (parentDir != null) {
+                            Files.createDirectories(parentDir);
+                        }
 
                         // Format the note with current timestamp
                         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-                        String formattedNote = format.replace("%s", content);
+                        String formattedNote = String.format(format, content);
 
                         // Write to file
                         try (FileWriter writer = new FileWriter(path, true)) {
@@ -101,4 +106,4 @@ public class NoteCommand extends Command {
     private void error(String message) {
         mc.player.sendMessage(Text.literal("§c[Note] " + message), false);
     }
-} 
+}
