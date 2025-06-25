@@ -12,10 +12,10 @@ import java.util.List;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
-public class TAMsgCommand extends Command {
+public class Command_TAMsg1 extends Command {
     
-    public TAMsgCommand() {
-        super("ta-msg", "Sends a fake TotalAnarchy-style message: PMs, public chat, join, leave, death coords, or teleport messages.");
+    public Command_TAMsg1() {
+        super("ta-msg-1", "Sends a fake TotalAnarchy-style message: PMs, public chat, join, leave, death coords, or teleport messages.");
     }
 
     @Override
