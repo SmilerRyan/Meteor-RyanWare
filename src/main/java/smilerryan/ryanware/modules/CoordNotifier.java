@@ -35,7 +35,7 @@ public class CoordNotifier extends Module {
     private static final String COORD_LEAK_TAG = "[Coord-TP-Leak]";
 
     public CoordNotifier() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "coord-notifier", "Notifies a player when you get teleported and hides coord leak messages.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
     }
 
     @EventHandler

@@ -26,7 +26,7 @@ public class UserLookups extends Module {
         .name("auto-lookup-names").defaultValue(false).build());
 
     public UserLookups() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "user-lookups",
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "User-Lookups",
             "Adds a NameMC Auto-Opener or Auto Name Lookup of users from the Laby API for join messages.");
     }
 

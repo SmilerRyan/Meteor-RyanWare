@@ -34,7 +34,7 @@ public class BeehiveCoordLogger extends Module {
     private final Set<BlockPos> loggedFlowerPositions = new HashSet<>();
 
     public BeehiveCoordLogger() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "beehive-coord-logger", "Logs coordinates of flowers that bees are targeting.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Beehive-Coord-Logger", "Logs coordinates of flowers that bees are targeting.");
     }
 
     @EventHandler

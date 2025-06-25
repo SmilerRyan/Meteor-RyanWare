@@ -12,7 +12,7 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class NoDamage extends Module {
+public class NoAttackDamage extends Module {
     public enum Mode {
         Everyone,
         FriendsOnly
@@ -26,8 +26,8 @@ public class NoDamage extends Module {
         .defaultValue(Mode.Everyone)
         .build());
 
-    public NoDamage() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"no-damage", "Prevents dealing damage to others.");
+    public NoAttackDamage() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"No-Attack-Damage", "Prevents dealing damage to others.");
     }
 
     @EventHandler

@@ -22,7 +22,7 @@ public class CringeDetector extends Module {
     );
 
     public CringeDetector() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "cringe-detector", "Detects and logs cringe words in chat messages.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Cringe-Detector", "Detects and logs cringe words in chat messages.");
     }
 
     @EventHandler
