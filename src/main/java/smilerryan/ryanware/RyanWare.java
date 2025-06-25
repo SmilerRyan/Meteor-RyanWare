@@ -91,6 +91,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new ElytraFly());
+        Modules.get().add(new f3_number_hider());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoBlockDamage());
