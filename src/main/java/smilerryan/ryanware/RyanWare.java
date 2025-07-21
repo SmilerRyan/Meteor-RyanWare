@@ -97,6 +97,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register Plus modules
         Modules.get().add(new _example());
+        Modules.get().add(new AntiHack());
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new Radio());
