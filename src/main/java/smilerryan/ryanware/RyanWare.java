@@ -89,6 +89,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
+        Modules.get().add(new Radio());
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new TabSortedByPing());
