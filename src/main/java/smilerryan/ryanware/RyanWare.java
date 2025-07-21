@@ -101,6 +101,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new Radio());
+        Modules.get().add(new Recorder());
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new TntCleaner());
         // ...
