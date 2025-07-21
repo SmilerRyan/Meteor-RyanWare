@@ -92,18 +92,18 @@ public class Radio extends Module {
 
     private void startRadio() {
         currentUrl = getActiveUrl();
-        if (currentUrl.isEmpty()) {
-            error("Custom URL is empty.");
-            return;
-        }
+        if (currentUrl.isEmpty()) return;
         
-        if (radioThread != null && !radioThread.isDone()) {
-            return; // Prevent multiple starts
-        }
+        if (radioThread != null && !radioThread.isDone()) return;
 
         radioThread = CompletableFuture.runAsync(() -> {
+            // Audio processing variables
+            byte[] previousGoodFrame = null;
+            int silentFrames = 0;
+            final int MIN_GOOD_FRAMES = 5; // Require 5 good frames before output
+            final float NOISE_THRESHOLD = 0.02f; // Volume threshold for noise detection
+            
             while (!stopRequested) {
-                info("Radio started: " + currentUrl);
                 try {
                     ProcessBuilder pb = new ProcessBuilder(
                         "ffmpeg",
@@ -111,48 +111,96 @@ public class Radio extends Module {
                         "-reconnect_streamed", "1",
                         "-reconnect_delay_max", "5",
                         "-i", currentUrl,
+                        "-af", "highpass=f=200,lowpass=f=3000", // Filter out extreme frequencies
                         "-f", "s16le",
                         "-acodec", "pcm_s16le",
                         "-ac", "2",
-                        "-ar", "44100",
+                        "-ar", "48000",
                         "-fflags", "+discardcorrupt",
                         "-"
                     );
                     pb.redirectErrorStream(true);
                     ffmpegProcess = pb.start();
-                    InputStream audioStream = ffmpegProcess.getInputStream();
-
-                    AudioFormat format = new AudioFormat(44100, 16, 2, true, false);
+                    
+                    AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
                     DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
                     dataLine = (SourceDataLine) AudioSystem.getLine(info);
-                    dataLine.open(format, 44100 * 4);
+                    dataLine.open(format, 500 * 1024);
                     dataLine.start();
 
-                    byte[] readBuffer = new byte[4096];
-                    int bytesRead;
+                    InputStream audioStream = ffmpegProcess.getInputStream();
+                    byte[] buffer = new byte[500 * 1024];
                     int frameSize = format.getFrameSize();
+                    int bytesRead;
 
-                    while (!stopRequested && (bytesRead = audioStream.read(readBuffer)) != -1 && ffmpegProcess.isAlive()) {
-                        if (bytesRead > 0) {
-                            int framesToWrite = bytesRead / frameSize;
-                            if (framesToWrite > 0) {
-                                dataLine.write(readBuffer, 0, framesToWrite * frameSize);
+                    while (!stopRequested && (bytesRead = audioStream.read(buffer)) != -1) {
+                        if (bytesRead <= 0) continue;
+                        
+                        int frameCount = bytesRead / frameSize;
+                        if (frameCount == 0) continue;
+                        
+                        for (int i = 0; i < frameCount; i++) {
+                            int offset = i * frameSize;
+                            
+                            // Calculate frame volume
+                            float frameVolume = calculateFrameVolume(buffer, offset, frameSize);
+                            
+                            // Detect noise/silence
+                            boolean isNoise = frameVolume > 0 && frameVolume < NOISE_THRESHOLD;
+                            boolean isSilent = frameVolume == 0;
+                            
+                            if (isNoise || isSilent) {
+                                silentFrames++;
+                                // Replace with previous good frame if available
+                                if (previousGoodFrame != null) {
+                                    System.arraycopy(previousGoodFrame, 0, buffer, offset, frameSize);
+                                }
+                            } else {
+                                // Store good frame
+                                if (previousGoodFrame == null) {
+                                    previousGoodFrame = new byte[frameSize];
+                                }
+                                System.arraycopy(buffer, offset, previousGoodFrame, 0, frameSize);
+                                silentFrames = 0;
                             }
                         }
+                        
+                        // Only output if we have enough consecutive good frames
+                        if (silentFrames < MIN_GOOD_FRAMES) {
+                            dataLine.write(buffer, 0, frameCount * frameSize);
+                        }
                     }
-
+                    
                     if (!stopRequested) {
-                        error("Stream interrupted, reconnecting...");
                         stopRadio();
+                        // Thread.sleep(3000);
                     }
                 } catch (Exception e) {
                     if (!stopRequested) {
-                        error("Error: " + e.getMessage());
                         stopRadio();
+                        // Thread.sleep(3000);
                     }
                 }
             }
         });
+    }
+
+    private float calculateFrameVolume(byte[] audioData, int offset, int length) {
+        // Convert bytes to samples and calculate RMS volume
+        float sum = 0;
+        int sampleCount = 0;
+        
+        for (int i = 0; i < length; i += 2) {
+            if (offset + i + 1 >= audioData.length) break;
+            
+            short sample = (short)((audioData[offset + i + 1] << 8) | (audioData[offset + i] & 0xff));
+            float sampleValue = sample / 32768.0f;
+            sum += sampleValue * sampleValue;
+            sampleCount++;
+        }
+        
+        if (sampleCount == 0) return 0;
+        return (float)Math.sqrt(sum / sampleCount);
     }
 
     private void stopRadio() {
@@ -166,7 +214,6 @@ public class Radio extends Module {
             ffmpegProcess.destroy();
             ffmpegProcess = null;
         }
-        info("Radio stopped.");
     }
 
     public enum Radios {
