@@ -89,7 +89,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
-        Modules.get().add(new Radio());
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new TabSortedByPing());
@@ -100,6 +99,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new _example());
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoTotem());
+        Modules.get().add(new Radio());
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new TntCleaner());
         // ...
