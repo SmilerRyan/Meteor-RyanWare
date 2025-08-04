@@ -66,7 +66,8 @@ public class ChatTranslator extends Module {
     private void onReceiveMessage(ReceiveMessageEvent event) {
         if (mode.get() == Mode.Sending) return;
         String original = event.getMessage().getString().trim();
-        if (original.isEmpty() || original.startsWith(readingPrefix.get())) return;
+
+        if (original.isEmpty() || original.startsWith(readingPrefix.get().replace("&", "§"))) return;
 
         new Thread(() -> {
             try {
