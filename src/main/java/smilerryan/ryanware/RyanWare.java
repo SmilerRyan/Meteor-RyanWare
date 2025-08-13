@@ -75,6 +75,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
+        Modules.get().add(new CrystalAura3());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraFakeRockets());
         Modules.get().add(new ElytraFly());
