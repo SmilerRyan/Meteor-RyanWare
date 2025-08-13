@@ -47,6 +47,7 @@ public class AskOllama extends Module {
         .build()
     );
 
+
     private final Setting<Boolean> allowRespondAsMe = sgGeneral.add(new BoolSetting.Builder()
         .name("allow-responding-as-me")
         .description("Allow Ollama to respond as you by sending chat messages or commands if response starts with [SEND].")
@@ -68,122 +69,91 @@ public class AskOllama extends Module {
         .build()
     );
 
-    private final Setting<Integer> waitDelayMs = sgGeneral.add(new IntSetting.Builder()
-        .name("wait-delay-ms")
-        .description("How long to wait (in ms) before collecting messages and sending to AI.")
-        .defaultValue(800)
-        .min(0)
-        .sliderMax(2000)
-        .build()
-    );
-
-    private final Setting<Integer> contextLimit = sgGeneral.add(new IntSetting.Builder()
-        .name("context-limit")
-        .description("Maximum number of messages to include in prompt context.")
-        .defaultValue(20)
-        .min(1)
-        .sliderMax(50)
-        .build()
-    );
-
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Deque<String> recentMessages = new ArrayDeque<>();
-    private static final int MAX_MESSAGES = 50;
+    private static final int MAX_CHAT_HISTORY = 20;
 
     public AskOllama() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override
-    public void onDeactivate() {
-        super.onDeactivate();
-        recentMessages.clear();
+    public void onActivate() {
     }
 
     @EventHandler
     private void onChat(ReceiveMessageEvent event) {
-        if (!isActive() || event.getMessage() == null) return;
+        if (!isActive() || mc.inGameHud == null || event.getMessage() == null) return;
 
         String msg = event.getMessage().getString();
 
-        if (allowOtherResponses.get()) {
-            if (msg.startsWith("[Ollama Other]") || msg.startsWith("[Ollama Guide]") ||
-                msg.startsWith("[Ollama Send Simulated]") || msg.startsWith("[Ollama Send Blocked]")) return;
-        }
-
         recentMessages.addLast(msg);
-        if (recentMessages.size() > MAX_MESSAGES) recentMessages.removeFirst();
+        if (recentMessages.size() > MAX_CHAT_HISTORY) recentMessages.removeFirst();
 
         for (String trigger : triggerWords.get()) {
             int index = msg.toLowerCase().indexOf(trigger.toLowerCase());
             if (index != -1) {
+                String userPrompt = msg.substring(index + trigger.length()).trim();
+
+                StringBuilder fullPromptBuilder = new StringBuilder();
+
+                // Send recent messages as context
+                fullPromptBuilder.append(recentMessages).append("\n").append(userPrompt);
+                fullPromptBuilder.append("\n\n");
+                
+                // If user prompt is not empty, append it
+                if (!userPrompt.isEmpty()) {    
+                    fullPromptBuilder.append("User context:\n").append(extraContext.get()).append("\n\n");
+                }
+
+                // If allowed to use respond as me, append instructions
+                if(allowRespondAsMe.get()) {
+                    String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
+                    fullPromptBuilder.append("You can respond as the player ");
+                    fullPromptBuilder.append(playerName);
+                    fullPromptBuilder.append(" if you are confident the message is short and sounds like the player's usual messages or commands ");
+                    fullPromptBuilder.append(" by using the prefix '/send' followed by your message.\n");
+                    fullPromptBuilder.append("If you want to send a guide (not forced) message, use '/guide'.\n\n");
+                } else {
+                    fullPromptBuilder.append("You can respond to the player's message by using the prefix '/guide' followed by your message.\n\n");
+                }
+
+                // Append ending prompt
+                fullPromptBuilder.append("REMEMBER, ALWAYS USE THE PREFIX '/send' OR '/guide' TO RESPOND FOR EACH LINE IN YOUR RESPONSE, IF YOU DO NOT INCLUDE THIS PREFIX YOUR MESSAGE RESPONSE WILL BE IGNORED.\nYour response goes here:\n");
+
+                String fullPrompt = fullPromptBuilder.toString();
+
                 executor.submit(() -> {
-                    try {
-                        Thread.sleep(waitDelayMs.get());
-                    } catch (InterruptedException ignored) {}
-
-                    StringBuilder fullPromptBuilder = new StringBuilder();
-                    List<String> context = new ArrayList<>(recentMessages);
-                    int limit = contextLimit.get();
-                    if (context.size() > limit) context = context.subList(context.size() - limit, context.size());
-
-                    for (String line : context) {
-                        fullPromptBuilder.append(line).append("\n");
-                    }
-
-                    String userPrompt = msg.substring(index + trigger.length()).trim();
-                    fullPromptBuilder.append("\n").append(userPrompt).append("\n\n");
-
-                    if (!userPrompt.isEmpty()) {
-                        fullPromptBuilder.append("User context:\n").append(extraContext.get()).append("\n\n");
-                    }
-
-                    if (allowRespondAsMe.get()) {
-                        String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
-                        fullPromptBuilder.append("You can respond as the player ").append(playerName).append(" ");
-                        fullPromptBuilder.append("by using the prefix '/send'. Use '/guide' to suggest a reply.\n\n");
-                    } else {
-                        fullPromptBuilder.append("Respond using '/guide' followed by your message.\n\n");
-                    }
-
-                    fullPromptBuilder.append("REMEMBER, ALWAYS USE THE PREFIX '/send' OR '/guide'. Responses without it will be ignored.\nYour response:\n");
-
-                    String fullPrompt = fullPromptBuilder.toString();
-
                     String reply = queryOllama(fullPrompt);
                     if (reply != null) {
                         mc.execute(() -> {
-                            String[] lines = reply.split("\n");
-                            for (String line : lines) {
-                                String lower = line.toLowerCase(Locale.ROOT);
-                                if (lower.startsWith("/send ")) {
-                                    String message = line.substring(6).trim();
-                                    if (message.isEmpty()) continue;
+                            String replyLower = reply.toLowerCase(Locale.ROOT);
+                            if (replyLower.startsWith("/send ")) {
+                                String messageToSend = reply.substring(6).trim();
+                                if (messageToSend.isEmpty()) return;
 
-                                    if (!allowRespondAsMe.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Blocked] " + message));
-                                        continue;
-                                    }
+                                if (!allowRespondAsMe.get()) {
+                                    mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Blocked] " + messageToSend));
+                                }
 
-                                    if (simulateRespondAsMe.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Simulated] " + message));
-                                    } else if (mc.player != null) {
-                                        if (message.startsWith("/")) {
-                                            mc.player.networkHandler.sendChatCommand(message.substring(1));
-                                        } else {
-                                            mc.player.networkHandler.sendChatMessage(message);
-                                        }
+                                if (simulateRespondAsMe.get()) {
+                                    mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Simulated] " + messageToSend));
+                                } else if (mc.player != null) {
+                                    if (messageToSend.startsWith("/")) {
+                                        mc.player.networkHandler.sendChatCommand(messageToSend.substring(1));
+                                    } else {
+                                        mc.player.networkHandler.sendChatMessage(messageToSend);
                                     }
-                                } else if (lower.startsWith("/guide ")) {
-                                    String guide = line.substring(7).trim();
-                                    if (!guide.isEmpty()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Guide] " + guide));
-                                    }
-                                } else {
-                                    if (allowOtherResponses.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Other] " + line));
-                                    }
+                                }
+                            } else if (replyLower.startsWith("/guide ")) {
+                                String guideMessage = reply.substring(7).trim();
+                                if (!guideMessage.isEmpty()) {
+                                    mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Guide] " + guideMessage));
+                                }
+                            } else {
+                                if (allowOtherResponses.get()) {
+                                    mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Other] " + reply));
                                 }
                             }
                         });
@@ -214,7 +184,7 @@ public class AskOllama extends Module {
 
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
-                error("Ollama query failed: HTTP " + responseCode);
+                error("Ollama query failed: Server returned HTTP response code: " + responseCode);
                 return null;
             }
 
@@ -254,12 +224,16 @@ public class AskOllama extends Module {
 
             conn.disconnect();
 
-            return response.toString()
+            String cleanedResponse = response.toString()
                 .replaceAll("(?i)<think>.*?</think>", "")
                 .replaceAll("(?i)\\\\u003c/?think\\\\u003e", "")
+                .replaceAll("(?i)u003c/?thinku003e", "")
                 .replaceAll("(?i)<think>|</think>", "")
+                .replaceAll("(?i)\\\\u003cthink.*?\\\\u003c/think\\\\u003e", "")
+                .replaceAll("(?i)u003cthink.*?u003c/thinku003e", "")
                 .trim();
 
+            return cleanedResponse;
         } catch (Exception e) {
             error("Ollama query failed: " + e.getMessage());
             return null;
@@ -267,7 +241,21 @@ public class AskOllama extends Module {
     }
 
     private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
+        if (s == null || s.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            switch (ch) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                default: sb.append(ch); break;
+            }
+        }
+        return sb.toString();
     }
 }
