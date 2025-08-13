@@ -8,7 +8,7 @@ import smilerryan.ryanware.RyanWare;
 
 import java.util.*;
 
-public class PublicChatTags extends Module {
+public class M1_PublicChatTags extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<String>> serverTagStrings = sgGeneral.add(new StringListSetting.Builder()
@@ -25,8 +25,8 @@ public class PublicChatTags extends Module {
         .build()
     );
 
-    public PublicChatTags() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Chat-Tags", "Adds a prefix and suffix to public messages per server.");
+    public M1_PublicChatTags() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Tags", "Adds a prefix and suffix to public messages per server.");
     }
 
     private String getServerIp() {
