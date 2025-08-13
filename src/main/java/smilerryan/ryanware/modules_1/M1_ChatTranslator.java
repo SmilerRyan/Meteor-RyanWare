@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
@@ -17,7 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
-public class ChatTranslator extends Module {
+public class M1_ChatTranslator extends Module {
     public enum Mode {
         Reading, Sending, Both
     }
@@ -58,8 +58,8 @@ public class ChatTranslator extends Module {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
-    public ChatTranslator() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Chat-Translator", "Translates chat messages via Google Translate.");
+    public M1_ChatTranslator() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Translator", "Translates chat messages via Google Translate.");
     }
 
     @EventHandler

@@ -24,7 +24,7 @@ public class AntiHack extends Module {
     );
 
     public AntiHack() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "AntiHack", "Literally stops you from hacking, forces everything off.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AntiHack", "Literally stops you from hacking, forces everything off.");
     }
 
     @EventHandler

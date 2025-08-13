@@ -92,7 +92,7 @@ public class AskOllama extends Module {
     private static final int MAX_MESSAGES = 50;
 
     public AskOllama() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class TotemBypass extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     public TotemBypass() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "TotemBypass", "Tricks the server into thinking you aren't going to die.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-TotemBypass", "Tricks the server into thinking you aren't going to die.");
     }
 
     @EventHandler

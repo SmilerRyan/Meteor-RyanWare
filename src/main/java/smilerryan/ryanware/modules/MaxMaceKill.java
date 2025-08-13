@@ -32,7 +32,7 @@ public class MaxMaceKill extends Module {
     private static final int MAX_LAUNCH_TICKS = 20; // 1 second (20 ticks)
 
     public MaxMaceKill() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Max-Mace-Kill", "Launches you up and slams down with mace for max damage.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Max-Mace-Kill", "Launches you up and slams down with mace for max damage.");
     }
 
     @EventHandler

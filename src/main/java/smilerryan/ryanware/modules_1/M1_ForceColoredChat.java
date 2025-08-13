@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -10,11 +10,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class ForceColoredChat extends Module {
+public class M1_ForceColoredChat extends Module {
     private final Pattern colorCodePattern = Pattern.compile("&([0-9a-fk-or])", Pattern.CASE_INSENSITIVE);
 
-    public ForceColoredChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Force-Colored-Chat", "Replaces & with § in received messages.");
+    public M1_ForceColoredChat() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Force-Colored-Chat", "Replaces & with § in received messages.");
     }
 
     @EventHandler

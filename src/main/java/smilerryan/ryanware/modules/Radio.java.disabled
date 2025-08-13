@@ -45,7 +45,7 @@ public class Radio extends Module {
     private String currentUrl = "";
 
     public Radio() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Radio", "It's a fucking in-game radio!");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Radio", "It's a fucking in-game radio!");
     }
 
     @Override

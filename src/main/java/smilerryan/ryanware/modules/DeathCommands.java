@@ -58,7 +58,7 @@ public class DeathCommands extends Module {
     private final Random random = new Random();
 
     public DeathCommands() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Death-Commands", "Sends random messages when you die.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Death-Commands", "Sends random messages when you die.");
     }
 
     @EventHandler

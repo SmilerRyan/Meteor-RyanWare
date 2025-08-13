@@ -17,7 +17,7 @@ public class AtSomeone extends Module {
     private final Random random = new Random();
 
     public AtSomeone() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "@Someone", "Responds with a random online player when '@someone' is seen in chat.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-@Someone", "Responds with a random online player when '@someone' is seen in chat.");
     }
 
     @EventHandler

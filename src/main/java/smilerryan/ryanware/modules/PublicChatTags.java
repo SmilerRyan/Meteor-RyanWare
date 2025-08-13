@@ -26,7 +26,7 @@ public class PublicChatTags extends Module {
     );
 
     public PublicChatTags() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Chat-Tags", "Adds a prefix and suffix to public messages per server.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Chat-Tags", "Adds a prefix and suffix to public messages per server.");
     }
 
     private String getServerIp() {

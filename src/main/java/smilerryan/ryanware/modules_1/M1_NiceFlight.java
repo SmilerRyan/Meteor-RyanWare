@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -7,7 +7,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import smilerryan.ryanware.RyanWare;
 
-public class NiceFlight extends Module {
+public class M1_NiceFlight extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<Double> speed = sgGeneral.add(new DoubleSetting.Builder()
@@ -32,8 +32,8 @@ public class NiceFlight extends Module {
     private boolean isFlying = false;
     private boolean canDoubleJump = true;
 
-    public NiceFlight() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Nice-Flight", "Toggle flying with double jump, like creative mode.");
+    public M1_NiceFlight() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Nice-Flight", "Toggle flying with double jump, like creative mode.");
     }
 
     @Override

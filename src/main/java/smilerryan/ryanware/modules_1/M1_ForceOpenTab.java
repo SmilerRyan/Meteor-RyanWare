@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -8,12 +8,12 @@ import smilerryan.ryanware.RyanWare;
 
 import java.lang.reflect.Field;
 
-public class ForceOpenTab extends Module {
+public class M1_ForceOpenTab extends Module {
 
     private KeyBinding playerListKey;
 
-    public ForceOpenTab() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Force-Open-Tab", "Forces the tab list to stay open.");
+    public M1_ForceOpenTab() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Force-Open-Tab", "Forces the tab list to stay open.");
     }
 
     @Override

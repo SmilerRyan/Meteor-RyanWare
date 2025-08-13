@@ -109,7 +109,7 @@ public class CrystalAura2 extends Module {
     private int tickCounter = 0;
 
     public CrystalAura2() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Crystal-Aura-2", "Automatically attacks with end crystals, but better and safer.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Crystal-Aura-2", "Automatically attacks with end crystals, but better and safer.");
     }
 
     @EventHandler

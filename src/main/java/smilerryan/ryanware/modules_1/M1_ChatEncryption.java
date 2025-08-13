@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
@@ -21,7 +21,7 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatEncryption extends Module {
+public class M1_ChatEncryption extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<Boolean> enabled = sgGeneral.add(new BoolSetting.Builder()
@@ -88,8 +88,8 @@ public class ChatEncryption extends Module {
         }
     }
 
-    public ChatEncryption() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
+    public M1_ChatEncryption() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
     }
 
     @EventHandler

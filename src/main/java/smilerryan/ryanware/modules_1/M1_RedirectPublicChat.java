@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class RedirectPublicChat extends Module {
+public class M1_RedirectPublicChat extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<String>> redirectCommands = sgGeneral.add(new StringListSetting.Builder()
@@ -36,8 +36,8 @@ public class RedirectPublicChat extends Module {
     private final Queue<String> messageQueue = new LinkedList<>();
     private int tickCounter = 0;
 
-    public RedirectPublicChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "Redirect-Public-Chat", "Redirects public chat messages to specified commands.");
+    public M1_RedirectPublicChat() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Redirect-Public-Chat", "Redirects public chat messages to specified commands.");
     }
 
     @EventHandler
