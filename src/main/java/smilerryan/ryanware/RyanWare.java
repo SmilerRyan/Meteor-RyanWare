@@ -74,6 +74,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CoordNotifier());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
+        Modules.get().add(new CrystalAura2());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraFakeRockets());
         Modules.get().add(new ElytraFly());
@@ -100,13 +101,17 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new _example());
         Modules.get().add(new AntiHack());
         Modules.get().add(new AskOllama());
+        Modules.get().add(new AtSomeone());
         Modules.get().add(new AutoMineNearby());
+        Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new ChatTranslator());
+        Modules.get().add(new ForceColoredChat());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new TntCleaner());
+        Modules.get().add(new WorldDownloader());
         // ...
 
         // Register commands
