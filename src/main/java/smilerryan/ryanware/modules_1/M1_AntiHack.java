@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_1;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.ModuleListSetting;
@@ -12,7 +12,7 @@ import smilerryan.ryanware.RyanWare;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AntiHack extends Module {
+public class M1_AntiHack extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     // User picks modules to whitelist from all loaded modules
@@ -23,8 +23,8 @@ public class AntiHack extends Module {
         .build()
     );
 
-    public AntiHack() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AntiHack", "Literally stops you from hacking, forces everything off.");
+    public M1_AntiHack() {
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-AntiHack", "Literally stops you from hacking, forces everything except the allowed modules off.");
     }
 
     @EventHandler

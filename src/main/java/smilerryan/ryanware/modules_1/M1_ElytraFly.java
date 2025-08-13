@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Box;
 import smilerryan.ryanware.RyanWare;
 
-public class ElytraFly extends Module {
+public class M1_ElytraFly extends Module {
     private final Setting<Double> speed = settings.getDefaultGroup().add(new DoubleSetting.Builder()
         .name("speed")
         .description("Flying speed.")
@@ -57,7 +57,7 @@ public class ElytraFly extends Module {
     private static final int ANTI_CRASH_RANGE = 3;
     private static final double CRASH_PITCH = 40; // degrees, if you're diving too steep
 
-    public ElytraFly() {
+    public M1_ElytraFly() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Elytra-Fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
     }
 

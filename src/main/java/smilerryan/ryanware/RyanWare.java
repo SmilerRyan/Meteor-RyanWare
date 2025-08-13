@@ -63,9 +63,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register modules
         Modules.get().add(new _example());
-        Modules.get().add(new AntiHack());
         Modules.get().add(new AskOllama());
-        Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoMineNearby());
@@ -73,10 +71,8 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoTotem());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BritishChat());
-        Modules.get().add(new ChatCleanup());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
-        Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
@@ -84,17 +80,14 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CrystalAura3());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraFakeRockets());
-        Modules.get().add(new ElytraFly());
         Modules.get().add(new Excavator());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new FullBright());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
-        Modules.get().add(new NoAttackDamage());
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
-        Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
         Modules.get().add(new RedirectMsgCommands());
@@ -107,14 +100,22 @@ public class RyanWare extends MeteorAddon {
 
         // Register M1 modules
         // Assume these are done and never to be touched again
+        Modules.get().add(new M1_AntiHack());
+        Modules.get().add(new M1_AtSomeone());
+        Modules.get().add(new M1_ChatCleanup());
         Modules.get().add(new M1_ChatEncryption());
         Modules.get().add(new M1_ChatTranslator());
+        Modules.get().add(new M1_CompletionCrash());
+        Modules.get().add(new M1_ElytraFly());
         Modules.get().add(new M1_f3_number_hider());
         Modules.get().add(new M1_ForceColoredChat());
         Modules.get().add(new M1_ForceOpenTab());
         Modules.get().add(new M1_NiceFlight());
+        Modules.get().add(new M1_NoAttackDamage());
+        Modules.get().add(new M1_PublicChatTags());
         Modules.get().add(new M1_RedirectPublicChat());
         Modules.get().add(new M1_UserLookups());
+
 
         // Register commands
         Commands.add(new Command_Note());
