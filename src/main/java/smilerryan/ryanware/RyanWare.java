@@ -15,7 +15,6 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
-import smilerryan.ryanware.modules_plus.*;
 import smilerryan.ryanware.commands.*;
 
 import java.util.Collections;
@@ -62,12 +61,20 @@ public class RyanWare extends MeteorAddon {
         LOG.info("Initializing {} Addon.", addonName);
 
         // Register modules
+        Modules.get().add(new _example());
+        Modules.get().add(new AntiHack());
+        Modules.get().add(new AskOllama());
+        Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
+        Modules.get().add(new AutoHighwayBuilder());
+        Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoResponder());
+        Modules.get().add(new AutoTotem());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BritishChat());
         Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChatEncryption());
+        Modules.get().add(new ChatTranslator());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
         Modules.get().add(new CompletionCrash());
@@ -82,6 +89,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new Excavator());
         Modules.get().add(new f3_number_hider());
         Modules.get().add(new FocusCommands());
+        Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new FullBright());
         Modules.get().add(new MaxMaceKill());
@@ -92,26 +100,15 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
-        Modules.get().add(new RedirectMsgCommands());
-        Modules.get().add(new RedirectPublicChat());
-        Modules.get().add(new TabSortedByPing());
-        Modules.get().add(new TotemBypass());
-        Modules.get().add(new UserLookups());
-
-        // Register Plus modules
-        Modules.get().add(new _example());
-        Modules.get().add(new AntiHack());
-        Modules.get().add(new AskOllama());
-        Modules.get().add(new AtSomeone());
-        Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new AutoHighwayBuilder());
-        Modules.get().add(new AutoTotem());
-        Modules.get().add(new ChatTranslator());
-        Modules.get().add(new ForceColoredChat());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
+        Modules.get().add(new RedirectMsgCommands());
+        Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new SkinBlinker());
+        Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
+        Modules.get().add(new TotemBypass());
+        Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
         // ...
 
