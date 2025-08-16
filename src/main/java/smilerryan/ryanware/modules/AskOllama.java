@@ -68,6 +68,13 @@ public class AskOllama extends Module {
         .build()
     );
 
+    private final Setting<Boolean> allowGuideResponses = sgGeneral.add(new BoolSetting.Builder()
+        .name("allow-guide-responses")
+        .description("Allow Ollama to provide '/guide' messages, and include '/guide' instructions in the AI prompt.")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Integer> waitDelayMs = sgGeneral.add(new IntSetting.Builder()
         .name("wait-delay-ms")
         .description("How long to wait (in ms) before collecting messages and sending to AI.")
@@ -90,6 +97,10 @@ public class AskOllama extends Module {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Deque<String> recentMessages = new ArrayDeque<>();
     private static final int MAX_MESSAGES = 50;
+
+    private static final Set<String> STOP_COMMANDS = new HashSet<>(Arrays.asList(
+        "/stfu", "/nothing", "/ignore"
+    ));
 
     public AskOllama() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
@@ -141,13 +152,25 @@ public class AskOllama extends Module {
 
                     if (allowRespondAsMe.get()) {
                         String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
-                        fullPromptBuilder.append("You can respond as the player ").append(playerName).append(" ");
-                        fullPromptBuilder.append("by using the prefix '/send'. Use '/guide' to suggest a reply.\n\n");
+                        fullPromptBuilder.append("You can respond as the player ").append(playerName)
+                            .append(" by using the prefix '/send'. ");
+                        if (allowGuideResponses.get()) {
+                            fullPromptBuilder.append("Use '/guide' to suggest a reply.\n\n");
+                        } else {
+                            fullPromptBuilder.append("Do not use '/guide'.\n\n");
+                        }
                     } else {
-                        fullPromptBuilder.append("Respond using '/guide' followed by your message.\n\n");
+                        if (allowGuideResponses.get()) {
+                            fullPromptBuilder.append("Respond using '/guide' followed by your message.\n\n");
+                        } else {
+                            fullPromptBuilder.append("\n");
+                        }
                     }
 
-                    fullPromptBuilder.append("REMEMBER, ALWAYS USE THE PREFIX '/send' OR '/guide'. Responses without it will be ignored.\nYour response:\n");
+                    fullPromptBuilder.append("You may also respond with '/stfu', '/nothing', or '/ignore' to indicate no response is needed.\n");
+                    fullPromptBuilder.append("REMEMBER, ALWAYS USE THE PREFIX '/send'")
+                        .append(allowGuideResponses.get() ? " OR '/guide'" : "")
+                        .append(". Responses without it will be ignored.\nYour response:\n");
 
                     String fullPrompt = fullPromptBuilder.toString();
 
@@ -156,7 +179,13 @@ public class AskOllama extends Module {
                         mc.execute(() -> {
                             String[] lines = reply.split("\n");
                             for (String line : lines) {
-                                String lower = line.toLowerCase(Locale.ROOT);
+                                String trimmedLower = line.trim().toLowerCase(Locale.ROOT);
+                                // Stop command check
+                                if (STOP_COMMANDS.contains(trimmedLower)) {
+                                    return; // stop processing entirely
+                                }
+
+                                String lower = trimmedLower;
                                 if (lower.startsWith("/send ")) {
                                     String message = line.substring(6).trim();
                                     if (message.isEmpty()) continue;
@@ -176,6 +205,7 @@ public class AskOllama extends Module {
                                         }
                                     }
                                 } else if (lower.startsWith("/guide ")) {
+                                    if (!allowGuideResponses.get()) continue;
                                     String guide = line.substring(7).trim();
                                     if (!guide.isEmpty()) {
                                         mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Guide] " + guide));
