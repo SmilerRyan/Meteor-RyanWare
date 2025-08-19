@@ -84,6 +84,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new Excavator());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new FullBright());
+        Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoBlockDamage());
@@ -116,7 +117,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new M1_PublicChatTags());
         Modules.get().add(new M1_RedirectPublicChat());
         Modules.get().add(new M1_UserLookups());
-
 
         // Register commands
         Commands.add(new Command_Note());
