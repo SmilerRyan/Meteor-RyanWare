@@ -89,6 +89,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
+        Modules.get().add(new NewChunks());
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
