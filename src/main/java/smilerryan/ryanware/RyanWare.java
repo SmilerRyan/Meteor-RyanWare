@@ -110,6 +110,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new M1_ChatEncryption());
         Modules.get().add(new M1_ChatTranslator());
         Modules.get().add(new M1_CompletionCrash());
+        Modules.get().add(new M1_DeathCoordsMessage());
         Modules.get().add(new M1_ElytraFly());
         Modules.get().add(new M1_f3_number_hider());
         Modules.get().add(new M1_ForceColoredChat());
