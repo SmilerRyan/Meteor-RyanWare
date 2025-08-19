@@ -35,6 +35,20 @@ public class M1_DeathCoordsMessage extends Module {
         .build()
     );
 
+    private final Setting<Boolean> protectedMessageToggle = sgGeneral.add(new BoolSetting.Builder()
+        .name("protected-message-toggle")
+        .description("Send a different message if you die in protected coords.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<String> protectedMessage = sgGeneral.add(new StringSetting.Builder()
+        .name("protected-death-message")
+        .description("Message sent when dying inside protected coords. Supports {x}, {y}, {z} and color codes (&).")
+        .defaultValue("&fYour death location is: &chidden")
+        .build()
+    );
+
     private boolean wasAlive = true;
 
     public M1_DeathCoordsMessage() {
@@ -45,18 +59,13 @@ public class M1_DeathCoordsMessage extends Module {
     private void onTick(TickEvent.Post event) {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
-
         boolean isAlive = player.isAlive();
-
-        // Detect death by health dropping to 0 (only triggers once)
         if (wasAlive && !isAlive) {
             double deathX = player.getX();
             double deathY = player.getY();
             double deathZ = player.getZ();
-
             sendDeathMessage(deathX, deathY, deathZ);
         }
-
         wasAlive = isAlive;
     }
 
@@ -76,11 +85,7 @@ public class M1_DeathCoordsMessage extends Module {
                     double distance = Math.sqrt(dx*dx + dz*dz);
 
                     if (debug.get()) {
-                        if (distance <= radius) {
-                            sendDebug(px, py, pz, distance, radius, entry, true);
-                        } else {
-                            sendDebug(px, py, pz, distance, radius, entry, false);
-                        }
+                        sendDebug(px, py, pz, distance, radius, entry, distance <= radius);
                     }
 
                     if (distance <= radius) inRange = true;
@@ -88,30 +93,31 @@ public class M1_DeathCoordsMessage extends Module {
             } catch (NumberFormatException ignored) {}
         }
 
-        if (!inRange) {
-            String finalMessage = message.get()
-                .replace("{x}", String.valueOf((int)px))
-                .replace("{y}", String.valueOf((int)py))
-                .replace("{z}", String.valueOf((int)pz))
-                .replace("&", "§");
+        String finalMessage = null;
+        if (inRange) {
+            if (protectedMessageToggle.get()) {
+                finalMessage = protectedMessage.get();
+            }
+        } else {
+            finalMessage = message.get();
+        }
 
+        if (finalMessage != null) {
+            finalMessage = finalMessage
+                .replace("{x}", String.valueOf((int) px))
+                .replace("{y}", String.valueOf((int) py))
+                .replace("{z}", String.valueOf((int) pz))
+                .replace("&", "§");
             MinecraftClient.getInstance().player.sendMessage(Text.of(finalMessage), false);
         }
+
     }
 
     private void sendDebug(double px, double py, double pz, double distance, double radius, String entry, boolean inside) {
-        String debugMsg;
-        if (inside) {
-            debugMsg = String.format(
-                "Inside protected range! Coord: %.1f, %.1f, %.1f | Distance=%.1f Radius=%.1f | Entry=%s",
-                px, py, pz, distance, radius, entry
-            );
-        } else {
-            debugMsg = String.format(
-                "Outside protected range. Coord: %.1f, %.1f, %.1f | Distance=%.1f Radius=%.1f | Entry=%s",
-                px, py, pz, distance, radius, entry
-            );
-        }
+        String debugMsg = inside ?
+            String.format("[IN] %.1f, %.1f, %.1f | D %.1f R %.1f E %s", px, py, pz, distance, radius, entry)
+            : String.format("[OUT] %.1f, %.1f, %.1f | D %.1f R %.1f E %s", px, py, pz, distance, radius, entry);
+
         MinecraftClient.getInstance().player.sendMessage(Text.of(debugMsg), false);
     }
 }
