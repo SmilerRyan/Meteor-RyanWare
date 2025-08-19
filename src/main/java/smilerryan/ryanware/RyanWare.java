@@ -121,6 +121,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new M1_UserLookups());
 
         // Register commands
+        Commands.add(new Command_GMC());
         Commands.add(new Command_Note());
         Commands.add(new Command_RandomNumber());
         Commands.add(new Command_TAMsg1());        
