@@ -27,7 +27,7 @@ public class M1_NoAttackDamage extends Module {
         .build());
 
     public M1_NoAttackDamage() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"M1-No-Attack-Damage", "Prevents dealing damage to others.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix+"M1-No-Attack-Damage", "Prevents dealing damage to others.");
     }
 
     @EventHandler

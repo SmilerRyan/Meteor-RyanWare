@@ -33,7 +33,7 @@ public class M1_NiceFlight extends Module {
     private boolean canDoubleJump = true;
 
     public M1_NiceFlight() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Nice-Flight", "Toggle flying with double jump, like creative mode.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Nice-Flight", "Toggle flying with double jump, like creative mode.");
     }
 
     @Override

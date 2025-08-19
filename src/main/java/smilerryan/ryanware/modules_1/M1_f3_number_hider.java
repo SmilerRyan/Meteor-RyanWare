@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 public class M1_f3_number_hider extends Module {
 
     public M1_f3_number_hider() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-F3-Number-Hider", "Hide coordinates in F3 menu replacing them with asterisks.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-F3-Number-Hider", "Hide coordinates in F3 menu replacing them with asterisks.");
     }
 
     public static M1_f3_number_hider INSTANCE;

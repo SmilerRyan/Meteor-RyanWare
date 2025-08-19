@@ -23,7 +23,7 @@ public class M1_ChatCleanup extends Module {
     );
 
     public M1_ChatCleanup() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Cleanup", "Ignores annoying chat messages using regex patterns.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Chat-Cleanup", "Ignores annoying chat messages using regex patterns.");
     }
 
     @EventHandler

@@ -29,6 +29,7 @@ public class RyanWare extends MeteorAddon {
     public static String modulePrefix = "RyanWare";
     public static Item iconItem = Items.SPONGE;
     public static Category CATEGORY;
+    public static Category CATEGORY_M1;
 
     static {
         try {
@@ -55,6 +56,7 @@ public class RyanWare extends MeteorAddon {
         }
 
         CATEGORY = new Category(addonName, iconItem.getDefaultStack());
+        CATEGORY_M1 = new Category(addonName+" M1", iconItem.getDefaultStack());
     }
 
     @Override
@@ -132,6 +134,7 @@ public class RyanWare extends MeteorAddon {
     @Override
     public void onRegisterCategories() {
         Modules.registerCategory(CATEGORY);
+        Modules.registerCategory(CATEGORY_M1);
     }
 
     @Override

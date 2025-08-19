@@ -14,7 +14,7 @@ public class M1_ForceColoredChat extends Module {
     private final Pattern colorCodePattern = Pattern.compile("&([0-9a-fk-or])", Pattern.CASE_INSENSITIVE);
 
     public M1_ForceColoredChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Force-Colored-Chat", "Replaces & with § in received messages.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Force-Colored-Chat", "Replaces & with § in received messages.");
     }
 
     @EventHandler

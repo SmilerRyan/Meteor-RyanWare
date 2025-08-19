@@ -59,7 +59,7 @@ public class M1_ChatTranslator extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     public M1_ChatTranslator() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Translator", "Translates chat messages via Google Translate.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Chat-Translator", "Translates chat messages via Google Translate.");
     }
 
     @EventHandler

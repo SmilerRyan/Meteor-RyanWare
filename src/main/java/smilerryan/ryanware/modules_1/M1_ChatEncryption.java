@@ -89,7 +89,7 @@ public class M1_ChatEncryption extends Module {
     }
 
     public M1_ChatEncryption() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "M1-Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
+        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
     }
 
     @EventHandler
