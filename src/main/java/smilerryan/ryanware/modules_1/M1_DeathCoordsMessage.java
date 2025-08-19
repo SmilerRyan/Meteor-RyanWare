@@ -46,8 +46,8 @@ public class M1_DeathCoordsMessage extends Module {
         .build()
     );
 
-    private final Setting<Boolean> protectedMessageToggle = sgProtected.add(new BoolSetting.Builder()
-        .name("protected-message-toggle")
+    private final Setting<Boolean> enableProtectedCoords = sgProtected.add(new BoolSetting.Builder()
+        .name("enable-protected-coords")
         .description("Block messages/leaks and show protected-death-message if you die in protected coords.")
         .defaultValue(true)
         .build()
@@ -60,14 +60,7 @@ public class M1_DeathCoordsMessage extends Module {
         .defaultValue(false)
         .build()
     );
-
-    private final Setting<Boolean> leakerIgnoreProtected = sgLeaker.add(new BoolSetting.Builder()
-        .name("leaker-ignore-protected")
-        .description("If true, leaker messages ignore protected coords and always send.")
-        .defaultValue(false)
-        .build()
-    );
-
+    
     private final Setting<List<String>> leakerMessages = sgLeaker.add(new StringListSetting.Builder()
         .name("leaker-messages")
         .description("Messages/commands sent in leaker mode. Lines starting with '/' are treated as commands.")
@@ -95,7 +88,8 @@ public class M1_DeathCoordsMessage extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        PlayerEntity player = mc.player;
         if (player == null) return;
 
         boolean isAlive = player.isAlive();
@@ -108,8 +102,8 @@ public class M1_DeathCoordsMessage extends Module {
 
             boolean inProtected = isInProtected(lastDeathX, lastDeathZ);
 
-            // Always send client message
-            if (inProtected && protectedMessageToggle.get()) {
+            // Always send client message first
+            if (inProtected && enableProtectedCoords.get()) {
                 sendClientMessage(protectedMessage.get(), lastDeathX, lastDeathY, lastDeathZ);
             } else {
                 sendClientMessage(message.get(), lastDeathX, lastDeathY, lastDeathZ);
@@ -117,38 +111,38 @@ public class M1_DeathCoordsMessage extends Module {
 
             // Setup leaking if enabled
             if (leakerMode.get()) {
-                boolean blockLeak = !leakerIgnoreProtected.get() && inProtected && protectedMessageToggle.get();
-                if (!blockLeak) {
+                boolean allowLeak = !inProtected || !enableProtectedCoords.get();
+                if (allowLeak) {
                     leakIndex = 0;
                     leakTimer = 0;
                     leaking = true;
+                } else {
+                    leaking = false; // block leaking for protected
                 }
             }
         }
 
         // Process leaking
-        if (leaking && player != null) {
-            if (leakIndex < leakerMessages.get().size()) {
-                if (leakIndex == 0 || leakTimer >= leakerDelay.get()) {
-                    String raw = leakerMessages.get().get(leakIndex);
-                    String msg = format(raw, lastDeathX, lastDeathY, lastDeathZ);
+        if (leaking && leakIndex < leakerMessages.get().size()) {
+            if (leakIndex == 0 || leakTimer >= leakerDelay.get()) {
+                String raw = leakerMessages.get().get(leakIndex);
+                String msg = format(raw, lastDeathX, lastDeathY, lastDeathZ);
 
-                    if (!msg.isEmpty()) {
-                        if (msg.startsWith("/")) {
-                            MinecraftClient.getInstance().player.networkHandler.sendChatCommand(msg.substring(1));
-                        } else {
-                            MinecraftClient.getInstance().player.networkHandler.sendChatMessage(msg);
-                        }
+                if (!msg.isEmpty()) {
+                    if (msg.startsWith("/")) {
+                        mc.player.networkHandler.sendChatCommand(msg.substring(1));
+                    } else {
+                        mc.player.networkHandler.sendChatMessage(msg);
                     }
-
-                    leakIndex++;
-                    leakTimer = 0; // reset for next delay
-                } else {
-                    leakTimer++; // count ticks
                 }
+
+                leakIndex++;
+                leakTimer = 0;
             } else {
-                leaking = false; // finished
+                leakTimer++;
             }
+        } else if (leakIndex >= leakerMessages.get().size()) {
+            leaking = false; // finished
         }
 
         wasAlive = isAlive;
