@@ -14,6 +14,16 @@ import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.text.Text;
 import net.minecraft.client.texture.NativeImage;
 
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.network.ServerInfo.ServerType;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -172,9 +182,9 @@ public class RemoteViewWebServer extends Module {
                 screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
                 screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, screenshotDelay, TimeUnit.MILLISECONDS);
                 sendRedirectResponse(out);
-            } else {
-                send404Response(out, requestLine);
-            }
+            } else if (requestLine.startsWith("GET /?connect=")) {
+                handleConnect(requestLine, out);
+            } else send404Response(out, requestLine);
 
         } catch (Exception e) {
             error("Client handling error: " + e.toString());
@@ -184,6 +194,45 @@ public class RemoteViewWebServer extends Module {
             } catch (IOException ignored) {}
         }
     }
+    
+    private void handleConnect(String requestLine, OutputStream out) throws IOException {
+        try {
+            String param = requestLine.split("\\?connect=")[1].split(" ")[0];
+            String[] parts = param.split(":");
+            String ip = parts[0];
+            int port = parts.length > 1 ? Integer.parseInt(parts[1]) : 25565; // default port
+
+            MinecraftClient mc = MinecraftClient.getInstance();
+
+            mc.execute(() -> {
+                mc.setScreen(new MultiplayerScreen(new TitleScreen()));
+
+                try {
+                    // Create ServerInfo; pass null instead of ServerType for compatibility
+                    ServerInfo serverInfo = new ServerInfo(ip + ":" + port, ip + ":" + port, null);
+
+                    // Call the private connect(ServerInfo) method via reflection
+                    Method connectMethod = MultiplayerScreen.class.getDeclaredMethod("connect", ServerInfo.class);
+                    connectMethod.setAccessible(true);
+                    connectMethod.invoke(mc.currentScreen, serverInfo);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            // Send redirect
+            out.write("HTTP/1.1 303 See Other\r\nLocation: /\r\n\r\n".getBytes());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Simple inline error response for compatibility
+            out.write(("HTTP/1.1 500 Internal Server Error\r\n\r\nFailed to connect to server").getBytes());
+        }
+    }
+
+
+
 
     private void handleDisconnect(OutputStream out) throws IOException {
         if (MeteorClient.mc.world != null) {
@@ -446,8 +495,8 @@ public class RemoteViewWebServer extends Module {
             String serverName = escapeHtml(servers.get(i).name);
             String serverAddress = escapeHtml(servers.get(i).address);
             html.append("<form method='GET' action=''>");
-            html.append("<button class='server-btn' type='submit' name='connect' value='").append(i).append("'>");
-            html.append(serverName).append(" (").append(serverAddress).append(")");
+            html.append("<button class='server-btn' type='submit' name='connect' value='").append(serverAddress).append("'>");
+            html.append(serverName);
             html.append("</button>");
             html.append("</form>");
         }
