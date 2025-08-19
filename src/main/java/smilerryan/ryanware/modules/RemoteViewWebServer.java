@@ -1,6 +1,7 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.settings.*;
 import smilerryan.ryanware.RyanWare;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
@@ -23,6 +24,33 @@ import java.util.concurrent.*;
 public class RemoteViewWebServer extends Module {
     public static RemoteViewWebServer INSTANCE;
 
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+
+    private final Setting<Integer> port = sgGeneral.add(new IntSetting.Builder()
+        .name("port")
+        .description("Port number for the web server.")
+        .defaultValue(8080)
+        .min(1024)
+        .max(65535)
+        .build()
+    );
+
+    private final Setting<Boolean> autoOpen = sgGeneral.add(new BoolSetting.Builder()
+        .name("auto-open-link")
+        .description("Automatically open the web server link in the browser when enabled.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Integer> screenshotMode = sgGeneral.add(new IntSetting.Builder()
+        .name("screenshot-mode")
+        .description("Screenshot mode. 1 = normal capture, 2 = blank image.")
+        .defaultValue(1)
+        .min(1)
+        .max(2)
+        .build()
+    );
+
     private ServerSocket serverSocket;
     private ExecutorService executor;
     private ScheduledExecutorService screenshotScheduler;
@@ -30,6 +58,9 @@ public class RemoteViewWebServer extends Module {
     private byte[] lastScreenshotBytes = new byte[0];
     private long lastScreenshotTime = 0;
     private int screenshotDelay = 250;
+
+    // Track connected clients by IP and last activity time
+    private final Map<String, Long> activeClients = new ConcurrentHashMap<>();
 
     public RemoteViewWebServer() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Remote-View-Web-Server", "A Remote View Web Server that works on 1.21.1");
@@ -44,6 +75,14 @@ public class RemoteViewWebServer extends Module {
         screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
         screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, screenshotDelay, TimeUnit.MILLISECONDS);
         executor.execute(this::startServer);
+
+        if (autoOpen.get()) {
+            try {
+                java.awt.Desktop.getDesktop().browse(new URI("http://localhost:" + port.get() + "/"));
+            } catch (Exception e) {
+                error("Failed to auto-open browser: " + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -53,6 +92,7 @@ public class RemoteViewWebServer extends Module {
         } catch (IOException ignored) {}
         if (executor != null) executor.shutdownNow();
         if (screenshotScheduler != null) screenshotScheduler.shutdownNow();
+        activeClients.clear();
     }
 
     @EventHandler
@@ -64,11 +104,21 @@ public class RemoteViewWebServer extends Module {
 
     private void startServer() {
         try {
-            serverSocket = new ServerSocket(8080);
-            log("HTTP Server started on port 8080");
+            serverSocket = new ServerSocket(port.get());
+            log("HTTP Server started on port " + port.get());
+
+            // Background monitor for inactive clients
+            executor.execute(this::monitorClients);
 
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
+                String ip = clientSocket.getInetAddress().getHostAddress();
+
+                if (!activeClients.containsKey(ip)) {
+                    log("Client connected: " + ip);
+                }
+                activeClients.put(ip, System.currentTimeMillis());
+
                 executor.execute(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
@@ -78,14 +128,28 @@ public class RemoteViewWebServer extends Module {
         }
     }
 
+    private void monitorClients() {
+        try {
+            while (!serverSocket.isClosed()) {
+                long now = System.currentTimeMillis();
+                for (Iterator<Map.Entry<String, Long>> it = activeClients.entrySet().iterator(); it.hasNext();) {
+                    Map.Entry<String, Long> entry = it.next();
+                    if (now - entry.getValue() > 60_000) { // 1 minute inactivity
+                        log("Client disconnected (timeout): " + entry.getKey());
+                        it.remove();
+                    }
+                }
+                Thread.sleep(5000); // check every 5s
+            }
+        } catch (InterruptedException ignored) {}
+    }
+
     private void handleClient(Socket clientSocket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
             String requestLine = in.readLine();
             if (requestLine == null) return;
-
-            log("Request from " + clientSocket.getInetAddress().getHostAddress() + " to " + requestLine);
 
             if (requestLine.startsWith("GET / ") || requestLine.startsWith("GET / HTTP/1.")) {
                 sendHtmlResponse(out, buildHtmlPage());
@@ -102,7 +166,6 @@ public class RemoteViewWebServer extends Module {
             } else if (requestLine.startsWith("GET /setspeed")) {
                 String speed = requestLine.split("speed=")[1].split(" ")[0];
                 screenshotDelay = Integer.parseInt(URLDecoder.decode(speed, "UTF-8"));
-                // Reschedule with new delay
                 if (screenshotScheduler != null) {
                     screenshotScheduler.shutdownNow();
                 }
@@ -142,7 +205,6 @@ public class RemoteViewWebServer extends Module {
     }
 
     private void handleChatRequest(OutputStream out) throws IOException {
-        log("Handling /chat request...");
         StringBuilder chatHtml = new StringBuilder();
         synchronized (chatMessages) {
             for (String message : chatMessages) {
@@ -195,55 +257,63 @@ public class RemoteViewWebServer extends Module {
         }
     }
 
+    private void takeScreenshotAsync() {
+        if (screenshotMode.get() == 2) {
+            try {
+                BufferedImage blank = new BufferedImage(854, 480, BufferedImage.TYPE_INT_ARGB);
+                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    ImageIO.write(blank, "png", baos);
+                    lastScreenshotBytes = baos.toByteArray();
+                    lastScreenshotTime = System.currentTimeMillis();
+                }
+            } catch (Exception e) {
+                error("Failed to generate blank screenshot: " + e.getMessage());
+            }
+            return;
+        }
 
-private void takeScreenshotAsync() {
-    if (MeteorClient.mc.player == null || MeteorClient.mc.getFramebuffer() == null) {
-        //log("Cannot take screenshot, player or framebuffer is null.");
-        return;
+        if (MeteorClient.mc.player == null || MeteorClient.mc.getFramebuffer() == null) {
+            return;
+        }
+
+        MeteorClient.mc.execute(() -> {
+            try {
+                NativeImage nativeImage = ScreenshotRecorder.takeScreenshot(MeteorClient.mc.getFramebuffer());
+
+                if (nativeImage == null) {
+                    return;
+                }
+
+                new Thread(() -> {
+                    try {
+                        BufferedImage bufferedImage = nativeImageToBufferedImage(nativeImage);
+                        nativeImage.close();
+
+                        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                            ImageIO.write(bufferedImage, "png", baos);
+                            lastScreenshotBytes = baos.toByteArray();
+                            lastScreenshotTime = System.currentTimeMillis();
+                        } catch (IOException e) {
+                            error("Failed to encode screenshot: " + e.getMessage());
+                        }
+                    } catch (Exception e) {
+                        error("Exception during image processing: " + e.getMessage());
+                    }
+                }, "ScreenshotProcessor").start();
+
+            } catch (Exception e) {
+                error("Exception during screenshot capture: " + e.getMessage());
+            }
+        });
     }
 
-    MeteorClient.mc.execute(() -> {
-        try {
-            NativeImage nativeImage = ScreenshotRecorder.takeScreenshot(MeteorClient.mc.getFramebuffer());
-
-            if (nativeImage == null) {
-                //error("ScreenshotRecorder.takeScreenshot returned null image");
-                return;
-            }
-
-            // Process off-thread
-            new Thread(() -> {
-                try {
-                    BufferedImage bufferedImage = nativeImageToBufferedImage(nativeImage);
-                    nativeImage.close();
-
-                    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                        ImageIO.write(bufferedImage, "png", baos);
-                        lastScreenshotBytes = baos.toByteArray();
-                        lastScreenshotTime = System.currentTimeMillis();
-                    } catch (IOException e) {
-                        error("Failed to encode screenshot: " + e.getMessage());
-                    }
-                } catch (Exception e) {
-                    error("Exception during image processing: " + e.getMessage());
-                }
-            }, "ScreenshotProcessor").start();
-
-        } catch (Exception e) {
-            error("Exception during screenshot capture: " + e.getMessage());
-        }
-    });
-}
-
-
     private void log(String message) {
-    System.out.println("[RemoteViewWebServer] " + message);
-}
+        System.out.println("[RemoteViewWebServer] " + message);
+    }
 
-private void error(String message) {
-    System.err.println("[RemoteViewWebServer] ERROR: " + message);
-}
-
+    private void error(String message) {
+        System.err.println("[RemoteViewWebServer] ERROR: " + message);
+    }
 
     private BufferedImage nativeImageToBufferedImage(NativeImage nativeImage) {
         int width = nativeImage.getWidth();
@@ -259,7 +329,6 @@ private void error(String message) {
                 int green = (argb >> 8)  & 0xFF;
                 int blue  = (argb)       & 0xFF;
 
-                // Swap red and blue
                 int fixedArgb = (alpha << 24) | (blue << 16) | (green << 8) | red;
 
                 bufferedImage.setRGB(x, y, fixedArgb);
@@ -304,100 +373,96 @@ private void error(String message) {
         error("404 Not Found for request: " + request);
     }
 
-private String buildHtmlPage() {
-    ServerList servers = new ServerList(MeteorClient.mc);
-    servers.loadFile();
+    private String buildHtmlPage() {
+        ServerList servers = new ServerList(MeteorClient.mc);
+        servers.loadFile();
 
-    StringBuilder html = new StringBuilder();
-    html.append("<!DOCTYPE html><html><head><title>Minecraft Remote View</title><style>");
-    html.append("body{font-family:Arial,sans-serif;max-width:1200px;margin:0 auto;padding:20px;}");
-    html.append(".container{display:flex;gap:20px;}");
-    html.append(".chat-box{border:1px solid #ccc;padding:10px;width:400px;height:600px;overflow-y:scroll;}");
-    html.append(".viewer{flex-grow:1;border:1px solid #ccc;padding:10px;}");
-    html.append("#screenshot{max-width:100%;max-height:550px;display:block;margin-bottom:10px;cursor:pointer;}");
-    html.append("#chat-messages{height:600px;overflow-y:auto;}");
-    html.append("form{display:flex;margin-top:10px;}input{flex-grow:1;padding:8px;}");
-    html.append("button{padding:8px 15px;border:none;color:white;}");
-    html.append(".server-btn{background:#428bca;margin:5px 0;width:100%;}");
-    html.append(".disconnect-btn{background:#f0ad4e;margin:5px 0;width:100%;}");
-    html.append(".quit-btn{background:#d9534f;margin:5px 0;width:100%;}");
-    html.append(".refresh-btn{background:#5cb85c;margin-bottom:10px;}");
-    html.append(".fullscreen-btn{background:#666;margin-bottom:10px;cursor:pointer;}");
-    html.append("</style><script>");
-    html.append("function refreshScreenshot(){document.getElementById('screenshot').src='/screenshot?'+new Date().getTime();}");
-    html.append("function refreshChat(){fetch('/chat').then(r=>r.text()).then(h=>document.getElementById('chat-messages').innerHTML=h);}");
-    html.append("setInterval(refreshScreenshot,").append(screenshotDelay).append(");");
-    html.append("setInterval(refreshChat,1000);");
-    html.append("function sendChatMessage(){let msg=document.getElementById('chat-input').value.trim();if(msg==='')return;");
-    html.append("fetch('/chat',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'message='+encodeURIComponent(msg)});");
-    html.append("document.getElementById('chat-input').value='';}");
-    html.append("function toggleFullscreen() {");
-    html.append("  const elem = document.getElementById('screenshot');");
-    html.append("  if (!document.fullscreenElement) {");
-    html.append("    elem.requestFullscreen().catch(() => {});");
-    html.append("  } else {");
-    html.append("    document.exitFullscreen();");
-    html.append("  }");
-    html.append("}");
-    html.append("</script></head><body>");
-    html.append("<h1>Minecraft Remote View Web Server</h1>");
-    html.append("<div class='container'>");
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head><title>Minecraft Remote View</title><style>");
+        html.append("body{font-family:Arial,sans-serif;max-width:1200px;margin:0 auto;padding:20px;}");
+        html.append(".container{display:flex;gap:20px;}");
+        html.append(".chat-box{border:1px solid #ccc;padding:10px;width:400px;height:600px;overflow-y:scroll;}");
+        html.append(".viewer{flex-grow:1;border:1px solid #ccc;padding:10px;}");
+        html.append("#screenshot{max-width:100%;max-height:550px;display:block;margin-bottom:10px;cursor:pointer;}");
+        html.append("#chat-messages{height:600px;overflow-y:auto;}");
+        html.append("form{display:flex;margin-top:10px;}input{flex-grow:1;padding:8px;}");
+        html.append("button{padding:8px 15px;border:none;color:white;}");
+        html.append(".server-btn{background:#428bca;margin:5px 0;width:100%;}");
+        html.append(".disconnect-btn{background:#f0ad4e;margin:5px 0;width:100%;}");
+        html.append(".quit-btn{background:#d9534f;margin:5px 0;width:100%;}");
+        html.append(".refresh-btn{background:#5cb85c;margin-bottom:10px;}");
+        html.append(".fullscreen-btn{background:#666;margin-bottom:10px;cursor:pointer;}");
+        html.append("</style><script>");
+        html.append("function refreshScreenshot(){document.getElementById('screenshot').src='/screenshot?'+new Date().getTime();}");
+        html.append("function refreshChat(){fetch('/chat').then(r=>r.text()).then(h=>document.getElementById('chat-messages').innerHTML=h);}");
+        html.append("setInterval(refreshScreenshot,").append(screenshotDelay).append(");");
+        html.append("setInterval(refreshChat,1000);");
+        html.append("function sendChatMessage(){let msg=document.getElementById('chat-input').value.trim();if(msg==='')return;");
+        html.append("fetch('/chat',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'message='+encodeURIComponent(msg)});");
+        html.append("document.getElementById('chat-input').value='';}");
+        html.append("function toggleFullscreen() {");
+        html.append("  const elem = document.getElementById('screenshot');");
+        html.append("  if (!document.fullscreenElement) {");
+        html.append("    elem.requestFullscreen().catch(() => {});");
+        html.append("  } else {");
+        html.append("    document.exitFullscreen();");
+        html.append("  }");
+        html.append("}");
+        html.append("</script></head><body>");
+        html.append("<h1>Minecraft Remote View Web Server</h1>");
+        html.append("<div class='container'>");
 
-    // Viewer Section
-    html.append("<div class='viewer'>");
-    html.append("<button class='fullscreen-btn' onclick='toggleFullscreen()'>Toggle Fullscreen</button>");
-    html.append("<img id='screenshot' src='/screenshot' alt='Screenshot'/>");
+        html.append("<div class='viewer'>");
+        html.append("<button class='fullscreen-btn' onclick='toggleFullscreen()'>Toggle Fullscreen</button>");
+        html.append("<img id='screenshot' src='/screenshot' alt='Screenshot'/>");
 
-    html.append("<form onsubmit='event.preventDefault(); sendChatMessage();'>");
-    html.append("<input id='chat-input' type='text' placeholder='Send chat message' autocomplete='off'/>");
-    html.append("<button type='submit' style='background:#428bca;'>Send</button>");
-    html.append("</form>");
-
-    html.append("</div>");
-
-    // Chat History moved to right side box
-    html.append("<div class='chat-box'>");
-    html.append("<h2>Chat History</h2>");
-    html.append("<div id='chat-messages'>");
-    synchronized (chatMessages) {
-        for (String msg : chatMessages) {
-            html.append("<p>").append(escapeHtml(msg)).append("</p>");
-        }
-    }
-    html.append("</div>");
-    html.append("</div>");
-
-    html.append("</div>");
-
-    // Server list and controls
-    html.append("<h2>Servers</h2>");
-    html.append("<form method='GET' action='/setspeed'>");
-    html.append("Screenshot Delay (ms): <input name='speed' type='number' value='").append(screenshotDelay).append("' min='50' max='5000'/>");
-    html.append("<button type='submit' class='refresh-btn'>Set</button>");
-    html.append("</form>");
-
-    for (int i = 0; i < servers.size(); i++) {
-        String serverName = escapeHtml(servers.get(i).name);
-        String serverAddress = escapeHtml(servers.get(i).address);
-        html.append("<form method='GET' action=''>");
-        html.append("<button class='server-btn' type='submit' name='connect' value='").append(i).append("'>");
-        html.append(serverName).append(" (").append(serverAddress).append(")");
-        html.append("</button>");
+        html.append("<form onsubmit='event.preventDefault(); sendChatMessage();'>");
+        html.append("<input id='chat-input' type='text' placeholder='Send chat message' autocomplete='off'/>");
+        html.append("<button type='submit' style='background:#428bca;'>Send</button>");
         html.append("</form>");
+
+        html.append("</div>");
+
+        html.append("<div class='chat-box'>");
+        html.append("<h2>Chat History</h2>");
+        html.append("<div id='chat-messages'>");
+        synchronized (chatMessages) {
+            for (String msg : chatMessages) {
+                html.append("<p>").append(escapeHtml(msg)).append("</p>");
+            }
+        }
+        html.append("</div>");
+        html.append("</div>");
+
+        html.append("</div>");
+
+        html.append("<h2>Servers</h2>");
+        html.append("<form method='GET' action='/setspeed'>");
+        html.append("Screenshot Delay (ms): <input name='speed' type='number' value='").append(screenshotDelay).append("' min='50' max='5000'/>");
+        html.append("<button type='submit' class='refresh-btn'>Set</button>");
+        html.append("</form>");
+
+        for (int i = 0; i < servers.size(); i++) {
+            String serverName = escapeHtml(servers.get(i).name);
+            String serverAddress = escapeHtml(servers.get(i).address);
+            html.append("<form method='GET' action=''>");
+            html.append("<button class='server-btn' type='submit' name='connect' value='").append(i).append("'>");
+            html.append(serverName).append(" (").append(serverAddress).append(")");
+            html.append("</button>");
+            html.append("</form>");
+        }
+
+        html.append("<form method='GET' action='/disconnect'>");
+        html.append("<button class='disconnect-btn' type='submit'>Disconnect</button>");
+        html.append("</form>");
+
+        html.append("<form method='GET' action='/quitgame'>");
+        html.append("<button class='quit-btn' type='submit'>Quit Game</button>");
+        html.append("</form>");
+
+        html.append("</body></html>");
+        return html.toString();
     }
-
-    html.append("<form method='GET' action='/disconnect'>");
-    html.append("<button class='disconnect-btn' type='submit'>Disconnect</button>");
-    html.append("</form>");
-
-    html.append("<form method='GET' action='/quitgame'>");
-    html.append("<button class='quit-btn' type='submit'>Quit Game</button>");
-    html.append("</form>");
-
-    html.append("</body></html>");
-    return html.toString();
-}
-
 
     private String escapeHtml(String s) {
         if (s == null) return "";
