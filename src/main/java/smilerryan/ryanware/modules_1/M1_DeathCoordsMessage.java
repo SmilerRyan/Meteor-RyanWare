@@ -61,6 +61,13 @@ public class M1_DeathCoordsMessage extends Module {
         .build()
     );
 
+    private final Setting<Boolean> leakerIgnoreProtected = sgLeaker.add(new BoolSetting.Builder()
+        .name("leaker-ignore-protected")
+        .description("If true, leaker messages ignore protected coords and always send.")
+        .defaultValue(false)
+        .build()
+    );
+
     private final Setting<List<String>> leakerMessages = sgLeaker.add(new StringListSetting.Builder()
         .name("leaker-messages")
         .description("Messages/commands sent in leaker mode. Lines starting with '/' are treated as commands.")
@@ -101,20 +108,20 @@ public class M1_DeathCoordsMessage extends Module {
 
             boolean inProtected = isInProtected(lastDeathX, lastDeathZ);
 
+            // Always send client message
+            if (inProtected && protectedMessageToggle.get()) {
+                sendClientMessage(protectedMessage.get(), lastDeathX, lastDeathY, lastDeathZ);
+            } else {
+                sendClientMessage(message.get(), lastDeathX, lastDeathY, lastDeathZ);
+            }
+
+            // Setup leaking if enabled
             if (leakerMode.get()) {
-                if (inProtected && protectedMessageToggle.get()) {
-                    // block leaking, just send protected message
-                    sendClientMessage(protectedMessage.get(), lastDeathX, lastDeathY, lastDeathZ);
-                } else {
+                boolean blockLeak = !leakerIgnoreProtected.get() && inProtected && protectedMessageToggle.get();
+                if (!blockLeak) {
                     leakIndex = 0;
                     leakTimer = 0;
                     leaking = true;
-                }
-            } else {
-                if (inProtected && protectedMessageToggle.get()) {
-                    sendClientMessage(protectedMessage.get(), lastDeathX, lastDeathY, lastDeathZ);
-                } else {
-                    sendClientMessage(message.get(), lastDeathX, lastDeathY, lastDeathZ);
                 }
             }
         }
