@@ -146,31 +146,30 @@ public class AskOllama extends Module {
                     String userPrompt = msg.substring(index + trigger.length()).trim();
                     fullPromptBuilder.append("\n").append(userPrompt).append("\n\n");
 
+                    String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
+
                     if (!userPrompt.isEmpty()) {
                         fullPromptBuilder.append("User context:\n").append(extraContext.get()).append("\n\n");
                     }
 
                     if (allowRespondAsMe.get()) {
-                        String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
-                        fullPromptBuilder.append("You can respond as the player ").append(playerName)
-                            .append(" by using the prefix '/send'. ");
+                        fullPromptBuilder.append("You can respond as the player '").append(playerName)
+                            .append("' by using '/send' and your message. ");
                         if (allowGuideResponses.get()) {
-                            fullPromptBuilder.append("Use '/guide' to suggest a reply.\n\n");
+                            fullPromptBuilder.append("You can guide the player '").append(playerName).append("' by using '/guide' and your message.\n\n");
                         } else {
-                            fullPromptBuilder.append("Do not use '/guide'.\n\n");
+                            fullPromptBuilder.append("\n");
                         }
                     } else {
                         if (allowGuideResponses.get()) {
-                            fullPromptBuilder.append("Respond using '/guide' followed by your message.\n\n");
+                            fullPromptBuilder.append("You can guide the player '").append(playerName).append("' by using '/guide' and your message.\n\n");
                         } else {
                             fullPromptBuilder.append("\n");
                         }
                     }
 
-                    fullPromptBuilder.append("You may also respond with '/stfu', '/nothing', or '/ignore' to indicate no response is needed.\n");
-                    fullPromptBuilder.append("REMEMBER, ALWAYS USE THE PREFIX '/send'")
-                        .append(allowGuideResponses.get() ? " OR '/guide'" : "")
-                        .append(". Responses without it will be ignored.\nYour response:\n");
+                    fullPromptBuilder.append("You may also respond with '/stfu', '/nothing', or '/ignore' to provide no response.\n");
+                    fullPromptBuilder.append("REMEMBER, ALL RESPONSES WITHOUT A COMMAND/PREFIX WILL BE IGNORED.\nYour response:\n");
 
                     String fullPrompt = fullPromptBuilder.toString();
 
