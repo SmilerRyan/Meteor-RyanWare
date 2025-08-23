@@ -74,6 +74,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoTotem());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BritishChat());
+        Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
         Modules.get().add(new CoordNotifier());
