@@ -53,6 +53,7 @@ public class AutoFollowItems extends Module {
     );
 
     private boolean wasAutoWalking = false;
+    private long lastManualInputTime = 0;
 
     public AutoFollowItems() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowItems", "Automatically walks/jumps towards items with a whitelist/blacklist/max-range.");
@@ -61,6 +62,27 @@ public class AutoFollowItems extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.world == null || mc.player == null) return;
+
+        // Detect manual movement input
+        if (mc.options.forwardKey.isPressed() || mc.options.backKey.isPressed()
+            || mc.options.leftKey.isPressed() || mc.options.rightKey.isPressed()
+            || mc.options.jumpKey.isPressed() || mc.options.sprintKey.isPressed()) {
+            lastManualInputTime = System.currentTimeMillis();
+            if (wasAutoWalking) {
+                mc.options.forwardKey.setPressed(false);
+                wasAutoWalking = false;
+            }
+            return;
+        }
+
+        // Check if 0.5s has passed since last manual input
+        if (System.currentTimeMillis() - lastManualInputTime < 500) {
+            if (wasAutoWalking) {
+                mc.options.forwardKey.setPressed(false);
+                wasAutoWalking = false;
+            }
+            return;
+        }
 
         ItemEntity closest = findClosestItem();
 
