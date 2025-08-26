@@ -53,10 +53,17 @@ public class AutoFollowPlayers extends Module {
         .build()
     );
 
+    private final Setting<Boolean> ignoreWalls = sgGeneral.add(new BoolSetting.Builder()
+        .name("ignore-walls")
+        .description("Follow players even if they are behind walls.")
+        .defaultValue(false)
+        .build()
+    );
+
     private boolean wasAutoWalking = false;
 
     public AutoFollowPlayers() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and walks/flys towards players.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and walks towards players.");
     }
 
     @EventHandler
@@ -69,7 +76,7 @@ public class AutoFollowPlayers extends Module {
             return;
         }
 
-        // Snap look instantly
+        // Snap instantly to target
         lookAt(closest.getPos());
 
         double dist = mc.player.squaredDistanceTo(closest);
@@ -78,24 +85,20 @@ public class AutoFollowPlayers extends Module {
             return;
         }
 
-        // Always sprint
+        // Always walk & sprint
         mc.options.forwardKey.setPressed(true);
         mc.options.sprintKey.setPressed(true);
         wasAutoWalking = true;
 
         if (legitMode.get()) {
-            // "Legit": only normal ground walking
             if (mc.player.horizontalCollision) mc.player.jump();
-        } else {
-            // "Non-legit": fly up/down to match their height
+        }
+        else {
+            // Flying mode: adjust up/down to match target Y
             double dy = closest.getY() - mc.player.getY();
-
-            if (dy > 1.0) {
-                mc.options.jumpKey.setPressed(true);
-                mc.options.sneakKey.setPressed(false);
-            } else if (dy < -1.0) {
-                mc.options.sneakKey.setPressed(true);
-                mc.options.jumpKey.setPressed(false);
+            if (Math.abs(dy) > 0.5) {
+                if (dy > 0) mc.options.jumpKey.setPressed(true);
+                else mc.options.sneakKey.setPressed(true);
             } else {
                 mc.options.jumpKey.setPressed(false);
                 mc.options.sneakKey.setPressed(false);
@@ -125,7 +128,7 @@ public class AutoFollowPlayers extends Module {
         for (Entity e : mc.world.getEntities()) {
             if (!(e instanceof PlayerEntity player)) continue;
             if (player == mc.player) continue;
-            if (!mc.player.canSee(player)) continue;
+            if (!ignoreWalls.get() && !mc.player.canSee(player)) continue;
             if (!passesFilter(player)) continue;
 
             double dist = mc.player.squaredDistanceTo(player);
