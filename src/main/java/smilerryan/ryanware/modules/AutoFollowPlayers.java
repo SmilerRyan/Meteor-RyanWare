@@ -46,24 +46,17 @@ public class AutoFollowPlayers extends Module {
         .build()
     );
 
-    private final Setting<Boolean> autoWalkJump = sgGeneral.add(new BoolSetting.Builder()
-        .name("auto-walk-jump")
-        .description("Automatically jump up blocks when following.")
+    private final Setting<Boolean> legitMode = sgGeneral.add(new BoolSetting.Builder()
+        .name("legit-mode")
+        .description("If enabled, behaves like normal walking (no flying). If disabled, follows targets in 3D space including flying up/down.")
         .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> sprint = sgGeneral.add(new BoolSetting.Builder()
-        .name("sprint")
-        .description("Sprint while following.")
-        .defaultValue(false)
         .build()
     );
 
     private boolean wasAutoWalking = false;
 
     public AutoFollowPlayers() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and walks towards players.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and walks/flys towards players.");
     }
 
     @EventHandler
@@ -85,13 +78,28 @@ public class AutoFollowPlayers extends Module {
             return;
         }
 
-        // Always walk forward
+        // Always sprint
         mc.options.forwardKey.setPressed(true);
-        if (sprint.get()) mc.options.sprintKey.setPressed(true);
+        mc.options.sprintKey.setPressed(true);
         wasAutoWalking = true;
 
-        if (autoWalkJump.get() && mc.player.horizontalCollision) {
-            mc.player.jump();
+        if (legitMode.get()) {
+            // "Legit": only normal ground walking
+            if (mc.player.horizontalCollision) mc.player.jump();
+        } else {
+            // "Non-legit": fly up/down to match their height
+            double dy = closest.getY() - mc.player.getY();
+
+            if (dy > 1.0) {
+                mc.options.jumpKey.setPressed(true);
+                mc.options.sneakKey.setPressed(false);
+            } else if (dy < -1.0) {
+                mc.options.sneakKey.setPressed(true);
+                mc.options.jumpKey.setPressed(false);
+            } else {
+                mc.options.jumpKey.setPressed(false);
+                mc.options.sneakKey.setPressed(false);
+            }
         }
     }
 
@@ -104,6 +112,8 @@ public class AutoFollowPlayers extends Module {
         if (wasAutoWalking) {
             mc.options.forwardKey.setPressed(false);
             mc.options.sprintKey.setPressed(false);
+            mc.options.jumpKey.setPressed(false);
+            mc.options.sneakKey.setPressed(false);
             wasAutoWalking = false;
         }
     }
