@@ -68,6 +68,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AskOllama());
         Modules.get().add(new Aura());
         Modules.get().add(new AutoFollowItems());
+        Modules.get().add(new AutoFollowPlayers());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoResponder());
