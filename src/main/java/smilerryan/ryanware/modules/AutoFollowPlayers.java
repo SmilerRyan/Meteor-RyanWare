@@ -48,7 +48,7 @@ public class AutoFollowPlayers extends Module {
 
     private final Setting<Boolean> legitMode = sgGeneral.add(new BoolSetting.Builder()
         .name("legit-mode")
-        .description("If enabled, behaves like normal walking (no flying). If disabled, follows targets in 3D space including flying up/down.")
+        .description("If enabled, behaves like walking/jumping. If disabled, flies directly toward players in 3D.")
         .defaultValue(true)
         .build()
     );
@@ -63,7 +63,7 @@ public class AutoFollowPlayers extends Module {
     private boolean wasAutoWalking = false;
 
     public AutoFollowPlayers() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and walks towards players.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and follows players.");
     }
 
     @EventHandler
@@ -76,39 +76,54 @@ public class AutoFollowPlayers extends Module {
             return;
         }
 
-        // Snap instantly to target
+        // Always snap look instantly
         lookAt(closest.getPos());
 
         double dist = mc.player.squaredDistanceTo(closest);
         if (dist <= minDistance.get() * minDistance.get()) {
             stopWalking();
+            if (!legitMode.get()) mc.player.setVelocity(Vec3d.ZERO);
             return;
         }
 
-        // Always walk & sprint
-        mc.options.forwardKey.setPressed(true);
-        mc.options.sprintKey.setPressed(true);
-        wasAutoWalking = true;
-
         if (legitMode.get()) {
+            // Normal walk mode
+            mc.options.forwardKey.setPressed(true);
+            mc.options.sprintKey.setPressed(true);
+            wasAutoWalking = true;
+
             if (mc.player.horizontalCollision) mc.player.jump();
         }
         else {
-            // Flying mode: adjust up/down to match target Y
-            double dy = closest.getY() - mc.player.getY();
-            if (Math.abs(dy) > 0.5) {
-                if (dy > 0) mc.options.jumpKey.setPressed(true);
-                else mc.options.sneakKey.setPressed(true);
-            } else {
-                mc.options.jumpKey.setPressed(false);
-                mc.options.sneakKey.setPressed(false);
-            }
+            // Flying mode: move directly toward target
+            Vec3d targetPos = closest.getPos();
+            Vec3d playerPos = mc.player.getPos();
+
+            Vec3d diff = targetPos.subtract(playerPos);
+
+            // Speed control
+            double speed = 0.3; // tweak as needed
+            Vec3d velocity = diff.normalize().multiply(speed);
+
+            mc.player.setVelocity(velocity);
+            mc.player.velocityDirty = true;
+
+            // Stop pressing keys so they don’t interfere
+            mc.options.forwardKey.setPressed(false);
+            mc.options.sprintKey.setPressed(false);
+            mc.options.jumpKey.setPressed(false);
+            mc.options.sneakKey.setPressed(false);
+            wasAutoWalking = false;
         }
     }
 
     @Override
     public void onDeactivate() {
         stopWalking();
+        if (!legitMode.get() && mc.player != null) {
+            mc.player.setVelocity(Vec3d.ZERO);
+            mc.player.velocityDirty = true;
+        }
     }
 
     private void stopWalking() {
