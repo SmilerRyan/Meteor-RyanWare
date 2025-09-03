@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -27,7 +27,7 @@ public class FocusCommands extends Module {
     private boolean lastFocused = true;
 
     public FocusCommands() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"+-Focus-Commands", "Sends commands when window focus changes.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix+"E-Focus-Commands", "Sends commands when window focus changes.");
     }
 
     @EventHandler
@@ -37,7 +37,13 @@ public class FocusCommands extends Module {
             String block = focused ? onFocusCommands.get() : onUnfocusCommands.get();
             for (String cmd : block.split(";")) {
                 String trimmed = cmd.trim();
-                if (!trimmed.isEmpty()) mc.getNetworkHandler().sendChatMessage(trimmed);
+                if (!trimmed.isEmpty()) {
+                    if (trimmed.startsWith("/")) {
+                        mc.getNetworkHandler().sendCommand(trimmed.substring(1));
+                    } else {
+                        mc.getNetworkHandler().sendChatMessage(trimmed);
+                    }
+                }
             }
             lastFocused = focused;
         }

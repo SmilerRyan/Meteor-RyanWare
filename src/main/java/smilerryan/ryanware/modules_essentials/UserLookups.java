@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_1;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.BoolSetting;
@@ -18,15 +18,15 @@ import java.net.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class M1_UserLookups extends Module {
+public class UserLookups extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final Setting<Boolean> autoOpen = sgGeneral.add(new BoolSetting.Builder()
         .name("auto-open-NameMC-profile").defaultValue(false).build());
     private final Setting<Boolean> autoLookup = sgGeneral.add(new BoolSetting.Builder()
         .name("auto-lookup-names").defaultValue(false).build());
 
-    public M1_UserLookups() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-User-Lookups",
+    public UserLookups() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-User-Lookups",
             "Adds a NameMC Auto-Opener or Auto Name Lookup of users from the Laby API for join messages.");
     }
 

@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class M1_ChatCleanup extends Module {
+public class ChatCleanup extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<String>> annoyingChats = sgGeneral.add(new StringListSetting.Builder()
@@ -22,8 +22,8 @@ public class M1_ChatCleanup extends Module {
         .build()
     );
 
-    public M1_ChatCleanup() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Chat-Cleanup", "Ignores annoying chat messages using regex patterns.");
+    public ChatCleanup() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "M1-Chat-Cleanup", "Ignores annoying chat messages using regex patterns.");
     }
 
     @EventHandler

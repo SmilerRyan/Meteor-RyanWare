@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_1;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -10,13 +10,13 @@ import smilerryan.ryanware.RyanWare;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class M1_f3_number_hider extends Module {
+public class f3_number_hider extends Module {
 
-    public M1_f3_number_hider() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-F3-Number-Hider", "Hide coordinates in F3 menu replacing them with asterisks.");
+    public f3_number_hider() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-F3-Number-Hider", "Hide coordinates in F3 menu replacing them with asterisks.");
     }
 
-    public static M1_f3_number_hider INSTANCE;
+    public static f3_number_hider INSTANCE;
 
     @Override
     public void onActivate() {

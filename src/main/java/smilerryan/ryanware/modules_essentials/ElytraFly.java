@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Box;
 import smilerryan.ryanware.RyanWare;
 
-public class M1_ElytraFly extends Module {
+public class ElytraFly extends Module {
     private final Setting<Double> speed = settings.getDefaultGroup().add(new DoubleSetting.Builder()
         .name("speed")
         .description("Flying speed.")
@@ -57,8 +57,8 @@ public class M1_ElytraFly extends Module {
     private static final int ANTI_CRASH_RANGE = 3;
     private static final double CRASH_PITCH = 40; // degrees, if you're diving too steep
 
-    public M1_ElytraFly() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Elytra-Fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
+    public ElytraFly() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Elytra-Fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
     }
 
     @EventHandler

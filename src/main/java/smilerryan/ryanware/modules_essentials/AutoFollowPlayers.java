@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -63,7 +63,7 @@ public class AutoFollowPlayers extends Module {
     private boolean wasAutoWalking = false;
 
     public AutoFollowPlayers() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoFollowPlayers", "Locks view on and follows players.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AutoFollowPlayers", "Locks view on and follows players.");
     }
 
     @EventHandler

@@ -29,7 +29,7 @@ public class RyanWare extends MeteorAddon {
     public static String modulePrefix = "RyanWare";
     public static Item iconItem = Items.SPONGE;
     public static Category CATEGORY;
-    public static Category CATEGORY_M1;
+    public static Category CATEGORY_ESSENTIALS;
 
     static {
         try {
@@ -55,38 +55,58 @@ public class RyanWare extends MeteorAddon {
             LOG.error("Failed to access mod container", e);
         }
 
-        CATEGORY = new Category(addonName, iconItem.getDefaultStack());
-        CATEGORY_M1 = new Category(addonName+" M1", iconItem.getDefaultStack());
+        CATEGORY = new Category(addonName+" Extras", iconItem.getDefaultStack());
+        CATEGORY_ESSENTIALS = new Category(addonName+" Essentials", iconItem.getDefaultStack());
     }
 
     @Override
     public void onInitialize() {
         LOG.info("Initializing {} Addon.", addonName);
 
-        // Register modules
-        Modules.get().add(new _example());
+        // Register Essentials
+        Modules.get().add(new AntiHack());
         Modules.get().add(new AskOllama());
-        Modules.get().add(new Aura());
+        Modules.get().add(new AtSomeone());
         Modules.get().add(new AutoFollowItems());
         Modules.get().add(new AutoFollowPlayers());
-        Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new AutoResponder());
+        Modules.get().add(new AutoResponder());;
+        Modules.get().add(new ChatEncryption());
+        Modules.get().add(new ChatTranslator());
+        Modules.get().add(new DeathCommands());
+        Modules.get().add(new DeathCoordsMessage());
+        Modules.get().add(new ElytraFakeRockets());
+        Modules.get().add(new ElytraFly());
+        Modules.get().add(new f3_number_hider());
+        Modules.get().add(new FocusCommands());
+        Modules.get().add(new ForceColoredChat());
+        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new NiceFlight());
+        Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new PublicChatTags());
+        Modules.get().add(new Radio());
+        Modules.get().add(new Recorder());
+        Modules.get().add(new RedirectPublicChat());
+        Modules.get().add(new UserLookups());
+
+        // Register Other Modules
+        Modules.get().add(new _example());
+        Modules.get().add(new Aura());
+        Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BritishChat());
+        Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
+        Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
         Modules.get().add(new CrystalAura3());
-        Modules.get().add(new DeathCommands());
-        Modules.get().add(new ElytraFakeRockets());
         Modules.get().add(new Excavator());
-        Modules.get().add(new FocusCommands());
         Modules.get().add(new FullBright());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
@@ -95,8 +115,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PlayerShapeESP());
-        Modules.get().add(new Radio());
-        Modules.get().add(new Recorder());
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RemoteViewProxyServer());
         Modules.get().add(new RemoteViewWebServer());
@@ -105,26 +123,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemBypass());
         Modules.get().add(new WorldDownloader());
-        // ...
-
-        // Register M1 modules
-        // Assume these are done and never to be touched again
-        Modules.get().add(new M1_AntiHack());
-        Modules.get().add(new M1_AtSomeone());
-        Modules.get().add(new M1_ChatCleanup());
-        Modules.get().add(new M1_ChatEncryption());
-        Modules.get().add(new M1_ChatTranslator());
-        Modules.get().add(new M1_CompletionCrash());
-        Modules.get().add(new M1_DeathCoordsMessage());
-        Modules.get().add(new M1_ElytraFly());
-        Modules.get().add(new M1_f3_number_hider());
-        Modules.get().add(new M1_ForceColoredChat());
-        Modules.get().add(new M1_ForceOpenTab());
-        Modules.get().add(new M1_NiceFlight());
-        Modules.get().add(new M1_NoAttackDamage());
-        Modules.get().add(new M1_PublicChatTags());
-        Modules.get().add(new M1_RedirectPublicChat());
-        Modules.get().add(new M1_UserLookups());
 
         // Register commands
         Commands.add(new Command_GMC());
@@ -137,7 +135,7 @@ public class RyanWare extends MeteorAddon {
     @Override
     public void onRegisterCategories() {
         Modules.registerCategory(CATEGORY);
-        Modules.registerCategory(CATEGORY_M1);
+        Modules.registerCategory(CATEGORY_ESSENTIALS);
     }
 
     @Override

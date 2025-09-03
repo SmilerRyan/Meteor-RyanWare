@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -12,7 +12,7 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class M1_NoAttackDamage extends Module {
+public class NoAttackDamage extends Module {
     public enum Mode {
         Everyone,
         FriendsOnly
@@ -26,8 +26,8 @@ public class M1_NoAttackDamage extends Module {
         .defaultValue(Mode.Everyone)
         .build());
 
-    public M1_NoAttackDamage() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix+"M1-No-Attack-Damage", "Prevents dealing damage to others.");
+    public NoAttackDamage() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix+"E-No-Attack-Damage", "Prevents dealing damage to others.");
     }
 
     @EventHandler

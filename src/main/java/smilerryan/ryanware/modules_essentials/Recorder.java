@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.*;
@@ -60,7 +60,7 @@ public class Recorder extends Module {
     private File outputFile;
 
     public Recorder() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Recorder", "Records the desktop using ffmpeg (no dependencies).");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Recorder", "Records the desktop using ffmpeg (no dependencies).");
     }
 
     @Override

@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.EnumSetting;
@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-public class M1_AtSomeone extends Module {
+public class AtSomeone extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final Random random = new Random();
 
@@ -35,8 +35,8 @@ public class M1_AtSomeone extends Module {
     );
 
 
-    public M1_AtSomeone() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-@Someone", "Responds with a random online player when '@someone' is seen in chat. 'Help, I've fallen and I can't get up I need @someone'");
+    public AtSomeone() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-@Someone", "Responds with a random online player when '@someone' is seen in chat. 'Help, I've fallen and I can't get up I need @someone'");
     }
 
     @EventHandler

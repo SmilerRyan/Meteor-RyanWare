@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -58,7 +58,7 @@ public class DeathCommands extends Module {
     private final Random random = new Random();
 
     public DeathCommands() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Death-Commands", "Sends random messages when you die.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Death-Commands", "Sends random messages when you die.");
     }
 
     @EventHandler

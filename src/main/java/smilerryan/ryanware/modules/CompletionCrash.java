@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_1;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.IntSetting;
@@ -14,11 +14,11 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class M1_CompletionCrash extends Module {
+public class CompletionCrash extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("Rate");
 
-    public M1_CompletionCrash() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix+"M1-Completion-Crash", "Funny Completion");
+    public CompletionCrash() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix+"M1-Completion-Crash", "Funny Completion");
     }
 
     private int length = 2032;

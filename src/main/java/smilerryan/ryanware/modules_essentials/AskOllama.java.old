@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -75,7 +75,7 @@ public class AskOllama extends Module {
     private static final int MAX_CHAT_HISTORY = 20;
 
     public AskOllama() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override

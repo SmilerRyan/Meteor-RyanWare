@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -59,7 +59,7 @@ public class AutoMineNearby extends Module {
     private final Random rand = new Random();
 
     public AutoMineNearby() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoMineNearby", "Fast legit auto mines nearby visible selected blocks.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AutoMineNearby", "Fast legit auto mines nearby visible selected blocks.");
     }
 
     @EventHandler

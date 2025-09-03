@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_essentials;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -8,7 +8,7 @@ import smilerryan.ryanware.RyanWare;
 
 import java.util.*;
 
-public class M1_PublicChatTags extends Module {
+public class PublicChatTags extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<String>> serverTagStrings = sgGeneral.add(new StringListSetting.Builder()
@@ -25,8 +25,8 @@ public class M1_PublicChatTags extends Module {
         .build()
     );
 
-    public M1_PublicChatTags() {
-        super(RyanWare.CATEGORY_M1, RyanWare.modulePrefix + "M1-Chat-Tags", "Adds a prefix and suffix to public messages per server.");
+    public PublicChatTags() {
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Chat-Tags", "Adds a prefix and suffix to public messages per server.");
     }
 
     private String getServerIp() {
