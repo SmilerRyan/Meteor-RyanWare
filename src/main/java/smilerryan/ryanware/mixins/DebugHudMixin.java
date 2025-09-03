@@ -1,6 +1,6 @@
 package smilerryan.ryanware.mixins;
 
-import smilerryan.ryanware.modules_1.M1_f3_number_hider;
+import smilerryan.ryanware.modules_essentials.f3_number_hider;
 import net.minecraft.client.gui.hud.DebugHud;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,12 +16,12 @@ public class DebugHudMixin {
 
     @Inject(method = "getLeftText", at = @At("RETURN"), cancellable = true)
     private void hideLeftCoords(CallbackInfoReturnable<List<String>> cir) {
-        if (M1_f3_number_hider.INSTANCE != null) {
+        if (f3_number_hider.INSTANCE != null) {
             List<String> original = cir.getReturnValue();
             List<String> modified = new ArrayList<>();
             
             for (String line : original) {
-                modified.add(M1_f3_number_hider.INSTANCE.hideCoordinateString(line));
+                modified.add(f3_number_hider.INSTANCE.hideCoordinateString(line));
             }
             
             cir.setReturnValue(modified);
@@ -30,12 +30,12 @@ public class DebugHudMixin {
 
     @Inject(method = "getRightText", at = @At("RETURN"), cancellable = true)
     private void hideRightCoords(CallbackInfoReturnable<List<String>> cir) {
-        if (M1_f3_number_hider.INSTANCE != null) {
+        if (f3_number_hider.INSTANCE != null) {
             List<String> original = cir.getReturnValue();
             List<String> modified = new ArrayList<>();
             
             for (String line : original) {
-                modified.add(M1_f3_number_hider.INSTANCE.hideCoordinateString(line));
+                modified.add(f3_number_hider.INSTANCE.hideCoordinateString(line));
             }
             
             cir.setReturnValue(modified);
