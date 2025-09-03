@@ -1,6 +1,5 @@
 package smilerryan.ryanware.modules_essentials;
 
-import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.StringListSetting;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -8,22 +7,17 @@ import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.nio.ByteBuffer;
-import java.time.Instant;
 
 public class AutoResponder extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -67,7 +61,7 @@ public class AutoResponder extends Module {
     }
 
     private long secretRandomSeedComponent; 
-    private final int SECRET_SEED_UPDATE_INTERVAL_SECONDS = 3600; // Update every hour
+    private final int SECRET_SEED_UPDATE_INTERVAL_SECONDS = 3600;
 
     @Override
     public void onActivate() {
@@ -85,23 +79,26 @@ public class AutoResponder extends Module {
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-
         String message = event.getMessage().getString();
         String responseToSend = null;
 
-        // Actual Auto Responder Logic
+        // Collect all possible responses instead of just first
+        List<String> possibleResponses = new ArrayList<>();
         for (String pair : triggerResponses.get()) {
             int idx = pair.indexOf('=');
-            if (idx == -1) {continue;}
+            if (idx == -1) continue;
             String trigger = pair.substring(0, idx);
             String response = pair.substring(idx + 1);
             if (message.contains(trigger)) {
-                responseToSend = response;
-                break;
+                possibleResponses.add(response);
             }
         }
 
-        // Baconware Fake 1ACT 2ACT 3ACT 69X Commands
+        if (!possibleResponses.isEmpty()) {
+            responseToSend = possibleResponses.get(new Random().nextInt(possibleResponses.size()));
+        }
+
+        // Baconware Fake
         if (responseToSend == null && fakeBaconwareInstallation.get()) {
             if (message.contains("1ACT") || message.contains("2ACT") || message.contains("69X") || message.contains("3ACT")) {
                 
