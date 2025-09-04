@@ -62,7 +62,7 @@ public class ElytraFly extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Pre event) {
+    private void onTick(TickEvent.Post event) {
         if (!mc.player.isFallFlying()) return;
 
         double baseSpeed = speed.get();
@@ -74,18 +74,32 @@ public class ElytraFly extends Module {
         if (isAuto) {
             moveVec = mc.player.getRotationVec(1.0f);
         } else {
-            boolean anyKey = mc.options.forwardKey.isPressed() || mc.options.jumpKey.isPressed() || mc.options.sneakKey.isPressed();
+            boolean forward = mc.options.forwardKey.isPressed();
+            boolean back    = mc.options.backKey.isPressed();
+            boolean left    = mc.options.leftKey.isPressed();
+            boolean right   = mc.options.rightKey.isPressed();
+            boolean up      = mc.options.jumpKey.isPressed();
+            boolean down    = mc.options.sneakKey.isPressed();
 
-            if (anyKey) {
-                double y = 0;
-                if (mc.options.jumpKey.isPressed()) y += 1;
-                if (mc.options.sneakKey.isPressed()) y -= 1;
+            Vec3d input = Vec3d.ZERO;
 
-                Vec3d forward = mc.options.forwardKey.isPressed()
-                    ? new Vec3d(mc.player.getRotationVec(1.0f).x, 0, mc.player.getRotationVec(1.0f).z).normalize()
-                    : Vec3d.ZERO;
+            if (forward || back || left || right) {
+                float yaw = mc.player.getYaw() * ((float) Math.PI / 180F);
+                Vec3d forwardVec = new Vec3d(-Math.sin(yaw), 0, Math.cos(yaw));
+                Vec3d strafeVec  = new Vec3d(-forwardVec.z, 0, forwardVec.x);
 
-                moveVec = new Vec3d(forward.x, y, forward.z).normalize();
+                if (forward) input = input.add(forwardVec);
+                if (back)    input = input.subtract(forwardVec);
+                if (left)    input = input.subtract(strafeVec);
+                if (right)   input = input.add(strafeVec);
+            }
+
+            // Vertical control
+            if (up) input = input.add(0, 1, 0);
+            if (down) input = input.add(0, -1, 0);
+            
+            if (input.lengthSquared() > 0) {
+                moveVec = input.normalize();
             } else {
                 moveVec = Vec3d.ZERO;
                 currentSpeed = 0;
@@ -101,7 +115,7 @@ public class ElytraFly extends Module {
                 for (int i = 1; i <= ANTI_CRASH_RANGE; i++) {
                     Box checkBox = box.offset(norm.multiply(i));
                     if (!mc.world.isSpaceEmpty(mc.player, checkBox)) {
-                        double factor = (double)(i) / ANTI_CRASH_RANGE;
+                        double factor = (double) i / ANTI_CRASH_RANGE;
                         minFactor = Math.min(minFactor, factor);
                         break;
                     }
@@ -110,15 +124,15 @@ public class ElytraFly extends Module {
 
             currentSpeed = MIN_SPEED + (baseSpeed - MIN_SPEED) * minFactor;
 
-            // extra safety: steep dive detection
             float pitch = mc.player.getPitch();
             if (pitch > CRASH_PITCH) {
-                double steepFactor = 1.0 - Math.min((pitch - CRASH_PITCH) / 60.0, 1.0); // scales from 1 to 0
+                double steepFactor = 1.0 - Math.min((pitch - CRASH_PITCH) / 60.0, 1.0);
                 currentSpeed *= steepFactor;
             }
         }
 
         Vec3d velocity = moveVec.multiply(currentSpeed);
         mc.player.setVelocity(velocity.x, velocity.y, velocity.z);
+        mc.player.velocityModified = true;
     }
 }
