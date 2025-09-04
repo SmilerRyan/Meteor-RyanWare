@@ -56,7 +56,7 @@ public class AutoFollowItems extends Module {
     private long lastManualInputTime = 0;
 
     public AutoFollowItems() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AutoFollowItems", "Automatically walks/jumps towards items with a whitelist/blacklist/max-range.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AutoFollowItems", "Automatically walks/jumps towards items with a whitelist/blacklist/max-range.");
     }
 
     @EventHandler

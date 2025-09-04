@@ -60,7 +60,7 @@ public class Recorder extends Module {
     private File outputFile;
 
     public Recorder() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Recorder", "Records the desktop using ffmpeg (no dependencies).");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Recorder", "Records the desktop using ffmpeg (no dependencies).");
     }
 
     @Override

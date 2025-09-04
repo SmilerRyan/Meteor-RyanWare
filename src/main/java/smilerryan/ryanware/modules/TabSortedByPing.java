@@ -20,7 +20,7 @@ public class TabSortedByPing extends Module {
     private static final Color TEXT_COLOR = new Color(255, 255, 255); // White text
 
     public TabSortedByPing() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Tab-Sorted-By-Ping", "Custom tab list sorted by ping with numbers.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Tab-Sorted-By-Ping", "Custom tab list sorted by ping with numbers.");
     }
 
     @EventHandler

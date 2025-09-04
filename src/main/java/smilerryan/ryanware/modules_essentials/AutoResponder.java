@@ -74,7 +74,7 @@ public class AutoResponder extends Module {
     }
 
     public AutoResponder() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Auto-Responder", "Reads and responds to chat.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Auto-Responder", "Reads and responds to chat.");
     }
 
     @EventHandler

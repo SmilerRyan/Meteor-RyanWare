@@ -89,7 +89,7 @@ public class ChatEncryption extends Module {
     }
 
     public ChatEncryption() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
     }
 
     @EventHandler

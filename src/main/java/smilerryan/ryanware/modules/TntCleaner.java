@@ -17,7 +17,7 @@ public class TntCleaner extends Module {
     private Vec3d lastPlayerPos = null;
 
     public TntCleaner() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-TntCleaner", "Mines nearby TNT blocks and returns to original position.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "TntCleaner", "Mines nearby TNT blocks and returns to original position.");
     }
 
     @EventHandler

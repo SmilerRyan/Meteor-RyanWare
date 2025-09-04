@@ -64,7 +64,7 @@ public class ChunkBlockESP extends Module {
     private final Set<Integer> notifiedEntities = new HashSet<>();
 
     public ChunkBlockESP() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-ChunkBlockESP", "Highlights chunks with specific blocks/entities.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "ChunkBlockESP", "Highlights chunks with specific blocks/entities.");
     }
 
     @Override

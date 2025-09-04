@@ -16,7 +16,7 @@ public class RemoteViewProxyServer extends Module {
     private List<ViewerHandler> viewers = Collections.synchronizedList(new ArrayList<>());
 
     public RemoteViewProxyServer() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Remote-View-Proxy", "1.12.2 Remote View Server");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Remote-View-Proxy", "1.12.2 Remote View Server");
     }
 
     @Override

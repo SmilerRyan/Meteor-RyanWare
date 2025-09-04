@@ -38,7 +38,7 @@ public class BritishChat extends Module {
     );
 
     public BritishChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-British-Chat", "Makes your public chat slightly more (or less) British.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "British-Chat", "Makes your public chat slightly more (or less) British.");
     }
 
     @EventHandler

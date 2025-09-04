@@ -36,7 +36,7 @@ public class AutoTotem extends Module {
     private int disconnectDelay = -1; // ticks until disconnect, -1 = no disconnect scheduled
 
     public AutoTotem() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-AutoTotem", "Automatically equips totems and optionally disconnects when none are left.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AutoTotem", "Automatically equips totems and optionally disconnects when none are left.");
     }
 
     @Override

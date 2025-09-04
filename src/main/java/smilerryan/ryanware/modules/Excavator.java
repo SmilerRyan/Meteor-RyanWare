@@ -90,7 +90,7 @@ public class Excavator extends Module {
     private int blockCheckTimer = 0;
 
     public Excavator() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Excavator", "Mines blocks between two points efficiently.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Excavator", "Mines blocks between two points efficiently.");
     }
 
     @Override

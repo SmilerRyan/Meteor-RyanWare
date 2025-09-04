@@ -12,7 +12,7 @@ import net.minecraft.block.BlockState;
 public class NoBlockDamage extends Module {
 
     public NoBlockDamage() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-No-Block-Damage", "Prevents elytra collision damage.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "No-Block-Damage", "Prevents elytra collision damage.");
     }
 
     @EventHandler

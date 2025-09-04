@@ -36,7 +36,7 @@ public class AtSomeone extends Module {
 
 
     public AtSomeone() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-@Someone", "Responds with a random online player when '@someone' is seen in chat. 'Help, I've fallen and I can't get up I need @someone'");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "@Someone", "Responds with a random online player when '@someone' is seen in chat. 'Help, I've fallen and I can't get up I need @someone'");
     }
 
     @EventHandler

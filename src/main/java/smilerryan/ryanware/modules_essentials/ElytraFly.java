@@ -58,7 +58,7 @@ public class ElytraFly extends Module {
     private static final double CRASH_PITCH = 40; // degrees, if you're diving too steep
 
     public ElytraFly() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Elytra-Fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Elytra-Fly", "Fly with Elytra at a set speed, with anti-crash and manual/auto control.");
     }
 
     @EventHandler

@@ -54,7 +54,7 @@ public class AutoHighwayBuilder extends Module {
     private float lockedYaw;
 
     public AutoHighwayBuilder() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix+"+-auto-highway-builder", "Auto walks forward locked to cardinal direction with building.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "auto-highway-builder", "Auto walks forward locked to cardinal direction with building.");
     }
 
     @Override

@@ -19,7 +19,7 @@ public class NoItemUsageCooldown extends Module {
     private Field interactionManagerCooldownField;
 
     public NoItemUsageCooldown() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-No-Item-Usage-Cooldown", "Removes and bypasses all possible item usage cooldowns.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "No-Item-Usage-Cooldown", "Removes and bypasses all possible item usage cooldowns.");
         try {
             interactionManagerCooldownField = ClientPlayerInteractionManager.class.getDeclaredField("itemUseCooldown");
             interactionManagerCooldownField.setAccessible(true);

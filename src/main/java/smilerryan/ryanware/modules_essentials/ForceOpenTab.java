@@ -13,7 +13,7 @@ public class ForceOpenTab extends Module {
     private KeyBinding playerListKey;
 
     public ForceOpenTab() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-Force-Open-Tab", "Forces the tab list to stay open.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Force-Open-Tab", "Forces the tab list to stay open.");
     }
 
     @Override

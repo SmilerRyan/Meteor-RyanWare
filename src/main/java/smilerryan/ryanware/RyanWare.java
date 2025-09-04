@@ -26,7 +26,10 @@ public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
 
     public static String addonName = "RyanWare";
-    public static String modulePrefix = "RyanWare";
+    public static String catName_essentials = "";
+    public static String catName_extras = "";
+    public static String modulePrefix_essentials = "";
+    public static String modulePrefix_extras = "";
     public static Item iconItem = Items.SPONGE;
     public static Category CATEGORY;
     public static Category CATEGORY_ESSENTIALS;
@@ -39,8 +42,17 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:addon-name") != null) {
                         addonName = meta.getCustomValue("ryanware:addon-name").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:module-prefix") != null) {
-                        modulePrefix = meta.getCustomValue("ryanware:module-prefix").getAsString();
+                    if (meta.getCustomValue("ryanware:module-prefix-essentials") != null) {
+                        modulePrefix_essentials = meta.getCustomValue("ryanware:module-prefix-essentials").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:module-prefix-extras") != null) {
+                        modulePrefix_extras = meta.getCustomValue("ryanware:module-prefix-extras").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:cat-name-essentials") != null) {
+                        catName_essentials = meta.getCustomValue("ryanware:cat-name-essentials").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:cat-name-extras") != null) {
+                        catName_extras = meta.getCustomValue("ryanware:cat-name-extras").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:icon") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon").getAsString().toLowerCase(Locale.ROOT);
@@ -55,8 +67,8 @@ public class RyanWare extends MeteorAddon {
             LOG.error("Failed to access mod container", e);
         }
 
-        CATEGORY = new Category(addonName+" Extras", iconItem.getDefaultStack());
-        CATEGORY_ESSENTIALS = new Category(addonName+" Essentials", iconItem.getDefaultStack());
+        CATEGORY = new Category(modulePrefix_extras, iconItem.getDefaultStack());
+        CATEGORY_ESSENTIALS = new Category(modulePrefix_essentials, iconItem.getDefaultStack());
     }
 
     @Override

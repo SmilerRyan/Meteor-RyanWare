@@ -21,7 +21,7 @@ public class RedirectMsgCommands extends Module {
     );
 
     public RedirectMsgCommands() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-Redirect-MSG-Commands", "Intercepts /msg commands to log messages.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Redirect-MSG-Commands", "Intercepts /msg commands to log messages.");
     }
 
     @EventHandler

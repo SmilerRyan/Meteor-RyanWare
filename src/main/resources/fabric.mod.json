@@ -21,7 +21,10 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "@gh_hash@",
     "ryanware:addon-name": "RyanWare",
-    "ryanware:module-prefix": "RyanWare-",
+    "ryanware:module-prefix-essentials": "RyanWare-E-",
+    "ryanware:module-prefix-extras": "RyanWare-+-",
+    "ryanware:cat-name-essentials": "RyanWare Essentials",
+    "ryanware:cat-name-extras": "RyanWare Extras",
     "ryanware:icon": "sponge"
   },
   "depends": {

@@ -18,7 +18,10 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "",
     "ryanware:addon-name": "NovaCore",
-    "ryanware:module-prefix": "Nova-",
+    "ryanware:module-prefix-essentials": "Nova-",
+    "ryanware:module-prefix-extras": "NB-",
+    "ryanware:cat-name-essentials": "NovaCore",
+    "ryanware:cat-name-extras": "NovaBeta",
     "ryanware:icon": "nether_star"
   },
   "depends": {

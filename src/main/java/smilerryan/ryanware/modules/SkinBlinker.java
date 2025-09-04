@@ -30,7 +30,7 @@ public class SkinBlinker extends Module {
     private boolean skinVisible = true;
 
     public SkinBlinker() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix + "+-skin-blinker", "Makes your skin parts blink on and off at specified intervals");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "skin-blinker", "Makes your skin parts blink on and off at specified intervals");
     }
 
     @Override

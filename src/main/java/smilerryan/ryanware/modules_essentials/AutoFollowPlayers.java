@@ -63,7 +63,7 @@ public class AutoFollowPlayers extends Module {
     private boolean wasAutoWalking = false;
 
     public AutoFollowPlayers() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AutoFollowPlayers", "Locks view on and follows players.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AutoFollowPlayers", "Locks view on and follows players.");
     }
 
     @EventHandler

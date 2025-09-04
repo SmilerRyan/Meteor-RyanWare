@@ -27,7 +27,7 @@ public class FocusCommands extends Module {
     private boolean lastFocused = true;
 
     public FocusCommands() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix+"E-Focus-Commands", "Sends commands when window focus changes.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials+"Focus-Commands", "Sends commands when window focus changes.");
     }
 
     @EventHandler

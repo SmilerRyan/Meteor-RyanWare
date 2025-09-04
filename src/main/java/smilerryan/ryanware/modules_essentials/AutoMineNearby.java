@@ -59,7 +59,7 @@ public class AutoMineNearby extends Module {
     private final Random rand = new Random();
 
     public AutoMineNearby() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix + "E-AutoMineNearby", "Fast legit auto mines nearby visible selected blocks.");
+        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AutoMineNearby", "Fast legit auto mines nearby visible selected blocks.");
     }
 
     @EventHandler
