@@ -26,11 +26,16 @@ public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
 
     public static String addonName = "RyanWare";
+
     public static String catName_essentials = "";
     public static String catName_extras = "";
+
     public static String modulePrefix_essentials = "";
     public static String modulePrefix_extras = "";
-    public static Item iconItem = Items.SPONGE;
+
+    public static Item iconItem_essentials = Items.SPONGE;
+    public static Item iconItem_extras = Items.SPONGE;
+    
     public static Category CATEGORY;
     public static Category CATEGORY_ESSENTIALS;
 
@@ -54,10 +59,15 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:cat-name-extras") != null) {
                         catName_extras = meta.getCustomValue("ryanware:cat-name-extras").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:icon") != null) {
-                        String iconName = meta.getCustomValue("ryanware:icon").getAsString().toLowerCase(Locale.ROOT);
+                    if (meta.getCustomValue("ryanware:icon-essentials") != null) {
+                        String iconName = meta.getCustomValue("ryanware:icon-essentials").getAsString().toLowerCase(Locale.ROOT);
                         Identifier id = Identifier.of("minecraft", iconName);
-                        iconItem = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                        iconItem_essentials = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                    }
+                    if (meta.getCustomValue("ryanware:icon-extras") != null) {
+                        String iconName = meta.getCustomValue("ryanware:icon-extras").getAsString().toLowerCase(Locale.ROOT);
+                        Identifier id = Identifier.of("minecraft", iconName);
+                        iconItem_extras = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
                     }
                 } catch (Exception e) {
                     LOG.error("Failed to read mod metadata or override values.", e);
@@ -67,8 +77,8 @@ public class RyanWare extends MeteorAddon {
             LOG.error("Failed to access mod container", e);
         }
 
-        CATEGORY = new Category(modulePrefix_extras, iconItem.getDefaultStack());
-        CATEGORY_ESSENTIALS = new Category(modulePrefix_essentials, iconItem.getDefaultStack());
+        CATEGORY = new Category(catName_extras, iconItem_extras.getDefaultStack());
+        CATEGORY_ESSENTIALS = new Category(catName_essentials, iconItem_essentials.getDefaultStack());
     }
 
     @Override
