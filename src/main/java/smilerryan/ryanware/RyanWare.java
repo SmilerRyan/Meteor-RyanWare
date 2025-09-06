@@ -143,6 +143,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
+        Modules.get().add(new TotemAutoLeave());
         Modules.get().add(new TotemBypass());
         Modules.get().add(new WorldDownloader());
 
