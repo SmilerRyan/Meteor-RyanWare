@@ -5,7 +5,6 @@ import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.StringListSetting;
 import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -14,13 +13,15 @@ import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 import smilerryan.ryanware.RyanWare;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,75 +29,40 @@ import java.util.regex.Pattern;
 public class CustomTabText extends Module {
     private final SettingGroup sgHeader = settings.createGroup("Header Settings");
     private final SettingGroup sgFooter = settings.createGroup("Footer Settings");
-    private final SettingGroup sgColumns = settings.createGroup("Column Settings");
     private final SettingGroup sgPlayerHiding = settings.createGroup("Player Hiding");
 
     public enum HeaderMode { Remove, Replace, AddToTop, AddToEnd }
     public enum FooterMode { Remove, Replace, AddToTop, AddToEnd }
 
     private final Setting<Boolean> customHeaderEnabled = sgHeader.add(new meteordevelopment.meteorclient.settings.BoolSetting.Builder()
-        .name("custom-header")
-        .description("Enable custom header modifications.")
-        .defaultValue(true)
-        .build()
+        .name("custom-header").description("Enable custom header modifications.").defaultValue(true).build()
     );
 
     private final Setting<HeaderMode> headerMode = sgHeader.add(new EnumSetting.Builder<HeaderMode>()
-        .name("header-mode")
-        .description("How to handle the server's header.")
-        .defaultValue(HeaderMode.Replace)
-        .visible(() -> customHeaderEnabled.get())
-        .build()
+        .name("header-mode").description("How to handle the server's header.").defaultValue(HeaderMode.Replace)
+        .visible(() -> customHeaderEnabled.get()).build()
     );
 
     private final Setting<String> headerText = sgHeader.add(new meteordevelopment.meteorclient.settings.StringSetting.Builder()
-        .name("header-text")
-        .description("Custom text for the header. Use & for color codes and \\n for new lines.")
-        .defaultValue("")
-        .visible(() -> customHeaderEnabled.get())
-        .build()
+        .name("header-text").description("Custom text for the header. Use & for color codes and \\n for new lines.")
+        .defaultValue("").visible(() -> customHeaderEnabled.get()).build()
     );
 
     private final Setting<Boolean> customFooterEnabled = sgFooter.add(new meteordevelopment.meteorclient.settings.BoolSetting.Builder()
-        .name("custom-footer")
-        .description("Enable custom footer modifications.")
-        .defaultValue(true)
-        .build()
+        .name("custom-footer").description("Enable custom footer modifications.").defaultValue(true).build()
     );
 
     private final Setting<FooterMode> footerMode = sgFooter.add(new EnumSetting.Builder<FooterMode>()
-        .name("footer-mode")
-        .description("How to handle the server's footer.")
-        .defaultValue(FooterMode.Replace)
-        .visible(() -> customFooterEnabled.get())
-        .build()
+        .name("footer-mode").description("How to handle the server's footer.").defaultValue(FooterMode.Replace)
+        .visible(() -> customFooterEnabled.get()).build()
     );
 
     private final Setting<String> footerText = sgFooter.add(new meteordevelopment.meteorclient.settings.StringSetting.Builder()
-        .name("footer-text")
-        .description("Custom text for the footer. Use & for color codes and \\n for new lines.")
-        .defaultValue("")
-        .visible(() -> customFooterEnabled.get())
-        .build()
+        .name("footer-text").description("Custom text for the footer. Use & for color codes and \\n for new lines.")
+        .defaultValue("").visible(() -> customFooterEnabled.get()).build()
     );
 
-    private final Setting<Boolean> customColumns = sgColumns.add(new meteordevelopment.meteorclient.settings.BoolSetting.Builder()
-        .name("custom-columns")
-        .description("Enable custom column width for the tab list.")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Integer> columnWidth = sgColumns.add(new IntSetting.Builder()
-        .name("column-width")
-        .description("Number of columns to display in the tab list.")
-        .defaultValue(4)
-        .min(1)
-        .max(20)
-        .visible(() -> customColumns.get())
-        .build()
-    );
-
+    // Player Hiding Settings
     private final Setting<Boolean> hidePlayersEnabled = sgPlayerHiding.add(new meteordevelopment.meteorclient.settings.BoolSetting.Builder()
         .name("hide-players")
         .description("Enable hiding specific players from the tab list.")
@@ -118,25 +84,35 @@ public class CustomTabText extends Module {
         .build()
     );
 
+    // Pattern for matching & color codes
     private static final Pattern COLOR_PATTERN = Pattern.compile("&([0-9a-fk-or])");
 
+    // Store server header/footer for combination modes
     private Text serverHeader = null;
     private Text serverFooter = null;
 
-    private Map<String, String> playerNameReplacements = new HashMap<>();
-    private List<PlayerListEntry> filteredPlayers = null;
-
-    // FIX: missing field
-    private final Map<PlayerListEntry, Text> originalDisplayNames = new HashMap<>();
+    /*
+     * Player hiding internal state:
+     * - playerReplacementsByUUID: what replacement ("" = hide, "X" = replace) to apply for a given UUID this tick
+     * - originalDisplayNames: the original display Text for a given UUID (may be null)
+     * - originalProfileNames: the original profile name String for a given UUID
+     */
+    private final Map<UUID, String> playerReplacementsByUUID = new HashMap<>();
+    private final Map<UUID, Text> originalDisplayNames = new HashMap<>();
+    private final Map<UUID, String> originalProfileNames = new HashMap<>();
 
     public CustomTabText() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Custom-Tab-Text",
-            "Allows customization of the tab overlay text, columns, and player visibility.");
+            "Allows customization of the tab overlay text, and player visibility.");
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        updatePlayerList();
+        // Always rebuild mapping from current players -> replacements (so changes apply immediately)
+        updatePlayerReplacements();
+        // Apply or restore names based on the mapping
+        applyOrRestoreNames();
+        // Keep header/footer updated
         forceUpdateTabText();
     }
 
@@ -158,161 +134,167 @@ public class CustomTabText extends Module {
             if (mc != null && mc.inGameHud != null && mc.inGameHud.getPlayerListHud() != null) {
                 PlayerListHud hud = mc.inGameHud.getPlayerListHud();
 
-                if (!customHeaderEnabled.get()) {
-                    hud.setHeader(packetHeader);
-                } else {
-                    Text finalHeader = buildFinalText(headerText.get(), serverHeader, headerMode.get());
-                    hud.setHeader(finalHeader);
-                }
+                if (!customHeaderEnabled.get()) hud.setHeader(packetHeader);
+                else hud.setHeader(buildFinalText(headerText.get(), serverHeader, headerMode.get()));
 
-                if (!customFooterEnabled.get()) {
-                    hud.setFooter(packetFooter);
-                } else {
-                    Text finalFooter = buildFinalText(footerText.get(), serverFooter, footerMode.get());
-                    hud.setFooter(finalFooter);
-                }
+                if (!customFooterEnabled.get()) hud.setFooter(packetFooter);
+                else hud.setFooter(buildFinalText(footerText.get(), serverFooter, footerMode.get()));
             }
         }
     }
 
-    @EventHandler 
+    @EventHandler
     private void onRender2D(Render2DEvent event) {
-        if (mc.options.playerListKey.isPressed()) {
-            applyCustomTabModifications();
-        }
+        // nothing tab-specific here; modifications are applied in onTick so they're always up to date
     }
 
-    private void updatePlayerList() {
-        if (mc == null || mc.getNetworkHandler() == null) return;
+    /**
+     * Rebuild playerReplacementsByUUID from the current network player list and the user's configured lists.
+     * Matching is done against the originalProfileNames (if we saved it) or the current profile name otherwise.
+     */
+    private void updatePlayerReplacements() {
+        playerReplacementsByUUID.clear();
+        if (!hidePlayersEnabled.get() || mc == null || mc.getNetworkHandler() == null) return;
 
-        playerNameReplacements.clear();
+        List<String> hiddenPlayers = playersToHide.get();
+        List<String> replacements = replacementNames.get();
 
-        if (hidePlayersEnabled.get()) {
-            List<String> hiddenPlayers = playersToHide.get();
-            List<String> replacements = replacementNames.get();
+        Collection<PlayerListEntry> playerList = mc.getNetworkHandler().getPlayerList();
 
+        for (PlayerListEntry entry : playerList) {
+            UUID uuid = entry.getProfile().getId();
+            // Use saved original name if we have one; otherwise use current profile name
+            String nameToMatch = originalProfileNames.getOrDefault(uuid, entry.getProfile().getName());
+            if (nameToMatch == null) continue;
+
+            // Find index in hiddenPlayers (case-insensitive match for convenience)
             for (int i = 0; i < hiddenPlayers.size(); i++) {
-                String hiddenName = hiddenPlayers.get(i);
-                String replacement = (i < replacements.size() && !replacements.get(i).isEmpty()) 
-                    ? replacements.get(i) : null;
+                String hid = hiddenPlayers.get(i);
+                if (hid == null) continue;
+                if (hid.equalsIgnoreCase(nameToMatch)) {
+                    String repl = (i < replacements.size() && replacements.get(i) != null) ? replacements.get(i) : "";
+                    // If replacement string empty -> hide; otherwise replace with string
+                    playerReplacementsByUUID.put(uuid, repl);
+                    break;
+                }
+            }
+        }
+    }
 
-                if (replacement != null) {
-                    playerNameReplacements.put(hiddenName, replacement);
+    /**
+     * For every current player entry:
+     * - if they are in playerReplacementsByUUID -> apply replacement (and store originals if first time)
+     * - else if we previously modified them -> restore originals and clear saved state
+     */
+    private void applyOrRestoreNames() {
+        if (mc == null || mc.getNetworkHandler() == null) return;
+        Collection<PlayerListEntry> playerList = mc.getNetworkHandler().getPlayerList();
+
+        // First apply replacements for players currently targeted
+        for (PlayerListEntry entry : playerList) {
+            UUID uuid = entry.getProfile().getId();
+
+            if (playerReplacementsByUUID.containsKey(uuid)) {
+                String replacement = playerReplacementsByUUID.get(uuid);
+                // store originals only once per UUID
+                originalDisplayNames.putIfAbsent(uuid, safeGetDisplayName(entry));
+                originalProfileNames.putIfAbsent(uuid, entry.getProfile().getName());
+
+                if (replacement == null || replacement.isEmpty()) {
+                    // hide: set display name to empty text (or null) and profile name to empty string
+                    setPlayerDisplayName(entry, Text.literal(""));
+                    safeSetProfileName(entry, "");
                 } else {
-                    playerNameReplacements.put(hiddenName, "");
+                    // replace both display and profile names
+                    Text newText = parseFormattedText(replacement);
+                    setPlayerDisplayName(entry, newText);
+                    safeSetProfileName(entry, replacement);
+                }
+            } else {
+                // not targeted this tick: if we have an original saved, restore it
+                if (originalDisplayNames.containsKey(uuid) || originalProfileNames.containsKey(uuid)) {
+                    Text origDisplay = originalDisplayNames.get(uuid); // may be null
+                    String origProfile = originalProfileNames.get(uuid); // may be null
+
+                    // restore display name
+                    setPlayerDisplayName(entry, origDisplay);
+                    // restore profile name if available
+                    if (origProfile != null) safeSetProfileName(entry, origProfile);
+
+                    // clear saved state
+                    originalDisplayNames.remove(uuid);
+                    originalProfileNames.remove(uuid);
                 }
             }
         }
 
-        Collection<PlayerListEntry> allPlayers = mc.getNetworkHandler().getPlayerList();
-        filteredPlayers = allPlayers.stream()
-            .filter(entry -> {
-                String playerName = entry.getProfile().getName();
-                String replacement = playerNameReplacements.get(playerName);
-                return replacement == null || !replacement.isEmpty();
-            })
-            .collect(Collectors.toList());
+        // Finally: if saved originals exist for players who are no longer online, we should clear them to avoid memory leak
+        // (we don't need to restore anything for offline players)
+        originalDisplayNames.keySet().removeIf(uuid -> playerList.stream().noneMatch(e -> e.getProfile().getId().equals(uuid)));
+        originalProfileNames.keySet().removeIf(uuid -> playerList.stream().noneMatch(e -> e.getProfile().getId().equals(uuid)));
     }
 
-    private void applyCustomTabModifications() {
-        if (mc == null || mc.getNetworkHandler() == null) return;
+    /* ----------------------- Reflection helpers ----------------------- */
 
+    // Try to get display name (may be null)
+    private Text safeGetDisplayName(PlayerListEntry entry) {
         try {
-            PlayerListHud hud = mc.inGameHud.getPlayerListHud();
+            // try method getDisplayName()
+            Method m = entry.getClass().getMethod("getDisplayName");
+            m.setAccessible(true);
+            Object res = m.invoke(entry);
+            if (res instanceof Text) return (Text) res;
+        } catch (Throwable ignored) {}
 
-            if (hidePlayersEnabled.get() && !playerNameReplacements.isEmpty()) {
-                modifyPlayerDisplayNames();
-            }
-
-            if (customColumns.get()) {
-                applyCustomColumnLayout();
-            }
-        } catch (Exception ignored) {}
-    }
-
-    private void modifyPlayerDisplayNames() {
-        if (mc == null || mc.getNetworkHandler() == null) return;
-
+        // fallback to field that looks like display
         try {
-            Collection<PlayerListEntry> playerList = mc.getNetworkHandler().getPlayerList();
-
-            for (PlayerListEntry entry : playerList) {
-                String originalName = entry.getProfile().getName();
-                String replacement = playerNameReplacements.get(originalName);
-
-                if (replacement != null) {
-                    if (replacement.isEmpty()) {
-                        continue;
-                    } else {
-                        originalDisplayNames.putIfAbsent(entry, entry.getDisplayName());
-                        modifyEntryDisplayName(entry, replacement);
-                    }
+            for (Field f : entry.getClass().getDeclaredFields()) {
+                if (f.getType() == Text.class && f.getName().toLowerCase().contains("display")) {
+                    f.setAccessible(true);
+                    Object o = f.get(entry);
+                    if (o instanceof Text) return (Text) o;
+                    break;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Throwable ignored) {}
+
+        return null;
     }
 
-    private void modifyEntryDisplayName(PlayerListEntry entry, String newName) {
-        try {
-            var entryClass = entry.getClass();
-            var fields = entryClass.getDeclaredFields();
-
-            for (var field : fields) {
-                if (field.getType() == Text.class && field.getName().toLowerCase().contains("display")) {
-                    field.setAccessible(true);
-                    field.set(entry, Text.literal(newName));
-                    return;
-                }
-            }
-
-            var profile = entry.getProfile();
-            var profileClass = profile.getClass();
-            var nameField = profileClass.getDeclaredField("name");
-            nameField.setAccessible(true);
-            nameField.set(profile, newName);
-
-        } catch (Exception ignored) {}
-    }
-
-    // FIX: missing method
+    // Set display name (try method then fallback to field). Accepts null.
     private void setPlayerDisplayName(PlayerListEntry entry, Text displayName) {
         try {
-            var entryClass = entry.getClass();
-            var fields = entryClass.getDeclaredFields();
+            // try method setDisplayName(Text)
+            try {
+                Method setMethod = entry.getClass().getMethod("setDisplayName", Text.class);
+                setMethod.setAccessible(true);
+                setMethod.invoke(entry, displayName);
+                return;
+            } catch (NoSuchMethodException ignored) {}
 
-            for (var field : fields) {
-                if (field.getType() == Text.class && field.getName().toLowerCase().contains("display")) {
-                    field.setAccessible(true);
-                    field.set(entry, displayName);
+            // fallback to field
+            for (Field f : entry.getClass().getDeclaredFields()) {
+                if (f.getType() == Text.class && f.getName().toLowerCase().contains("display")) {
+                    f.setAccessible(true);
+                    f.set(entry, displayName);
                     return;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Throwable ignored) {}
     }
 
-    private void applyCustomColumnLayout() {
+    // Safely set the profile.name field (GameProfile.name) via reflection
+    private void safeSetProfileName(PlayerListEntry entry, String newName) {
         try {
-            if (filteredPlayers == null) return;
-
-            int playerCount = filteredPlayers.size();
-            int desiredColumns = columnWidth.get();
-            int maxPlayersPerColumn = MathHelper.ceil((float) playerCount / desiredColumns);
-
-            PlayerListHud hud = mc.inGameHud.getPlayerListHud();
-            var hudClass = hud.getClass();
-            var fields = hudClass.getDeclaredFields();
-
-            for (var field : fields) {
-                if (field.getType() == int.class) {
-                    field.setAccessible(true);
-                    String fieldName = field.getName().toLowerCase();
-                    if (fieldName.contains("column") || fieldName.contains("max")) {
-                        field.setInt(hud, maxPlayersPerColumn);
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
+            Object profile = entry.getProfile();
+            if (profile == null) return;
+            Field nameField = profile.getClass().getDeclaredField("name");
+            nameField.setAccessible(true);
+            nameField.set(profile, newName);
+        } catch (Throwable ignored) {}
     }
+
+    /* ----------------------- Header/footer helpers ----------------------- */
 
     private void forceUpdateTabText() {
         if (mc == null || mc.player == null || mc.inGameHud == null) return;
@@ -359,22 +341,26 @@ public class CustomTabText extends Module {
     private Text parseFormattedText(String input) {
         if (input == null || input.isEmpty()) return Text.empty();
 
+        // Convert & codes to § codes for Minecraft formatting
         Matcher matcher = COLOR_PATTERN.matcher(input);
         String formatted = matcher.replaceAll("§$1");
 
         return Text.literal(formatted);
     }
 
+    /* ----------------------- Activation / Deactivation ----------------------- */
+
     @Override
     public void onActivate() {
         serverHeader = null;
         serverFooter = null;
-        originalDisplayNames.clear();
-        forceUpdateTabText();
+        // do not clear originals here; we want to restore on deactivate
+        playerReplacementsByUUID.clear();
     }
 
     @Override
     public void onDeactivate() {
+        // Restore header/footer
         if (mc != null && mc.inGameHud != null) {
             PlayerListHud hud = mc.inGameHud.getPlayerListHud();
             if (hud != null) {
@@ -383,19 +369,24 @@ public class CustomTabText extends Module {
             }
         }
 
-        restoreOriginalPlayerNames();
-        originalDisplayNames.clear();
-    }
-
-    private void restoreOriginalPlayerNames() {
-        if (mc == null || mc.getNetworkHandler() == null) return;
-
-        try {
-            for (Map.Entry<PlayerListEntry, Text> entry : originalDisplayNames.entrySet()) {
-                PlayerListEntry playerEntry = entry.getKey();
-                Text originalDisplayName = entry.getValue();
-                setPlayerDisplayName(playerEntry, originalDisplayName);
+        // Restore any modified player names
+        if (mc != null && mc.getNetworkHandler() != null) {
+            Collection<PlayerListEntry> playerList = mc.getNetworkHandler().getPlayerList();
+            for (PlayerListEntry entry : playerList) {
+                UUID uuid = entry.getProfile().getId();
+                // restore display
+                if (originalDisplayNames.containsKey(uuid)) {
+                    setPlayerDisplayName(entry, originalDisplayNames.get(uuid)); // may be null
+                }
+                // restore profile name
+                if (originalProfileNames.containsKey(uuid)) {
+                    safeSetProfileName(entry, originalProfileNames.get(uuid));
+                }
             }
-        } catch (Exception ignored) {}
+        }
+
+        originalDisplayNames.clear();
+        originalProfileNames.clear();
+        playerReplacementsByUUID.clear();
     }
 }
