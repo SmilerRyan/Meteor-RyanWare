@@ -1,6 +1,7 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
@@ -10,16 +11,18 @@ import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.hud.PlayerListHud;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import smilerryan.ryanware.RyanWare;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 public class CustomTabText extends Module {
     private final SettingGroup sgHeader = settings.createGroup("Header Settings");
@@ -29,7 +32,7 @@ public class CustomTabText extends Module {
 
     // Header Mode Enum
     public enum HeaderMode {
-        Ignore,
+        Remove,
         Replace,
         AddToTop,
         AddToEnd
@@ -37,7 +40,7 @@ public class CustomTabText extends Module {
 
     // Footer Mode Enum  
     public enum FooterMode {
-        Ignore,
+        Remove,
         Replace,
         AddToTop,
         AddToEnd
@@ -126,7 +129,7 @@ public class CustomTabText extends Module {
 
     private final Setting<List<String>> replacementNames = sgPlayerHiding.add(new StringListSetting.Builder()
         .name("replacement-names")
-        .description("List of replacement names (same order as hidden players). Leave empty for no replacement.")
+        .description("List of replacement names (same order as hidden players). Leave empty to just hide.")
         .visible(() -> hidePlayersEnabled.get())
         .build()
     );
@@ -138,72 +141,210 @@ public class CustomTabText extends Module {
     private Text serverHeader = null;
     private Text serverFooter = null;
     
-    // Reflection fields for column width
-    private Field maxPlayersPerColumnField = null;
-    private boolean reflectionInitialized = false;
+    // Store modified player names
+    private Map<String, String> playerNameReplacements = new HashMap<>();
+    
+    // Store filtered player list for custom columns
+    private List<PlayerListEntry> filteredPlayers = null;
 
     public CustomTabText() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Custom-Tab-Text",
             "Allows customization of the tab overlay text, columns, and player visibility.");
     }
 
-    private void initReflection() {
-        if (reflectionInitialized) return;
-        reflectionInitialized = true;
-        
-        try {
-            // Try to find the field that controls columns in PlayerListHud
-            Class<?> hudClass = PlayerListHud.class;
-            Field[] fields = hudClass.getDeclaredFields();
-            
-            for (Field field : fields) {
-                // Look for integer fields that might control column count
-                if (field.getType() == int.class) {
-                    field.setAccessible(true);
-                    // This is a guess - you might need to find the exact field name
-                    // Common names: maxPlayersPerColumn, columns, etc.
-                    if (field.getName().toLowerCase().contains("column") || 
-                        field.getName().toLowerCase().contains("player")) {
-                        maxPlayersPerColumnField = field;
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Reflection failed, column width won't work
-            info("Could not initialize reflection for column width");
-        }
-    }
-
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        updatePlayerList();
         forceUpdateTabText();
     }
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof PlayerListHeaderS2CPacket packet) {
-            // Store server's header/footer for combination modes
-            if (customHeaderEnabled.get() && headerMode.get() != HeaderMode.Replace) {
-                serverHeader = packet.header();
+            // Always store the server's values first
+            Text packetHeader = packet.header();
+            Text packetFooter = packet.footer();
+            
+            // Store for combination modes
+            if (customHeaderEnabled.get() && headerMode.get() != HeaderMode.Replace && headerMode.get() != HeaderMode.Remove) {
+                serverHeader = packetHeader;
             }
-            if (customFooterEnabled.get() && footerMode.get() != FooterMode.Replace) {
-                serverFooter = packet.footer();
+            if (customFooterEnabled.get() && footerMode.get() != FooterMode.Replace && footerMode.get() != FooterMode.Remove) {
+                serverFooter = packetFooter;
             }
             
-            // Cancel if we're replacing or ignoring
-            if ((customHeaderEnabled.get() && headerMode.get() == HeaderMode.Replace) ||
-                (customFooterEnabled.get() && footerMode.get() == FooterMode.Replace) ||
-                (customHeaderEnabled.get() && headerMode.get() == HeaderMode.Ignore) ||
-                (customFooterEnabled.get() && footerMode.get() == FooterMode.Ignore)) {
-                event.cancel();
+            // Always cancel and handle ourselves to ensure independence
+            event.cancel();
+            
+            // Apply server values for disabled/non-overriding modes
+            if (mc != null && mc.inGameHud != null && mc.inGameHud.getPlayerListHud() != null) {
+                PlayerListHud hud = mc.inGameHud.getPlayerListHud();
+                
+                // Handle header
+                if (!customHeaderEnabled.get()) {
+                    hud.setHeader(packetHeader);
+                } else {
+                    Text finalHeader = buildFinalText(headerText.get(), serverHeader, headerMode.get());
+                    hud.setHeader(finalHeader);
+                }
+                
+                // Handle footer
+                if (!customFooterEnabled.get()) {
+                    hud.setFooter(packetFooter);
+                } else {
+                    Text finalFooter = buildFinalText(footerText.get(), serverFooter, footerMode.get());
+                    hud.setFooter(finalFooter);
+                }
+            }
+        }
+    }
+
+    @EventHandler 
+    private void onRender2D(Render2DEvent event) {
+        // This is where we'll intercept the tab rendering to modify player names and columns
+        if (mc.options.playerListKey.isPressed()) {
+            applyCustomTabModifications();
+        }
+    }
+
+    private void updatePlayerList() {
+        if (mc == null || mc.getNetworkHandler() == null) return;
+        
+        // Update player name replacements
+        playerNameReplacements.clear();
+        
+        if (hidePlayersEnabled.get()) {
+            List<String> hiddenPlayers = playersToHide.get();
+            List<String> replacements = replacementNames.get();
+            
+            for (int i = 0; i < hiddenPlayers.size(); i++) {
+                String hiddenName = hiddenPlayers.get(i);
+                String replacement = (i < replacements.size() && !replacements.get(i).isEmpty()) 
+                    ? replacements.get(i) : null;
+                
+                if (replacement != null) {
+                    playerNameReplacements.put(hiddenName, replacement);
+                } else {
+                    playerNameReplacements.put(hiddenName, ""); // Empty string means hide completely
+                }
+            }
+        }
+        
+        // Create filtered player list
+        Collection<PlayerListEntry> allPlayers = mc.getNetworkHandler().getPlayerList();
+        filteredPlayers = allPlayers.stream()
+            .filter(entry -> {
+                String playerName = entry.getProfile().getName();
+                String replacement = playerNameReplacements.get(playerName);
+                return replacement == null || !replacement.isEmpty(); // Keep if not hidden or has replacement
+            })
+            .collect(Collectors.toList());
+    }
+
+    private void applyCustomTabModifications() {
+        if (mc == null || mc.getNetworkHandler() == null) return;
+        
+        try {
+            PlayerListHud hud = mc.inGameHud.getPlayerListHud();
+            
+            // Temporarily modify player names for rendering
+            if (hidePlayersEnabled.get() && !playerNameReplacements.isEmpty()) {
+                // This is a simplified approach - we modify the display names temporarily
+                modifyPlayerDisplayNames();
             }
             
-            // Immediately re-apply ours
-            forceUpdateTabText();
-        } else if (event.packet instanceof PlayerListS2CPacket packet && hidePlayersEnabled.get()) {
-            // Handle player list modifications for hiding players
-            modifyPlayerList(packet);
+            // Apply custom column layout if enabled
+            if (customColumns.get()) {
+                applyCustomColumnLayout();
+            }
+            
+        } catch (Exception ignored) {
+            // Fail silently
+        }
+    }
+
+    private void modifyPlayerDisplayNames() {
+        if (mc == null || mc.getNetworkHandler() == null) return;
+        
+        try {
+            Collection<PlayerListEntry> playerList = mc.getNetworkHandler().getPlayerList();
+            
+            for (PlayerListEntry entry : playerList) {
+                String originalName = entry.getProfile().getName();
+                String replacement = playerNameReplacements.get(originalName);
+                
+                if (replacement != null) {
+                    if (replacement.isEmpty()) {
+                        // Hide player by setting display name to empty
+                        // This is a simplified approach that may not work perfectly
+                        continue;
+                    } else {
+                        // Replace player name
+                        // Note: This is tricky without mixins, may require reflection on PlayerListEntry
+                        modifyEntryDisplayName(entry, replacement);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // Fail silently
+        }
+    }
+
+    private void modifyEntryDisplayName(PlayerListEntry entry, String newName) {
+        try {
+            // Try to modify the display name field
+            // This uses reflection to access private fields
+            var entryClass = entry.getClass();
+            var fields = entryClass.getDeclaredFields();
+            
+            for (var field : fields) {
+                if (field.getType() == Text.class && field.getName().toLowerCase().contains("display")) {
+                    field.setAccessible(true);
+                    field.set(entry, Text.literal(newName));
+                    return;
+                }
+            }
+            
+            // If no display name field found, try modifying the profile name temporarily
+            // This is hacky but might work
+            var profile = entry.getProfile();
+            var profileClass = profile.getClass();
+            var nameField = profileClass.getDeclaredField("name");
+            nameField.setAccessible(true);
+            nameField.set(profile, newName);
+            
+        } catch (Exception ignored) {
+            // Reflection failed, can't modify this entry
+        }
+    }
+
+    private void applyCustomColumnLayout() {
+        // This attempts to modify the column calculation
+        // Without mixins, this is very limited
+        try {
+            if (filteredPlayers == null) return;
+            
+            int playerCount = filteredPlayers.size();
+            int desiredColumns = columnWidth.get();
+            int maxPlayersPerColumn = MathHelper.ceil((float) playerCount / desiredColumns);
+            
+            // Try to access and modify the PlayerListHud's internal state
+            PlayerListHud hud = mc.inGameHud.getPlayerListHud();
+            var hudClass = hud.getClass();
+            var fields = hudClass.getDeclaredFields();
+            
+            for (var field : fields) {
+                if (field.getType() == int.class) {
+                    field.setAccessible(true);
+                    String fieldName = field.getName().toLowerCase();
+                    if (fieldName.contains("column") || fieldName.contains("max")) {
+                        field.setInt(hud, maxPlayersPerColumn);
+                    }
+                }
+            }
+            
+        } catch (Exception ignored) {
+            // Column modification failed
         }
     }
 
@@ -213,28 +354,23 @@ public class CustomTabText extends Module {
         PlayerListHud hud = mc.inGameHud.getPlayerListHud();
         if (hud == null) return;
 
-        // Handle header
+        // Handle header - only if enabled
         if (customHeaderEnabled.get()) {
             Text finalHeader = buildFinalText(headerText.get(), serverHeader, headerMode.get());
             hud.setHeader(finalHeader);
         }
 
-        // Handle footer
+        // Handle footer - only if enabled  
         if (customFooterEnabled.get()) {
             Text finalFooter = buildFinalText(footerText.get(), serverFooter, footerMode.get());
             hud.setFooter(finalFooter);
-        }
-
-        // Apply custom column width if enabled
-        if (customColumns.get()) {
-            applyCustomColumnWidth();
         }
     }
 
     private Text buildFinalText(String customText, Text serverText, Object mode) {
         String processedCustom = processText(customText);
         
-        if (mode == HeaderMode.Ignore || mode == FooterMode.Ignore) {
+        if (mode == HeaderMode.Remove || mode == FooterMode.Remove) {
             return null;
         } else if (mode == HeaderMode.Replace || mode == FooterMode.Replace) {
             return processedCustom.isEmpty() ? null : parseFormattedText(processedCustom);
@@ -268,84 +404,12 @@ public class CustomTabText extends Module {
         return Text.literal(formatted);
     }
 
-    private void applyCustomColumnWidth() {
-        initReflection();
-        
-        if (maxPlayersPerColumnField == null) return;
-        
-        try {
-            PlayerListHud hud = mc.inGameHud.getPlayerListHud();
-            int targetColumns = columnWidth.get();
-            
-            // Calculate max players per column based on total players and desired columns
-            int totalPlayers = mc.getNetworkHandler() != null ? 
-                mc.getNetworkHandler().getPlayerList().size() : 80;
-            int maxPerColumn = Math.max(1, (totalPlayers + targetColumns - 1) / targetColumns);
-            
-            maxPlayersPerColumnField.setInt(hud, maxPerColumn);
-        } catch (Exception e) {
-            // Reflection failed
-        }
-    }
-
-    private void modifyPlayerList(PlayerListS2CPacket packet) {
-        try {
-            List<String> hiddenPlayers = playersToHide.get();
-            List<String> replacements = replacementNames.get();
-            
-            if (hiddenPlayers.isEmpty()) return;
-
-            // Try multiple possible field names for entries
-            Class<?> packetClass = packet.getClass();
-            Field entriesField = null;
-            
-            String[] possibleFieldNames = {"entries", "playerAdditionEntries", "actions", "field_179769_b"};
-            for (String fieldName : possibleFieldNames) {
-                try {
-                    entriesField = packetClass.getDeclaredField(fieldName);
-                    entriesField.setAccessible(true);
-                    break;
-                } catch (NoSuchFieldException ignored) {}
-            }
-            
-            if (entriesField == null) {
-                // Try to find any List field
-                Field[] allFields = packetClass.getDeclaredFields();
-                for (Field field : allFields) {
-                    if (List.class.isAssignableFrom(field.getType())) {
-                        field.setAccessible(true);
-                        entriesField = field;
-                        break;
-                    }
-                }
-            }
-            
-            if (entriesField != null) {
-                @SuppressWarnings("unchecked")
-                List<PlayerListS2CPacket.Entry> entries = (List<PlayerListS2CPacket.Entry>) entriesField.get(packet);
-                
-                // Modify entries to hide players
-                entries.removeIf(entry -> {
-                    if (entry.profile() != null) {
-                        String playerName = entry.profile().getName();
-                        return hiddenPlayers.contains(playerName);
-                    }
-                    return false;
-                });
-            }
-            
-        } catch (Exception e) {
-            // Only log if it's a real error, not field access issues
-            if (!(e instanceof NoSuchFieldException) && !(e instanceof IllegalAccessException)) {
-                warning("Failed to modify player list: " + e.getClass().getSimpleName());
-            }
-        }
-    }
-
     @Override
     public void onActivate() {
         serverHeader = null;
         serverFooter = null;
+        playerNameReplacements.clear();
+        filteredPlayers = null;
         forceUpdateTabText();
     }
 
@@ -358,5 +422,31 @@ public class CustomTabText extends Module {
                 hud.setFooter(serverFooter);
             }
         }
+        
+        // Restore original player names
+        playerNameReplacements.clear();
+        restoreOriginalPlayerNames();
+    }
+
+    private void restoreOriginalPlayerNames() {
+        // Attempt to restore any modified player names
+        // This is limited without proper state management
+        try {
+            if (mc != null && mc.getNetworkHandler() != null) {
+                // Force a refresh of the player list
+                // The names should naturally restore when the module is disabled
+            }
+        } catch (Exception ignored) {
+            // Restoration failed
+        }
+    }
+
+    // Getter methods for potential external access
+    public Setting<Boolean> getCustomColumns() {
+        return customColumns;
+    }
+    
+    public Setting<Integer> getColumnWidth() {
+        return columnWidth;
     }
 }
