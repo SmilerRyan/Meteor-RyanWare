@@ -38,7 +38,7 @@ public class PlayerHider extends Module {
 
     private final Map<UUID, String> playerReplacementsByUUID = new HashMap<>();
     private final Map<UUID, Text> originalDisplayNames = new HashMap<>();
-    private final Map<UUID, String> originalProfileNames = new HashMap<>();
+    private final Set<UUID> appliedChanges = new HashSet<>();
     
     // Cache to avoid recalculating every tick
     private List<String> cachedPlayersToHide = new ArrayList<>();
@@ -52,92 +52,28 @@ public class PlayerHider extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (!hidePlayersEnabled.get()) {
+            restoreAll();
+            return;
+        }
+        
         tickCounter++;
         // Only update when settings change or every 20 ticks (1 second)
         if (needsUpdate || tickCounter % 20 == 0) {
             updateReplacements();
-            applyOrRestore();
             needsUpdate = false;
         }
+        
+        applyChanges();
     }
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
-        if (!hidePlayersEnabled.get()) return;
-        if (mc == null || mc.getNetworkHandler() == null) return;
-
-        // Apply changes immediately when packets are received
-        applyReplacementsToAllEntries();
-        
-        // Force a client-side refresh by triggering tab list update
-        try {
-            mc.execute(() -> {
-                if (mc.inGameHud != null && mc.inGameHud.getPlayerListHud() != null) {
-                    // This forces the client to re-render the tab list
-                    mc.inGameHud.getPlayerListHud().setVisible(true);
-                }
-            });
-        } catch (Exception ignored) {}
-    }
-
-    private void applyReplacementsToAllEntries() {
-        mc.getNetworkHandler().getPlayerList().forEach(entry -> {
-            if (entry.getProfile() == null) return;
-            
-            UUID uuid = entry.getProfile().getId();
-            if (!playerReplacementsByUUID.containsKey(uuid)) return;
-
-            String replacement = playerReplacementsByUUID.get(uuid);
-            String currentProfileName = entry.getProfile().getName();
-            Text currentDisplay = safeGetDisplayName(entry);
-
-            if (debugMode.get()) {
-                info("=== DEBUG SESSION START ===");
-                info("=== PLAYER DEBUG INFO ===");
-                info("UUID: " + uuid.toString());
-                info("Current Profile Name: " + currentProfileName);
-                info("Current Display Name: " + (currentDisplay != null ? currentDisplay.getString() : "null"));
-                info("Replacement: " + replacement);
-            }
-
-            // Store original values before any modification
-            originalDisplayNames.putIfAbsent(uuid, currentDisplay);
-            originalProfileNames.putIfAbsent(uuid, currentProfileName);
-
-            if (replacement.isEmpty()) {
-                // Hide the player by setting empty names
-                if (debugMode.get()) info("Hiding player: " + currentProfileName);
-                setProfileNameOnly(entry, "");
-                setDisplayOnly(entry, Text.literal(""));
-            } else {
-                // Replace with new name - set profile first, then display to match
-                if (debugMode.get()) info("Replacing " + currentProfileName + " with " + replacement);
-                
-                setProfileNameOnly(entry, replacement);
-                setDisplayOnly(entry, Text.literal(replacement));
-                
-                // Verify the changes took effect
-                if (debugMode.get()) {
-                    String newProfileName = entry.getProfile().getName();
-                    Text newDisplayName = safeGetDisplayName(entry);
-                    info("After change - Profile: " + newProfileName + ", Display: " + 
-                         (newDisplayName != null ? newDisplayName.getString() : "null"));
-                    
-                    if (!replacement.equals(newProfileName)) {
-                        warning("Profile name change failed! Expected: " + replacement + ", Got: " + newProfileName);
-                    }
-                    if (newDisplayName == null || !replacement.equals(newDisplayName.getString())) {
-                        warning("Display name change failed! Expected: " + replacement + ", Got: " + 
-                               (newDisplayName != null ? newDisplayName.getString() : "null"));
-                    }
-                    info("=== DEBUG SESSION END ===");
-                }
-            }
-        });
+        // Let the tick handler manage changes to avoid conflicts
     }
 
     private void updateReplacements() {
-        if (!hidePlayersEnabled.get() || mc == null || mc.getNetworkHandler() == null) {
+        if (mc == null || mc.getNetworkHandler() == null) {
             playerReplacementsByUUID.clear();
             return;
         }
@@ -149,6 +85,9 @@ public class PlayerHider extends Module {
         if (hidden.equals(cachedPlayersToHide) && repls.equals(cachedReplacementNames)) {
             return;
         }
+        
+        // First restore all before updating
+        restoreAll();
         
         cachedPlayersToHide = new ArrayList<>(hidden);
         cachedReplacementNames = new ArrayList<>(repls);
@@ -175,39 +114,80 @@ public class PlayerHider extends Module {
         
         // Clean up data for disconnected players
         originalDisplayNames.keySet().retainAll(currentPlayers);
-        originalProfileNames.keySet().retainAll(currentPlayers);
     }
 
-    private void applyOrRestore() {
+    private void applyChanges() {
         if (mc == null || mc.getNetworkHandler() == null) return;
 
-        // First apply all current replacements
-        applyReplacementsToAllEntries();
+        mc.getNetworkHandler().getPlayerList().forEach(entry -> {
+            if (entry.getProfile() == null) return;
+            
+            UUID uuid = entry.getProfile().getId();
+            
+            if (playerReplacementsByUUID.containsKey(uuid)) {
+                // Need to apply changes
+                if (!appliedChanges.contains(uuid)) {
+                    String replacement = playerReplacementsByUUID.get(uuid);
+                    
+                    // Store original display name only once
+                    if (!originalDisplayNames.containsKey(uuid)) {
+                        originalDisplayNames.put(uuid, safeGetDisplayName(entry));
+                    }
+                    
+                    // NEVER modify the profile name - only the display name
+                    // This preserves all tab list functionality (ping, position, scoreboard)
+                    if (replacement.isEmpty()) {
+                        // For hiding: use invisible text but keep it non-null
+                        setDisplayOnly(entry, Text.literal("§r§0"));
+                    } else {
+                        setDisplayOnly(entry, Text.literal(replacement));
+                    }
+                    
+                    appliedChanges.add(uuid);
+                    
+                    if (debugMode.get()) {
+                        info("Applied change to " + entry.getProfile().getName() + " -> " + 
+                             (replacement.isEmpty() ? "[HIDDEN]" : replacement));
+                    }
+                }
+            } else if (appliedChanges.contains(uuid)) {
+                // Need to restore changes
+                restorePlayer(entry, uuid);
+            }
+        });
+    }
 
-        // Then restore players that are no longer in the replacement map
-        Set<UUID> playersToRestore = new HashSet<>();
+    private void restorePlayer(PlayerListEntry entry, UUID uuid) {
+        Text originalDisplay = originalDisplayNames.get(uuid);
+
+        if (originalDisplay != null) {
+            setDisplayOnly(entry, originalDisplay);
+        } else {
+            // If no original display name, clear it to let the game use the profile name
+            setDisplayOnly(entry, null);
+        }
+
+        originalDisplayNames.remove(uuid);
+        appliedChanges.remove(uuid);
+        
+        if (debugMode.get()) {
+            info("Restored " + entry.getProfile().getName());
+        }
+    }
+
+    private void restoreAll() {
+        if (mc == null || mc.getNetworkHandler() == null) return;
+
+        // Create a copy of the set to avoid concurrent modification
+        Set<UUID> toRestore = new HashSet<>(appliedChanges);
         
         mc.getNetworkHandler().getPlayerList().forEach(entry -> {
             if (entry.getProfile() == null) return;
             
             UUID uuid = entry.getProfile().getId();
-            if (!playerReplacementsByUUID.containsKey(uuid) && 
-                (originalDisplayNames.containsKey(uuid) || originalProfileNames.containsKey(uuid))) {
-                
-                Text originalDisplay = originalDisplayNames.get(uuid);
-                String originalProfile = originalProfileNames.get(uuid);
-
-                if (originalDisplay != null) setDisplay(entry, originalDisplay);
-                if (originalProfile != null) setProfileName(entry, originalProfile);
-                
-                playersToRestore.add(uuid);
+            if (toRestore.contains(uuid)) {
+                restorePlayer(entry, uuid);
             }
-        });
-        
-        // Clean up restored players from our tracking maps
-        playersToRestore.forEach(uuid -> {
-            originalDisplayNames.remove(uuid);
-            originalProfileNames.remove(uuid);
         });
     }
 
@@ -225,8 +205,9 @@ public class PlayerHider extends Module {
                     }
                 }
             } catch (Exception fallbackException) {
-                // Log only if debugging is needed
-                // System.err.println("Failed to get display name: " + fallbackException.getMessage());
+                if (debugMode.get()) {
+                    info("Failed to get display name: " + fallbackException.getMessage());
+                }
             }
         }
         return null;
@@ -238,57 +219,63 @@ public class PlayerHider extends Module {
         }
         
         boolean success = false;
+        
+        // Method 1: Try the standard setDisplayName method
         try {
-            // Try the standard setDisplayName method
             Method setDisplayName = entry.getClass().getMethod("setDisplayName", Text.class);
             setDisplayName.invoke(entry, text);
             success = true;
             if (debugMode.get()) info("✓ setDisplayName method succeeded");
         } catch (Exception e) {
             if (debugMode.get()) info("✗ setDisplayName method failed: " + e.getMessage());
-            
-            // Try reflection fallback for different field names
+        }
+        
+        // Method 2: Try direct field access
+        if (!success) {
             try {
-                Field[] fields = entry.getClass().getDeclaredFields();
-                for (Field f : fields) {
-                    if (f.getType() == Text.class && 
-                        (f.getName().toLowerCase().contains("display") || 
-                         f.getName().toLowerCase().contains("name"))) {
-                        f.setAccessible(true);
-                        f.set(entry, text);
-                        success = true;
-                        if (debugMode.get()) info("✓ Reflection field '" + f.getName() + "' succeeded");
-                        break;
-                    }
-                }
-                
-                // If no Text field found by name, try by type - look for field_3743 (class_2561)
-                if (!success) {
-                    for (Field f : fields) {
-                        if (f.getType().getSimpleName().equals("class_2561") || 
-                            f.getName().equals("field_3743")) {
-                            f.setAccessible(true);
-                            f.set(entry, text);
-                            success = true;
-                            if (debugMode.get()) info("✓ Obfuscated field '" + f.getName() + "' (class_2561) succeeded");
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception fallbackException) {
-                if (debugMode.get()) info("✗ Reflection fallback failed: " + fallbackException.getMessage());
+                Field displayNameField = entry.getClass().getDeclaredField("displayName");
+                displayNameField.setAccessible(true);
+                displayNameField.set(entry, text);
+                success = true;
+                if (debugMode.get()) info("✓ displayName field succeeded");
+            } catch (Exception e) {
+                if (debugMode.get()) info("✗ displayName field failed: " + e.getMessage());
             }
         }
         
-        // Additional sync attempt - try common obfuscated field names
-        try {
-            Field displayNameField = entry.getClass().getDeclaredField("field_3743");
-            displayNameField.setAccessible(true);
-            displayNameField.set(entry, text);
-            if (!success) success = true;
-            if (debugMode.get()) info("✓ Direct field_3743 update succeeded");
-        } catch (Exception ignored) {
-            if (debugMode.get()) info("✗ Direct field_3743 not found or failed");
+        // Method 3: Try common obfuscated field names
+        if (!success) {
+            String[] possibleFieldNames = {"field_3743", "field_2773", "field_2774", "d", "e"};
+            for (String fieldName : possibleFieldNames) {
+                try {
+                    Field f = entry.getClass().getDeclaredField(fieldName);
+                    if (f.getType() == Text.class || f.getType().getSimpleName().equals("class_2561")) {
+                        f.setAccessible(true);
+                        f.set(entry, text);
+                        success = true;
+                        if (debugMode.get()) info("✓ Obfuscated field '" + fieldName + "' succeeded");
+                        break;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        
+        // Method 4: Search through all Text fields as last resort
+        if (!success) {
+            try {
+                Field[] fields = entry.getClass().getDeclaredFields();
+                for (Field f : fields) {
+                    if (f.getType() == Text.class || f.getType().getSimpleName().equals("class_2561")) {
+                        f.setAccessible(true);
+                        f.set(entry, text);
+                        success = true;
+                        if (debugMode.get()) info("✓ Generic Text field '" + f.getName() + "' succeeded");
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                if (debugMode.get()) info("✗ Generic field search failed: " + e.getMessage());
+            }
         }
         
         if (debugMode.get() && !success) {
@@ -301,90 +288,11 @@ public class PlayerHider extends Module {
         }
     }
 
-    private void setProfileNameOnly(PlayerListEntry entry, String name) {
-        if (debugMode.get()) {
-            info("Setting profile name to: " + name);
-        }
-        
-        boolean success = false;
-        try {
-            // Try to modify the GameProfile's name field
-            Field nameField = entry.getProfile().getClass().getDeclaredField("name");
-            nameField.setAccessible(true);
-            nameField.set(entry.getProfile(), name);
-            success = true;
-            if (debugMode.get()) info("✓ GameProfile name field succeeded");
-            
-            // Also try to update any cached profile data
-            try {
-                Field profileField = entry.getClass().getDeclaredField("profile");
-                profileField.setAccessible(true);
-                Object profile = profileField.get(entry);
-                if (profile != null) {
-                    Field cachedNameField = profile.getClass().getDeclaredField("name");
-                    cachedNameField.setAccessible(true);
-                    cachedNameField.set(profile, name);
-                    if (debugMode.get()) info("✓ Cached profile name update succeeded");
-                }
-            } catch (Exception ignored) {
-                if (debugMode.get()) info("✗ Cached profile update failed or not needed");
-            }
-            
-        } catch (Exception e) {
-            if (debugMode.get()) info("✗ GameProfile name field failed: " + e.getMessage());
-            
-            // Try alternative approaches for different Minecraft versions
-            try {
-                // Some versions might have a setter method
-                Method setName = entry.getProfile().getClass().getMethod("setName", String.class);
-                setName.invoke(entry.getProfile(), name);
-                success = true;
-                if (debugMode.get()) info("✓ GameProfile setName method succeeded");
-            } catch (Exception ignored) {
-                if (debugMode.get()) info("✗ GameProfile setName method failed");
-            }
-        }
-        
-        if (debugMode.get() && !success) {
-            warning("All profile name setting methods failed!");
-            // List available methods and fields for debugging
-            info("Available methods in GameProfile:");
-            for (Method m : entry.getProfile().getClass().getDeclaredMethods()) {
-                if (m.getName().toLowerCase().contains("name")) {
-                    info("  - " + m.getName() + "(" + Arrays.toString(m.getParameterTypes()) + ")");
-                }
-            }
-            info("Available fields in GameProfile:");
-            for (Field f : entry.getProfile().getClass().getDeclaredFields()) {
-                info("  - " + f.getName() + " (" + f.getType().getSimpleName() + ")");
-            }
-        }
-    }
-
-    // Legacy methods for compatibility
-    private void setDisplay(PlayerListEntry entry, Text text) {
-        setDisplayOnly(entry, text);
-    }
-
-    private void setProfileName(PlayerListEntry entry, String name) {
-        setProfileNameOnly(entry, name);
-    }
-
     @Override
     public void onDeactivate() {
-        if (mc == null || mc.getNetworkHandler() == null) return;
-
-        mc.getNetworkHandler().getPlayerList().forEach(entry -> {
-            UUID uuid = entry.getProfile().getId();
-            Text originalDisplay = originalDisplayNames.get(uuid);
-            String originalProfile = originalProfileNames.get(uuid);
-
-            if (originalDisplay != null) setDisplay(entry, originalDisplay);
-            if (originalProfile != null) setProfileName(entry, originalProfile);
-        });
-
-        originalDisplayNames.clear();
-        originalProfileNames.clear();
+        restoreAll();
         playerReplacementsByUUID.clear();
+        cachedPlayersToHide.clear();
+        cachedReplacementNames.clear();
     }
 }
