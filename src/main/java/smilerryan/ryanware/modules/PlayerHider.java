@@ -33,20 +33,6 @@ public class PlayerHider extends Module {
         .name("replacement-names").description("Replacement names, same order. Leave empty to just hide.").onChanged(value -> needsUpdate = true).build()
     );
 
-    private final SettingGroup locations = settings.createGroup("Locations");
-
-    private final Setting<Boolean> replaceInTab = locations.add(new BoolSetting.Builder()
-        .name("replace-in-tab").description("Replace names in the tab list.").defaultValue(true).build()
-    );
-
-    private final Setting<Boolean> replaceInChat = locations.add(new BoolSetting.Builder()
-        .name("replace-in-chat").description("Replace names in chat messages.").defaultValue(true).build()
-    );
-
-    private final Setting<Boolean> replaceInNametag = locations.add(new BoolSetting.Builder()
-        .name("replace-in-nametag").description("Replace names in nametags above players.").defaultValue(true).build()
-    );
-
     private final Map<String, String> playerReplacements = new HashMap<>();
     private final Map<UUID, Text> originalDisplayNames = new HashMap<>();
     private final Set<UUID> appliedChanges = new HashSet<>();
@@ -68,14 +54,11 @@ public class PlayerHider extends Module {
             needsUpdate = false;
         }
 
-        if (replaceInTab.get()) {
-            applyTabChanges();
-        }
+        applyTabChanges();
     }
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
-        if (!replaceInChat.get()) return;
 
         if (event.packet instanceof ChatMessageS2CPacket chatPacket) {
             try {
@@ -114,7 +97,7 @@ public class PlayerHider extends Module {
 
         if (hidden.equals(cachedPlayersToHide) && repls.equals(cachedReplacementNames)) return;
 
-        if (replaceInTab.get()) restoreAll();
+        restoreAll();
 
         cachedPlayersToHide = new ArrayList<>(hidden);
         cachedReplacementNames = new ArrayList<>(repls);
@@ -195,7 +178,6 @@ public class PlayerHider extends Module {
 
     // Nametag replacement now preserves formatting
     public Text getReplacementName(Text originalNameText) {
-        if (!replaceInNametag.get()) return originalNameText;
         return deepReplace(originalNameText);
     }
 
