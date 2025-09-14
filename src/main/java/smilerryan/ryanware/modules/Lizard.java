@@ -35,8 +35,8 @@ public class Lizard extends Module {
         .description("Volume of the lizard sound")
         .defaultValue(1.0) // 100%
         .min(0.0)
-        .max(1.0)
-        .sliderMax(1.0)
+        .max(1000.0)
+        .sliderMax(5.0)
         .build()
     );
 
@@ -153,19 +153,26 @@ public class Lizard extends Module {
 
     private void playLizardSound() {
         try {
-            File soundFile = new File(MinecraftClient.getInstance().runDirectory, "lizard.wav");
-            if (soundFile.exists()) {
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(soundFile);
+            var rawStream = Lizard.class.getResourceAsStream("/lizard.wav");
+            if (rawStream != null) {
+                // Wrap it so AudioSystem can use mark/reset
+                var buffered = new java.io.BufferedInputStream(rawStream);
+
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(buffered);
                 Clip clip = AudioSystem.getClip();
                 clip.open(audioStream);
 
+                // volume setting, using dB conversion
                 FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                float range = gainControl.getMaximum() - gainControl.getMinimum();
-                float gain = (float) (gainControl.getMinimum() + (range * volume.get()));
-                gainControl.setValue(gain);
+                float dB = (float) (20.0 * Math.log10(Math.max(0.0001, volume.get()))); // avoid log(0)
+                gainControl.setValue(Math.min(gainControl.getMaximum(), Math.max(gainControl.getMinimum(), dB)));
 
                 clip.start();
+            } else {
+                System.err.println("Could not find lizard.wav in resources!");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
