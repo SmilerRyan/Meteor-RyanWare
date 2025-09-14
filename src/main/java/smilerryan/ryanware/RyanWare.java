@@ -133,6 +133,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CustomTabText());
         Modules.get().add(new Excavator());
         Modules.get().add(new FullBright());
+        Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
         Modules.get().add(new MorePing());
