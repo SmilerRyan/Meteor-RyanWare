@@ -113,12 +113,14 @@ public class RyanWare extends MeteorAddon {
 
         // Register Other Modules
         Modules.get().add(new _example());
+        Modules.get().add(new AntiBlockPlace());
         Modules.get().add(new AntiFancyChat());
         Modules.get().add(new Aura());
         Modules.get().add(new AutoChestMover());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new BeehiveCoordLogger());
+        Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
         Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChunkBlockESP());
