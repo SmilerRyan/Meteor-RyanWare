@@ -56,10 +56,32 @@ public class Lizard extends Module {
         .build()
     );
 
+    private final Setting<Boolean> onlyWhenSound = sgGeneral.add(new BoolSetting.Builder()
+        .name("only-when-sound")
+        .description("Only show LIZARD text if the sound is also being played.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> autoChat = sgGeneral.add(new BoolSetting.Builder()
+        .name("auto-chat")
+        .description("Automatically send a chat message when the sound is played.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<List<String>> chatMessages = sgGeneral.add(new StringListSetting.Builder()
+        .name("chat-messages")
+        .description("Messages to randomly send when sound plays.")
+        .defaultValue(List.of("Lizard.", "LIZARD.", "\"Lizard.\"", "\"LIZARD.\""))
+        .build()
+    );
+
     private final Random random = new Random();
     private final List<LizardFlash> activeFlashes = new ArrayList<>();
     private long nextCheck = 0;
     private long lastSound = 0;
+    private boolean soundJustPlayed = false;
 
     private static class LizardFlash {
         int x, y;
@@ -85,15 +107,9 @@ public class Lizard extends Module {
             float life = (endTime - startTime);
             float progress = (now - startTime) / (float) life;
 
-            if (progress < 0.1f) {
-                return progress / 0.1f; // fast fade in
-            }
-            else if (progress > 0.8f) {
-                return (1f - progress) / 0.2f; // fade out
-            }
-            else {
-                return 1f;
-            }
+            if (progress < 0.1f) return progress / 0.1f;
+            else if (progress > 0.8f) return (1f - progress) / 0.2f;
+            else return 1f;
         }
     }
 
@@ -107,32 +123,41 @@ public class Lizard extends Module {
 
         if (now > nextCheck) {
             if (random.nextInt(100) < chance.get()) {
-                int count = 1 + random.nextInt(3);
-                for (int i = 0; i < count; i++) {
-                    float scale = 1.2f + random.nextFloat() * 2.0f; // minimum slightly bigger now
+                boolean canPlaySound = (now - lastSound) >= (minSeconds.get() * 1000L);
 
-                    int x = random.nextInt(Math.max(1, event.screenWidth - 60));
-                    int y = random.nextInt(Math.max(1, event.screenHeight - 20));
+                // Spawn text if allowed
+                if (!onlyWhenSound.get() || canPlaySound) {
+                    int count = 1 + random.nextInt(3);
+                    for (int i = 0; i < count; i++) {
+                        float scale = 1.2f + random.nextFloat() * 2.0f;
+                        int x = random.nextInt(Math.max(1, event.screenWidth - 60));
+                        int y = random.nextInt(Math.max(1, event.screenHeight - 20));
 
-                    Color color;
-                    if (colorMode.get() == ColorMode.Green) {
-                        color = new Color(0, 150 + random.nextInt(106), 0);
-                    } else {
-                        color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+                        Color color = (colorMode.get() == ColorMode.Green)
+                            ? new Color(0, 150 + random.nextInt(106), 0)
+                            : new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+
+                        long duration = 1000 + random.nextInt(2000);
+                        activeFlashes.add(new LizardFlash(x, y, duration, color, scale));
                     }
-
-                    long duration = 1000 + random.nextInt(2000);
-                    activeFlashes.add(new LizardFlash(x, y, duration, color, scale));
                 }
 
-                if ((now - lastSound) >= (minSeconds.get() * 1000L)) {
+                // Play sound if cooldown met
+                if (canPlaySound) {
                     playLizardSound();
                     lastSound = now;
+                    soundJustPlayed = true;
+
+                    if (autoChat.get() && !chatMessages.get().isEmpty()) {
+                        String msg = chatMessages.get().get(random.nextInt(chatMessages.get().size()));
+                        MinecraftClient.getInstance().player.networkHandler.sendChatMessage(msg);
+                    }
                 }
             }
             nextCheck = now + 50;
         }
 
+        // Draw flashes
         if (!activeFlashes.isEmpty()) {
             activeFlashes.removeIf(flash -> {
                 if (flash.isExpired()) return true;
@@ -140,6 +165,8 @@ public class Lizard extends Module {
                 return false;
             });
         }
+
+        soundJustPlayed = false;
     }
 
     private void drawText(int x, int y, Color baseColor, float scale, float alpha) {
@@ -155,16 +182,13 @@ public class Lizard extends Module {
         try {
             var rawStream = Lizard.class.getResourceAsStream("/lizard.wav");
             if (rawStream != null) {
-                // Wrap it so AudioSystem can use mark/reset
                 var buffered = new java.io.BufferedInputStream(rawStream);
-
                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(buffered);
                 Clip clip = AudioSystem.getClip();
                 clip.open(audioStream);
 
-                // volume setting, using dB conversion
                 FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                float dB = (float) (20.0 * Math.log10(Math.max(0.0001, volume.get()))); // avoid log(0)
+                float dB = (float) (20.0 * Math.log10(Math.max(0.0001, volume.get())));
                 gainControl.setValue(Math.min(gainControl.getMaximum(), Math.max(gainControl.getMinimum(), dB)));
 
                 clip.start();
