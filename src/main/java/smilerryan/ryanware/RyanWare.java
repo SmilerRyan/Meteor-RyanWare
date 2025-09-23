@@ -123,6 +123,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
         Modules.get().add(new ChatCleanup());
+        Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
