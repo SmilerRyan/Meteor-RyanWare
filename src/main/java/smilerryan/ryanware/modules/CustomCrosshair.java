@@ -8,10 +8,7 @@ import meteordevelopment.meteorclient.renderer.text.TextRenderer;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
-
-import java.util.Random;
 
 public class CustomCrosshair extends Module {
     private final SettingGroup sg = settings.getDefaultGroup();
@@ -23,50 +20,57 @@ public class CustomCrosshair extends Module {
             .build()
     );
 
-    private final Setting<Integer> size = sg.add(new IntSetting.Builder()
+  private final Setting<Integer> size = sg.add(new IntSetting.Builder()
             .name("size")
-            .description("Size of l")
+            .description("Overall Size of the Crosshair (Scale)")
             .defaultValue(10)
             .min(1)
-            .sliderMax(30)
+            .sliderMax(100)
             .build()
     );
 
-    private final Setting<Integer> gap = sg.add(new IntSetting.Builder()
-            .name("gap")
-            .description("Gap from center")
-            .defaultValue(3)
-            .min(0)
-            .sliderMax(20)
+    private final Setting<Integer> horizontalPos = sg.add(new IntSetting.Builder()
+            .name("horizontal-position")
+            .description("Horizontal position adjustment")
+            .defaultValue(0)
+            .min(-10000)
+            .max(10000)
             .build()
     );
+
+    private final Setting<Integer> verticalPos = sg.add(new IntSetting.Builder()
+            .name("vertical-position")
+            .description("Vertical position adjustment")
+            .defaultValue(0)
+            .min(-10000)
+            .max(10000)
+            .build()
+    );
+
 
     public CustomCrosshair() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "custom-crosshair", "Draws an l crosshair.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "custom-crosshair", "Draws a custom crosshair using a '+' symbol.");
     }
 
     @EventHandler
     private void onRender(Render2DEvent event) {
-        drawLs(event);
+        drawCrosshair(event);
     }
 
-    private void drawLs(Render2DEvent event) {
+    private void drawCrosshair(Render2DEvent event) {
         MinecraftClient mc = MinecraftClient.getInstance();
         double cx = mc.getWindow().getScaledWidth() / 2.0;
         double cy = mc.getWindow().getScaledHeight() / 2.0;
         Color c = color.get();
         int sizeVal = size.get();
-        int gapVal = gap.get();
-        String l = "l";
+        int horizontalPosVal = horizontalPos.get();
+        int verticalPosVal = verticalPos.get();
 
-        //  TextRenderer.get().begin(1.0, false, true); //ORIGINAL
-        float scale = sizeVal / 10f;
+        float scale = sizeVal/5f;
         TextRenderer.get().begin(scale, false, true);
 
-        TextRenderer.get().render(l, (int) (cx - gapVal - sizeVal/2), (int) (cy + sizeVal/4), c); // left
-        TextRenderer.get().render(l, (int) (cx + gapVal - sizeVal/2), (int) (cy + sizeVal/4), c); // right
-        TextRenderer.get().render(l, (int) (cx - sizeVal/2), (int) (cy - gapVal - sizeVal/4), c); // top
-        TextRenderer.get().render(l, (int) (cx - sizeVal/2), (int) (cy + gapVal + sizeVal/4), c); // bottom
+        String plusSymbol = "+";
+        TextRenderer.get().render(plusSymbol, (int) (cx + horizontalPosVal), (int) (cy + verticalPosVal), c);
 
         TextRenderer.get().end();
     }
