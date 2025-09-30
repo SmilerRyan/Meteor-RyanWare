@@ -2,7 +2,10 @@
   "required": true,
   "package": "smilerryan.ryanware.mixins",
   "compatibilityLevel": "JAVA_16",
-  "client": ["DebugHudMixin"],
+  "client": [
+    "DebugHudMixin",
+    "GameOptionsAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
