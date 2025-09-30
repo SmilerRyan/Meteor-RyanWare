@@ -59,12 +59,14 @@ public class CustomCrosshair extends Module {
         int gapVal = gap.get();
         String l = "l";
 
-        TextRenderer.get().begin(1.0, false, true);
+        //  TextRenderer.get().begin(1.0, false, true); //ORIGINAL
+        float scale = sizeVal / 10f;
+        TextRenderer.get().begin(scale, false, true);
 
-        TextRenderer.get().render(l, (int) (cx - gapVal - sizeVal), (int) cy, c); // left
-        TextRenderer.get().render(l, (int) (cx + gapVal), (int) cy, c); // right
-        TextRenderer.get().render(l, (int) cx, (int) (cy - gapVal - sizeVal), c); // top
-        TextRenderer.get().render(l, (int) cx, (int) (cy + gapVal), c); // bottom
+        TextRenderer.get().render(l, (int) (cx - gapVal - sizeVal/2), (int) (cy + sizeVal/4), c); // left
+        TextRenderer.get().render(l, (int) (cx + gapVal - sizeVal/2), (int) (cy + sizeVal/4), c); // right
+        TextRenderer.get().render(l, (int) (cx - sizeVal/2), (int) (cy - gapVal - sizeVal/4), c); // top
+        TextRenderer.get().render(l, (int) (cx - sizeVal/2), (int) (cy + gapVal + sizeVal/4), c); // bottom
 
         TextRenderer.get().end();
     }
