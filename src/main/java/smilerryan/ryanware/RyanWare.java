@@ -134,6 +134,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
         Modules.get().add(new CrystalAura3());
+        Modules.get().add(new CustomCrosshair());
         Modules.get().add(new CustomTabText());
         Modules.get().add(new Excavator());
         Modules.get().add(new FullBright());
