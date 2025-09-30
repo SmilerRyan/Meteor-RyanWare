@@ -6,10 +6,12 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.hud.PlayerListHud;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
 import net.minecraft.text.Text;
 import smilerryan.ryanware.RyanWare;
 
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +32,16 @@ public class CustomTabText extends Module {
     );
 
     private final Setting<String> headerText = sgHeader.add(new StringSetting.Builder()
-        .name("header-text").description("Custom text for the header. Use & for color codes and \\n for new lines.")
+        .name("header-text")
+        .description(
+            "Custom text for the header.\n" +
+            "Use & for color codes, \\n for new lines.\n" +
+            "Placeholders:\n" +
+            "  {players} - online player count\n" +
+            "  {ping}    - your current ping\n" +
+            "\n" +
+            "Example: &aOnline: {players} &7| Ping: {ping}ms\\n&bWelcome to the server!"
+        )
         .defaultValue("").visible(customHeaderEnabled::get).build()
     );
 
@@ -44,7 +55,16 @@ public class CustomTabText extends Module {
     );
 
     private final Setting<String> footerText = sgFooter.add(new StringSetting.Builder()
-        .name("footer-text").description("Custom text for the footer. Use & for color codes and \\n for new lines.")
+        .name("footer-text")
+        .description(
+            "Custom text for the footer.\n" +
+            "Use & for color codes, \\n for new lines.\n" +
+            "Placeholders:\n" +
+            "  {players} - online player count\n" +
+            "  {ping}    - your current ping\n" +
+            "\n" +
+            "Example: &7Have fun!\\n&aPlayers online: {players}"
+        )
         .defaultValue("").visible(customFooterEnabled::get).build()
     );
 
@@ -84,12 +104,38 @@ public class CustomTabText extends Module {
     }
 
     private Text buildFinalText(String customText, Text serverText, Object mode) {
-        String processed = customText.replace("\\n", "\n");
+        String processed = replacePlaceholders(customText).replace("\\n", "\n");
+
         if (mode == HeaderMode.Remove || mode == FooterMode.Remove) return null;
         if (mode == HeaderMode.Replace || mode == FooterMode.Replace) return parseFormattedText(processed);
-        if (mode == HeaderMode.AddToTop || mode == FooterMode.AddToTop) return Text.empty().append(parseFormattedText(processed)).append("\n").append(serverText);
-        if (mode == HeaderMode.AddToEnd || mode == FooterMode.AddToEnd) return Text.empty().append(serverText).append("\n").append(parseFormattedText(processed));
+        if (mode == HeaderMode.AddToTop || mode == FooterMode.AddToTop) {
+            if (serverText == null) return parseFormattedText(processed);
+            return Text.empty().append(parseFormattedText(processed)).append("\n").append(serverText);
+        }
+        if (mode == HeaderMode.AddToEnd || mode == FooterMode.AddToEnd) {
+            if (serverText == null) return parseFormattedText(processed);
+            return Text.empty().append(serverText).append("\n").append(parseFormattedText(processed));
+        }
         return null;
+    }
+
+    private String replacePlaceholders(String input) {
+        if (input == null || input.isEmpty() || mc == null || mc.getNetworkHandler() == null) return input;
+
+        // Online player count
+        Collection<PlayerListEntry> players = mc.getNetworkHandler().getPlayerList();
+        int playerCount = players != null ? players.size() : 0;
+
+        // Player ping
+        int ping = 0;
+        if (mc.player != null) {
+            PlayerListEntry entry = mc.getNetworkHandler().getPlayerListEntry(mc.player.getUuid());
+            if (entry != null) ping = entry.getLatency();
+        }
+
+        return input
+            .replace("{players}", String.valueOf(playerCount))
+            .replace("{ping}", String.valueOf(ping));
     }
 
     private Text parseFormattedText(String input) {
