@@ -10,7 +10,6 @@ import smilerryan.ryanware.RyanWare;
 import net.minecraft.client.MinecraftClient;
 
 import javax.sound.sampled.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,7 +21,7 @@ public class Lizard extends Module {
 
     private final Setting<Integer> chance = sgGeneral.add(new IntSetting.Builder()
         .name("chance")
-        .description("Chance (percent) each tick to spawn a LIZARD flash")
+        .description("Chance (percent) each tick to trigger lizard event")
         .defaultValue(100) // default full chance
         .min(1)
         .max(100)
@@ -30,13 +29,20 @@ public class Lizard extends Module {
         .build()
     );
 
-    private final Setting<Double> volume = sgGeneral.add(new DoubleSetting.Builder()
-        .name("volume")
-        .description("Volume of the lizard sound")
-        .defaultValue(1.0) // 100%
-        .min(0.0)
-        .max(1000.0)
-        .sliderMax(5.0)
+    private final Setting<Integer> minSeconds = sgGeneral.add(new IntSetting.Builder()
+        .name("min-seconds-between-triggers")
+        .description("Minimum seconds between lizard event triggers")
+        .defaultValue(10)
+        .min(0)
+        .sliderMax(60)
+        .build()
+    );
+
+    // === TEXT ===
+    private final Setting<Boolean> showText = sgGeneral.add(new BoolSetting.Builder()
+        .name("show-text")
+        .description("Show the LIZARD text on screen.")
+        .defaultValue(true)
         .build()
     );
 
@@ -47,32 +53,35 @@ public class Lizard extends Module {
         .build()
     );
 
-    private final Setting<Integer> minSeconds = sgGeneral.add(new IntSetting.Builder()
-        .name("min-seconds-between-sounds")
-        .description("Minimum seconds between playing the lizard sound")
-        .defaultValue(10)
-        .min(0)
-        .sliderMax(60)
+    // === SOUND ===
+    private final Setting<Boolean> playSound = sgGeneral.add(new BoolSetting.Builder()
+        .name("play-sound")
+        .description("Play the lizard.wav sound.")
+        .defaultValue(true)
         .build()
     );
 
-    private final Setting<Boolean> onlyWhenSound = sgGeneral.add(new BoolSetting.Builder()
-        .name("only-when-sound")
-        .description("Only show LIZARD text if the sound is also being played.")
-        .defaultValue(false)
+    private final Setting<Double> volume = sgGeneral.add(new DoubleSetting.Builder()
+        .name("volume")
+        .description("Volume of the lizard sound")
+        .defaultValue(1.0)
+        .min(0.0)
+        .max(1000.0)
+        .sliderMax(5.0)
         .build()
     );
 
+    // === CHAT ===
     private final Setting<Boolean> autoChat = sgGeneral.add(new BoolSetting.Builder()
         .name("auto-chat")
-        .description("Automatically send a chat message when the sound is played.")
+        .description("Automatically send a chat message when triggered.")
         .defaultValue(false)
         .build()
     );
 
     private final Setting<List<String>> chatMessages = sgGeneral.add(new StringListSetting.Builder()
         .name("chat-messages")
-        .description("Messages to randomly send when sound plays.")
+        .description("Messages to randomly send when triggered.")
         .defaultValue(List.of("Lizard.", "LIZARD.", "\"Lizard.\"", "\"LIZARD.\""))
         .build()
     );
@@ -80,8 +89,7 @@ public class Lizard extends Module {
     private final Random random = new Random();
     private final List<LizardFlash> activeFlashes = new ArrayList<>();
     private long nextCheck = 0;
-    private long lastSound = 0;
-    private boolean soundJustPlayed = false;
+    private long lastTrigger = 0;
 
     private static class LizardFlash {
         int x, y;
@@ -114,7 +122,7 @@ public class Lizard extends Module {
     }
 
     public Lizard() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Lizard", "Randomly flashes LIZARD text and plays lizard.wav");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Lizard", "Randomly flashes LIZARD text, plays lizard.wav, and/or sends messages.");
     }
 
     @EventHandler
@@ -123,50 +131,50 @@ public class Lizard extends Module {
 
         if (now > nextCheck) {
             if (random.nextInt(100) < chance.get()) {
-                boolean canPlaySound = (now - lastSound) >= (minSeconds.get() * 1000L);
+                boolean canTrigger = (now - lastTrigger) >= (minSeconds.get() * 1000L);
+                if (canTrigger) {
+                    // === TEXT ===
+                    if (showText.get()) spawnText(event);
 
-                // Spawn text if allowed
-                if (!onlyWhenSound.get() || canPlaySound) {
-                    int count = 1 + random.nextInt(3);
-                    for (int i = 0; i < count; i++) {
-                        float scale = 1.2f + random.nextFloat() * 2.0f;
-                        int x = random.nextInt(Math.max(1, event.screenWidth - 60));
-                        int y = random.nextInt(Math.max(1, event.screenHeight - 20));
+                    // === SOUND ===
+                    if (playSound.get()) playLizardSound();
 
-                        Color color = (colorMode.get() == ColorMode.Green)
-                            ? new Color(0, 150 + random.nextInt(106), 0)
-                            : new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-
-                        long duration = 1000 + random.nextInt(2000);
-                        activeFlashes.add(new LizardFlash(x, y, duration, color, scale));
-                    }
-                }
-
-                // Play sound if cooldown met
-                if (canPlaySound) {
-                    playLizardSound();
-                    lastSound = now;
-                    soundJustPlayed = true;
-
+                    // === CHAT ===
                     if (autoChat.get() && !chatMessages.get().isEmpty()) {
                         String msg = chatMessages.get().get(random.nextInt(chatMessages.get().size()));
                         MinecraftClient.getInstance().player.networkHandler.sendChatMessage(msg);
                     }
+
+                    lastTrigger = now;
                 }
             }
             nextCheck = now + 50;
         }
 
-        // Draw flashes
-        if (!activeFlashes.isEmpty()) {
+        // Draw active text flashes
+        if (showText.get() && !activeFlashes.isEmpty()) {
             activeFlashes.removeIf(flash -> {
                 if (flash.isExpired()) return true;
                 drawText(flash.x, flash.y, flash.color, flash.scale, flash.getAlpha());
                 return false;
             });
         }
+    }
 
-        soundJustPlayed = false;
+    private void spawnText(Render2DEvent event) {
+        int count = 1 + random.nextInt(3);
+        for (int i = 0; i < count; i++) {
+            float scale = 1.2f + random.nextFloat() * 2.0f;
+            int x = random.nextInt(Math.max(1, event.screenWidth - 60));
+            int y = random.nextInt(Math.max(1, event.screenHeight - 20));
+
+            Color color = (colorMode.get() == ColorMode.Green)
+                ? new Color(0, 150 + random.nextInt(106), 0)
+                : new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+
+            long duration = 1000 + random.nextInt(2000);
+            activeFlashes.add(new LizardFlash(x, y, duration, color, scale));
+        }
     }
 
     private void drawText(int x, int y, Color baseColor, float scale, float alpha) {
