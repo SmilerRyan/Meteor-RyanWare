@@ -114,6 +114,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register Other Modules
         Modules.get().add(new _example());
+        Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
         Modules.get().add(new AntiFancyChat());
         Modules.get().add(new Aura());
