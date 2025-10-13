@@ -104,6 +104,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new ForceYLevel());
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PublicChatTags());
@@ -138,6 +139,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CustomCrosshair());
         Modules.get().add(new CustomTabText());
         Modules.get().add(new Excavator());
+        Modules.get().add(new EventAnnouncer());
         Modules.get().add(new FullBright());
         Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
