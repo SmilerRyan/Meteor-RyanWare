@@ -25,20 +25,17 @@ public class PlayerHider extends Module {
     private final Setting<List<String>> playersToHide = sg.add(new StringListSetting.Builder()
         .name("players-to-hide")
         .description("Players to replace (real username).")
-        .onChanged(v -> needsUpdate = true)
         .build()
     );
 
     private final Setting<List<String>> replacementNames = sg.add(new StringListSetting.Builder()
         .name("replacement-names")
         .description("Replacement names (same order). Empty = ignore.")
-        .onChanged(v -> needsUpdate = true)
         .build()
     );
 
     // replacement lookup: lowercase original username -> replacement
     private final Map<String, String> replacements = new HashMap<>();
-    private boolean needsUpdate = true;
 
     // store originals per-player to restore on disable: UUID -> originalName
     private final Map<UUID, String> originalProfileNames = new HashMap<>();
@@ -75,11 +72,7 @@ public class PlayerHider extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (needsUpdate) {
-            updateReplacements();
-            needsUpdate = false;
-        }
-
+        updateReplacements();
         applyToPlayerList();
         applyToWorldPlayers();
     }
@@ -327,6 +320,8 @@ public class PlayerHider extends Module {
             }
         }
 
+        originalProfileNames.clear();
+        originalEntryDisplayNames.clear();
         replacements.clear();
     }
 }
