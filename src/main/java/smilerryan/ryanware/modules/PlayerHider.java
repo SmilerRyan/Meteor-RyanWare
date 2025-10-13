@@ -327,9 +327,6 @@ public class PlayerHider extends Module {
             }
         }
 
-        // Clear stored originals
-        originalProfileNames.clear();
-        originalEntryDisplayNames.clear();
         replacements.clear();
     }
 }
