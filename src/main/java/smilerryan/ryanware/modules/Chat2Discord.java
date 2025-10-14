@@ -2,7 +2,6 @@ package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
-import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -20,7 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Chat2Discord extends Module {
     private final SettingGroup sgMain = settings.createGroup("Settings");
+    private final SettingGroup sgForward = settings.createGroup("Forward Settings");
+    private final SettingGroup sgNames = settings.createGroup("Username Templates");
 
+    // Main settings
     private final Setting<String> webhook = sgMain.add(new StringSetting.Builder()
             .name("webhook")
             .description("Discord webhook URL.")
@@ -28,117 +30,128 @@ public class Chat2Discord extends Module {
             .build()
     );
 
-    private final Setting<String> usernameTemplate = sgMain.add(new StringSetting.Builder()
-            .name("username")
-            .description("Username template, supports %player% and %server%. Leave empty for default.")
-            .defaultValue("%player% on %server%")
-            .build()
-    );
-
-    private final Setting<Boolean> forwardOutgoingChat = sgMain.add(new BoolSetting.Builder()
+    // Forward settings
+    private final Setting<Boolean> forwardOutgoingChat = sgForward.add(new BoolSetting.Builder()
             .name("forward-outgoing-chat")
             .description("Forward outgoing chat messages.")
             .defaultValue(false)
             .build()
     );
 
-    private final Setting<Boolean> forwardOutgoingCommands = sgMain.add(new BoolSetting.Builder()
-            .name("forward-outgoing-commands")
-            .description("Forward outgoing commands (messages starting with /).")
-            .defaultValue(false)
-            .build()
-    );
-
-    private final Setting<Boolean> forwardIncomingChat = sgMain.add(new BoolSetting.Builder()
+    private final Setting<Boolean> forwardIncomingChat = sgForward.add(new BoolSetting.Builder()
             .name("forward-incoming-chat")
             .description("Forward incoming chat messages.")
             .defaultValue(false)
             .build()
     );
 
-    private final Setting<Boolean> forwardJoinLeave = sgMain.add(new BoolSetting.Builder()
+    private final Setting<Boolean> forwardJoinLeave = sgForward.add(new BoolSetting.Builder()
             .name("forward-join-leave")
             .description("Forward join and disconnect messages.")
             .defaultValue(false)
             .build()
     );
 
+    // Username templates
+    private final Setting<String> outgoingTemplate = sgNames.add(new StringSetting.Builder()
+            .name("outgoing-username")
+            .description("Username for outgoing chat messages")
+            .defaultValue("%player% on %server%")
+            .build()
+    );
+
+    private final Setting<String> incomingTemplate = sgNames.add(new StringSetting.Builder()
+            .name("incoming-username")
+            .description("Username for incoming chat messages")
+            .defaultValue("%server%")
+            .build()
+    );
+
     private ExecutorService executor;
     private final AtomicBoolean active = new AtomicBoolean(false);
-    private boolean wasConnected = false;
     private String lastServerAddress = null;
 
     public Chat2Discord() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord",
-                "Forward chat, commands, and join/leave to a single Discord webhook with plain text.");
+                "Forward chat and join/leave messages to a Discord webhook with plain text.");
     }
 
     @Override
     public void onActivate() {
         executor = Executors.newSingleThreadExecutor();
         active.set(true);
-        wasConnected = false;
-        lastServerAddress = null;
+
+        // Detect join immediately if connected
+        ServerInfo current = mc.getCurrentServerEntry();
+        if (forwardJoinLeave.get() && current != null && lastServerAddress == null) {
+            lastServerAddress = current.address;
+            sendWebhook("joined server " + lastServerAddress, outgoingTemplate.get());
+        }
     }
 
     @Override
     public void onDeactivate() {
         active.set(false);
         if (executor != null) executor.shutdownNow();
-        wasConnected = false;
-        lastServerAddress = null;
+
+        // Detect disconnect immediately
+        if (forwardJoinLeave.get() && lastServerAddress != null) {
+            sendWebhook("disconnected from " + lastServerAddress, outgoingTemplate.get());
+            lastServerAddress = null;
+        }
     }
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
         if (!active.get() || mc.player == null) return;
 
+        // Detect connection changes (for switching servers while active)
+        detectConnectionChange();
+
+        if (!forwardOutgoingChat.get()) return;
+
         String msg = event.message;
-        if (msg == null || msg.isEmpty()) return;
-
-        boolean isCommand = msg.startsWith("/");
-
-        if (isCommand && forwardOutgoingCommands.get()) sendWebhook(msg);
-        else if (!isCommand && forwardOutgoingChat.get()) sendWebhook(msg);
+        if (msg != null && !msg.isEmpty()) sendWebhook(msg, outgoingTemplate.get());
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (!active.get() || mc.player == null || !forwardIncomingChat.get()) return;
+        if (!active.get() || mc.player == null) return;
+
+        // Detect connection changes (for switching servers while active)
+        detectConnectionChange();
+
+        if (!forwardIncomingChat.get()) return;
+
         Text text = event.getMessage();
         if (text == null) return;
 
-        // Get the raw string and remove all color codes (formatting)
         String plain = removeColorCodes(text.getString());
-        if (!plain.isEmpty()) sendWebhook(plain);
+        if (!plain.isEmpty()) sendWebhook(plain, incomingTemplate.get());
     }
 
-    @EventHandler
-    private void onTick(TickEvent.Post event) {
-        if (!active.get() || !forwardJoinLeave.get()) return;
+    private void detectConnectionChange() {
+        if (!forwardJoinLeave.get()) return;
 
-        boolean currentlyConnected = mc.player != null && mc.getCurrentServerEntry() != null;
+        ServerInfo current = mc.getCurrentServerEntry();
 
-        if (currentlyConnected && !wasConnected) {
-            lastServerAddress = mc.getCurrentServerEntry().address;
-            sendWebhook("joined server " + lastServerAddress);
+        // Joined a server
+        if (current != null && lastServerAddress == null) {
+            lastServerAddress = current.address;
+            sendWebhook("joined server " + lastServerAddress, outgoingTemplate.get());
         }
 
-        if (!currentlyConnected && wasConnected) {
-            String server = lastServerAddress != null ? lastServerAddress : "unknown server";
-            sendWebhook("disconnected from " + server);
+        // Disconnected from server
+        if (current == null && lastServerAddress != null) {
+            sendWebhook("disconnected from " + lastServerAddress, outgoingTemplate.get());
             lastServerAddress = null;
         }
-
-        wasConnected = currentlyConnected;
     }
 
-    private void sendWebhook(String message) {
+    private void sendWebhook(String message, String usernameTemplate) {
         if (webhook.get() == null || webhook.get().isEmpty() || message == null || !active.get()) return;
 
-        String username = resolveUsername();
-
-        final String finalUsername = username;
+        final String username = resolveUsername(usernameTemplate);
         final String finalContent = message;
 
         executor.execute(() -> {
@@ -152,8 +165,8 @@ public class Chat2Discord extends Module {
                 connection.setReadTimeout(5000);
 
                 String payload = "{\"content\":\"" + escapeJson(finalContent) + "\"";
-                if (finalUsername != null && !finalUsername.isEmpty()) {
-                    payload += ",\"username\":\"" + escapeJson(finalUsername) + "\"";
+                if (username != null && !username.isEmpty()) {
+                    payload += ",\"username\":\"" + escapeJson(username) + "\"";
                 }
                 payload += "}";
 
@@ -172,8 +185,8 @@ public class Chat2Discord extends Module {
         });
     }
 
-    private String resolveUsername() {
-        if (usernameTemplate.get() == null || usernameTemplate.get().isEmpty()) return null;
+    private String resolveUsername(String template) {
+        if (template == null || template.isEmpty()) return null;
 
         String server = "singleplayer";
         try {
@@ -182,7 +195,7 @@ public class Chat2Discord extends Module {
         } catch (Throwable ignored) {}
 
         String player = mc.player != null ? mc.player.getName().getString() : "unknown";
-        return usernameTemplate.get().replace("%server%", server).replace("%player%", player);
+        return template.replace("%server%", server).replace("%player%", player);
     }
 
     private void notifyPlayerAsync(String message) {
@@ -212,9 +225,8 @@ public class Chat2Discord extends Module {
         return sb.toString();
     }
 
-    // Simple color code remover
     private String removeColorCodes(String s) {
         if (s == null) return "";
-        return s.replaceAll("§.", ""); // § followed by any char
+        return s.replaceAll("§.", "");
     }
 }
