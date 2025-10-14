@@ -2,6 +2,7 @@ package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
+import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -18,14 +19,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Chat2Discord for RyanWare - final version
- */
 public class Chat2Discord extends Module {
     private final SettingGroup sgGlobal = settings.createGroup("Global");
     private final SettingGroup sgOutgoingChat = settings.createGroup("Outgoing Chat");
     private final SettingGroup sgOutgoingCmd = settings.createGroup("Outgoing Commands");
     private final SettingGroup sgIncoming = settings.createGroup("Incoming Chat");
+    private final SettingGroup sgJoinLeave = settings.createGroup("Join/Leave");
 
     // ----- Global -----
     private final Setting<String> globalWebhook = sgGlobal.add(new StringSetting.Builder()
@@ -115,28 +114,52 @@ public class Chat2Discord extends Module {
             .build()
     );
 
+    // ----- Join/Leave -----
+    private final Setting<String> webhookJoinLeave = sgJoinLeave.add(new StringSetting.Builder()
+            .name("webhook-join-leave")
+            .description("Webhook for server join/leave messages (falls back to global webhook).")
+            .defaultValue("")
+            .build()
+    );
+
+    private final Setting<String> nameJoinLeave = sgJoinLeave.add(new StringSetting.Builder()
+            .name("name-join-leave")
+            .description("Username template for join/leave messages (supports %server% & %player%). Leave empty to use global.")
+            .defaultValue("")
+            .build()
+    );
+
+    private final Setting<Boolean> forwardJoinLeave = sgJoinLeave.add(new BoolSetting.Builder()
+            .name("forward-join-leave")
+            .description("Forward client join and disconnect messages to webhook.")
+            .defaultValue(false)
+            .build()
+    );
+
     private ExecutorService executor;
     private final AtomicBoolean active = new AtomicBoolean(false);
+    private boolean joinSent = false;
+    private boolean wasConnected = false;
 
     public Chat2Discord() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord", "Forward chat and commands to one or more Discord webhooks.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord", "Forward chat, commands, and join/leave to Discord webhooks.");
     }
 
     @Override
     public void onActivate() {
         executor = Executors.newSingleThreadExecutor();
         active.set(true);
+        joinSent = false;
+        wasConnected = false;
     }
 
     @Override
     public void onDeactivate() {
         active.set(false);
         if (executor != null) executor.shutdownNow();
+        joinSent = false;
+        wasConnected = false;
     }
-
-    // ---------------------------
-    // Event handlers
-    // ---------------------------
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
@@ -146,61 +169,67 @@ public class Chat2Discord extends Module {
 
         boolean isCommand = raw.startsWith("/");
 
-        // ----- Outgoing Commands -----
         if (isCommand && forwardOutgoingCommands.get()) {
-            String webhook = resolveWebhook(webhookOutgoingCommand.get(), globalWebhook.get());
-            String username = resolveName(nameOutgoingCommand.get(), globalName.get());
-            if (webhook != null && !webhook.isEmpty()) {
-                String content = escapeChat.get() ? escapeForDiscord(raw) : raw;
-                final String finalContent = content;
-                final String finalWebhook = webhook;
-                final String finalUsername = username;
-                executor.execute(() -> sendToWebhook(finalWebhook, finalUsername, finalContent));
-            }
-        }
-
-        // ----- Outgoing Chat -----
-        if (!isCommand && forwardOutgoingChat.get()) {
-            String webhook = resolveWebhook(webhookOutgoingChat.get(), globalWebhook.get());
-            String username = resolveName(nameOutgoingChat.get(), globalName.get());
-            if (webhook != null && !webhook.isEmpty()) {
-                String content = escapeChat.get() ? escapeForDiscord(raw) : raw;
-                final String finalContent = content;
-                final String finalWebhook = webhook;
-                final String finalUsername = username;
-                executor.execute(() -> sendToWebhook(finalWebhook, finalUsername, finalContent));
-            }
+            sendWebhook(webhookOutgoingCommand.get(), nameOutgoingCommand.get(), raw);
+        } else if (!isCommand && forwardOutgoingChat.get()) {
+            sendWebhook(webhookOutgoingChat.get(), nameOutgoingChat.get(), raw);
         }
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (!active.get() || mc.player == null) return;
-        if (!forwardIncomingChat.get()) return;
+        if (!active.get() || mc.player == null || !forwardIncomingChat.get()) return;
+        Text text = event.getMessage();
+        if (text == null) return;
 
-        try {
-            Text text = event.getMessage();
-            if (text == null) return;
+        String legacy = text.getString();
+        if (legacy.isEmpty()) return;
 
-            String legacy = textToLegacy(text);
-            if (legacy == null || legacy.isEmpty()) return;
+        sendWebhook(webhookIncomingChat.get(), nameIncomingChat.get(), legacy);
+    }
 
-            String webhook = resolveWebhook(webhookIncomingChat.get(), globalWebhook.get());
-            String username = resolveName(nameIncomingChat.get(), globalName.get());
+    // ---------------------------
+    // Join/Leave Handling
+    // ---------------------------
+    @EventHandler
+    private void onTick(TickEvent.Post event) {
+        if (!active.get() || !forwardJoinLeave.get()) return;
 
-            if (webhook == null || webhook.isEmpty()) return;
+        boolean currentlyConnected = mc.player != null && mc.getCurrentServerEntry() != null;
 
-            String content = escapeChat.get() ? escapeForDiscord(legacy) : legacy;
-            final String finalContent = content;
-            final String finalWebhook = webhook;
-            final String finalUsername = username;
-            executor.execute(() -> sendToWebhook(finalWebhook, finalUsername, finalContent));
-        } catch (Throwable ignored) {}
+        // Join
+        if (currentlyConnected && !wasConnected) {
+            String msg = "joined server " + mc.getCurrentServerEntry().address;
+            sendWebhook(webhookJoinLeave.get(), nameJoinLeave.get(), msg);
+            joinSent = true;
+        }
+
+        // Leave
+        if (!currentlyConnected && wasConnected) {
+            String server = mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : "unknown server";
+            String msg = "disconnected from " + server;
+            sendWebhook(webhookJoinLeave.get(), nameJoinLeave.get(), msg);
+            joinSent = false;
+        }
+
+        wasConnected = currentlyConnected;
     }
 
     // ---------------------------
     // Helpers
     // ---------------------------
+    private void sendWebhook(String specificWebhook, String specificName, String message) {
+        String webhook = resolveWebhook(specificWebhook, globalWebhook.get());
+        if (webhook == null || webhook.isEmpty()) return;
+
+        String username = resolveName(specificName, globalName.get());
+        String content = escapeChat.get() ? escapeForDiscord(message) : message;
+
+        final String finalWebhook = webhook;
+        final String finalUsername = username;
+        final String finalContent = content;
+        executor.execute(() -> sendToWebhook(finalWebhook, finalUsername, finalContent));
+    }
 
     private String resolveWebhook(String specific, String global) {
         if (specific != null && !specific.trim().isEmpty()) return specific.trim();
@@ -224,15 +253,6 @@ public class Chat2Discord extends Module {
         return src.replace("%server%", server).replace("%player%", player);
     }
 
-    private String textToLegacy(Text text) {
-        if (text == null) return "";
-        try {
-            return text.getString(); // preserve as much formatting as possible
-        } catch (Throwable t) {
-            return text.toString();
-        }
-    }
-
     private String escapeForDiscord(String s) {
         if (s == null) return null;
         StringBuilder sb = new StringBuilder(s.length() * 2);
@@ -248,8 +268,7 @@ public class Chat2Discord extends Module {
     }
 
     private void sendToWebhook(String webhookUrl, String username, String content) {
-        if (webhookUrl == null || webhookUrl.isEmpty() || content == null) return;
-        if (!active.get()) return;
+        if (webhookUrl == null || webhookUrl.isEmpty() || content == null || !active.get()) return;
 
         try {
             URL url = new URL(webhookUrl);
@@ -262,9 +281,7 @@ public class Chat2Discord extends Module {
 
             StringBuilder jb = new StringBuilder();
             jb.append("{\"content\":\"").append(escapeJson(content)).append("\"");
-            if (username != null && !username.isEmpty()) {
-                jb.append(",\"username\":\"").append(escapeJson(username)).append("\"");
-            }
+            if (username != null && !username.isEmpty()) jb.append(",\"username\":\"").append(escapeJson(username)).append("\"");
             jb.append("}");
 
             byte[] out = jb.toString().getBytes(StandardCharsets.UTF_8);
@@ -273,9 +290,7 @@ public class Chat2Discord extends Module {
             try (OutputStream os = connection.getOutputStream()) { os.write(out); }
 
             int code = connection.getResponseCode();
-            if (code < 200 || code >= 300) {
-                notifyPlayerAsync("Webhook responded with HTTP " + code);
-            }
+            if (code < 200 || code >= 300) notifyPlayerAsync("Webhook responded with HTTP " + code);
         } catch (Exception e) {
             notifyPlayerAsync("Failed to send webhook: " + e.getMessage());
         }
@@ -311,4 +326,3 @@ public class Chat2Discord extends Module {
         return sb.toString();
     }
 }
-// TODO: Dont strip colors, make commands get sent.
