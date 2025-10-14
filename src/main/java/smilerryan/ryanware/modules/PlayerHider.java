@@ -1,6 +1,9 @@
 package smilerryan.ryanware.modules;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -8,46 +11,56 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
 import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import smilerryan.ryanware.RyanWare;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Pattern;
 
-/**
- * PlayerHider (single-file, no mixin json edits).
- *
- * Uses a StringListSetting whose each element encodes one player-entry:
- *   enabled;original;display;profile
- *
- * Example:
- *   true;Notch;§cCool Guy;Cool_Guy
- *   false;Dinnerbone;;dinnerbone_real
- *
- * This provides dynamic add/remove in Meteor's standard settings UI while keeping
- * the code single-file and simple. Each entry can be enabled/disabled individually.
- *
- * Added: chat & command replacements:
- * - Outgoing chat/commands: profile(4) -> original(2)
- * - Incoming messages: original(2) -> profile(4)
- */
 public class PlayerHider extends Module {
+    public static PlayerHider INSTANCE;
+
     private final SettingGroup sg = settings.createGroup("Players");
 
     private final Setting<List<String>> playerEntries = sg.add(new StringListSetting.Builder()
-        .name("player-entries")
-        .description("One entry per player. Format: enabled;original;display;profile. Example: true;Notch;§cCool Guy;Cool_Guy")
-        .build()
+            .name("player-entries")
+            .description("One entry per player. Format: enabled;original;display;profile. Example: true;Notch;§cCool Guy;Cool_Guy")
+            .build()
+    );
+
+    // Two main toggles
+    private final Setting<Boolean> replacePlayers = sg.add(new BoolSetting.Builder()
+            .name("replace-players")
+            .description("Replace tab list, chat tab autocomplete, and outgoing messages.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> incomingChatReplacer = sg.add(new BoolSetting.Builder()
+            .name("incoming-chat-replacer")
+            .description("Replace player names in incoming chat messages.")
+            .defaultValue(true)
+            .build()
     );
 
     private final Map<String, Entry> replacementMap = new HashMap<>();
+    private final Map<String, Entry> fakeToRealMap = new HashMap<>();
     private final Map<UUID, String> originalProfileNames = new HashMap<>();
     private final Map<UUID, Text> originalEntryDisplayNames = new HashMap<>();
     private static Field gameProfileNameField;
 
     public PlayerHider() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Hider", "Replace players' display names (tab & nametag) without mixins. Use settings list with entries: enabled;original;display;profile");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Hider",
+                "Replace players' display names, chat, and command suggestions with fake names.");
+        INSTANCE = this;
         initReflection();
     }
 
@@ -68,81 +81,63 @@ public class PlayerHider extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        updateReplacementMap();
-        applyToPlayerList();
-        applyToWorldPlayers();
+        updateReplacementMaps();
+        if (replacePlayers.get()) {
+            applyToPlayerList();
+            applyToWorldPlayers();
+        }
     }
 
-    private void updateReplacementMap() {
+    private void updateReplacementMaps() {
         replacementMap.clear();
+        fakeToRealMap.clear();
         List<String> raw = playerEntries.get();
-
         for (String line : raw) {
             if (line == null) continue;
             Entry e = Entry.fromSettingLine(line);
-            if (e == null) continue;
-            if (!e.enabled) continue;
-            if (e.original == null || e.original.isEmpty()) continue;
-
-            String key = e.original.toLowerCase(Locale.ROOT);
-            replacementMap.put(key, e);
+            if (e == null || !e.enabled || e.original.isEmpty()) continue;
+            replacementMap.put(e.original.toLowerCase(Locale.ROOT), e);
+            if (!e.profile.isEmpty()) fakeToRealMap.put(e.profile.toLowerCase(Locale.ROOT), e);
         }
     }
 
     private void applyToPlayerList() {
         if (mc == null || mc.getNetworkHandler() == null) return;
-
         for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
             if (entry == null || entry.getProfile() == null) continue;
-
             GameProfile profile = entry.getProfile();
             UUID id = profile.getId();
             String currentName = profile.getName();
             String originalName = originalProfileNames.containsKey(id) ? originalProfileNames.get(id) : currentName;
             String key = originalName == null ? "" : originalName.toLowerCase(Locale.ROOT);
-
             Entry replacementEntry = replacementMap.get(key);
-
             if (replacementEntry != null) {
                 if (!originalProfileNames.containsKey(id)) originalProfileNames.put(id, currentName);
-
                 try {
                     if (!originalEntryDisplayNames.containsKey(id)) originalEntryDisplayNames.put(id, entry.getDisplayName());
-                    if (!replacementEntry.display.isEmpty()) {
-                        entry.setDisplayName(Text.of(replacementEntry.display));
-                    } else {
-                        entry.setDisplayName(null);
-                    }
+                    if (!replacementEntry.display.isEmpty()) entry.setDisplayName(Text.of(replacementEntry.display));
+                    else entry.setDisplayName(null);
                 } catch (Throwable ignored) {}
-
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
-            } else {
-                if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
-            }
+            } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
 
     private void applyToWorldPlayers() {
         if (mc == null || mc.world == null) return;
-
-        for (PlayerEntity player : mc.world.getPlayers()) {
+        for (var player : mc.world.getPlayers()) {
             if (player == null) continue;
             GameProfile profile = player.getGameProfile();
             if (profile == null) continue;
-
             UUID id = profile.getId();
             String currentName = profile.getName();
             String originalName = originalProfileNames.containsKey(id) ? originalProfileNames.get(id) : currentName;
             String key = originalName == null ? "" : originalName.toLowerCase(Locale.ROOT);
-
             Entry replacementEntry = replacementMap.get(key);
-
             if (replacementEntry != null) {
                 if (!originalProfileNames.containsKey(id)) originalProfileNames.put(id, currentName);
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
-            } else {
-                if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
-            }
+            } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
 
@@ -164,7 +159,7 @@ public class PlayerHider extends Module {
                 }
             }
             if (mc != null && mc.world != null) {
-                for (PlayerEntity p : mc.world.getPlayers()) {
+                for (var p : mc.world.getPlayers()) {
                     try {
                         GameProfile gp = p.getGameProfile();
                         if (gp == profile) replaceGameProfileField(p, newProfile);
@@ -192,25 +187,10 @@ public class PlayerHider extends Module {
         try {
             String original = originalProfileNames.remove(id);
             if (original != null) {
-                if (gameProfileNameField != null) {
-                    gameProfileNameField.set(profile, original);
-                } else {
-                    GameProfile restored = new GameProfile(profile.getId(), original);
-                    if (mc != null && mc.getNetworkHandler() != null) {
-                        for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
-                            if (entry != null && entry.getProfile() == profile) replaceGameProfileField(entry, restored);
-                        }
-                    }
-                    if (mc != null && mc.world != null) {
-                        for (PlayerEntity p : mc.world.getPlayers()) {
-                            GameProfile gp = p.getGameProfile();
-                            if (gp == profile) replaceGameProfileField(p, restored);
-                        }
-                    }
-                }
+                if (gameProfileNameField != null) gameProfileNameField.set(profile, original);
+                else replaceGameProfileField(profile, new GameProfile(profile.getId(), original));
             }
         } catch (Throwable ignored) {}
-
         try {
             if (originalEntryDisplayNames.containsKey(id) && mc != null && mc.getNetworkHandler() != null) {
                 for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
@@ -234,11 +214,8 @@ public class PlayerHider extends Module {
                     if (originalProfileNames.containsKey(id)) {
                         try {
                             String original = originalProfileNames.get(id);
-                            if (original != null && gameProfileNameField != null) {
-                                gameProfileNameField.set(entry.getProfile(), original);
-                            } else if (original != null) {
-                                replaceGameProfileField(entry, new GameProfile(id, original));
-                            }
+                            if (original != null && gameProfileNameField != null) gameProfileNameField.set(entry.getProfile(), original);
+                            else if (original != null) replaceGameProfileField(entry, new GameProfile(id, original));
                         } catch (Throwable ignored) {}
                     }
                     if (originalEntryDisplayNames.containsKey(entry.getProfile().getId())) {
@@ -248,7 +225,7 @@ public class PlayerHider extends Module {
             }
 
             if (mc.world != null) {
-                for (PlayerEntity player : mc.world.getPlayers()) {
+                for (var player : mc.world.getPlayers()) {
                     if (player == null) continue;
                     GameProfile profile = player.getGameProfile();
                     if (profile == null) continue;
@@ -256,51 +233,60 @@ public class PlayerHider extends Module {
                     if (originalProfileNames.containsKey(id)) {
                         try {
                             String original = originalProfileNames.get(id);
-                            if (original != null && gameProfileNameField != null) {
-                                gameProfileNameField.set(profile, original);
-                            } else if (original != null) {
-                                replaceGameProfileField(player, new GameProfile(id, original));
-                            }
+                            if (original != null && gameProfileNameField != null) gameProfileNameField.set(profile, original);
+                            else if (original != null) replaceGameProfileField(player, new GameProfile(id, original));
                         } catch (Throwable ignored) {}
                     }
                 }
             }
         }
-
         originalProfileNames.clear();
         originalEntryDisplayNames.clear();
         replacementMap.clear();
+        fakeToRealMap.clear();
     }
 
     // -----------------------------
-    // Chat/Command replacement
+    // Chat & Command Replacement
     // -----------------------------
-
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
+        if (!replacePlayers.get()) return;
+
         String msg = event.message;
-        for (Entry e : replacementMap.values()) {
+        String replaced = msg;
+        boolean changed = false;
+
+        for (Entry e : fakeToRealMap.values()) {
             if (!e.profile.isEmpty() && !e.original.isEmpty()) {
-                msg = msg.replace(e.profile, e.original);
+                String temp = replaced.replaceAll("(?i)\\b" + Pattern.quote(e.profile) + "\\b", e.original);
+                if (!temp.equals(replaced)) {
+                    replaced = temp;
+                    changed = true;
+                }
             }
         }
-        event.message = msg;
+
+        if (changed) event.message = replaced; // only modify if something changed
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
+        if (!incomingChatReplacer.get()) return;
+
         String msg = event.getMessage().getString();
+        boolean hasPlayer = false;
+
         for (Entry e : replacementMap.values()) {
-            if (!e.original.isEmpty() && !e.profile.isEmpty()) {
+            if (!e.original.isEmpty() && !e.profile.isEmpty() && msg.contains(e.original)) {
                 msg = msg.replace(e.original, e.profile);
+                hasPlayer = true;
             }
         }
-        event.setMessage(Text.of(msg));
+
+        if (hasPlayer) event.setMessage(Text.of(msg));
     }
 
-    // -----------------------------
-    // Helper: Entry parse/format
-    // -----------------------------
     private static class Entry {
         boolean enabled;
         String original;
@@ -335,6 +321,49 @@ public class PlayerHider extends Module {
 
         String toSettingLine() {
             return (enabled ? "true" : "false") + ";" + (original == null ? "" : original) + ";" + (display == null ? "" : display) + ";" + (profile == null ? "" : profile);
+        }
+    }
+
+    // -----------------------------
+    // Mixin for command tab completion
+    // -----------------------------
+    @Mixin(ClientPlayNetworkHandler.class)
+    public static class PlayerHiderMixin {
+        @Inject(method = "onCommandSuggestions", at = @At("HEAD"), cancellable = true)
+        private void injectCommandSuggestions(CommandSuggestionsS2CPacket packet, CallbackInfo ci) {
+            PlayerHider module = PlayerHider.INSTANCE;
+            if (module == null || !module.replacePlayers.get()) return;
+
+            try {
+                Field fInput = CommandSuggestionsS2CPacket.class.getDeclaredField("input");
+                Field fStart = CommandSuggestionsS2CPacket.class.getDeclaredField("start");
+                Field fSuggestions = CommandSuggestionsS2CPacket.class.getDeclaredField("suggestions");
+                fInput.setAccessible(true);
+                fStart.setAccessible(true);
+                fSuggestions.setAccessible(true);
+
+                String input = (String) fInput.get(packet);
+                int start = (int) fStart.get(packet);
+                Suggestions old = (Suggestions) fSuggestions.get(packet);
+
+                SuggestionsBuilder builder = new SuggestionsBuilder(input, start);
+
+                for (Suggestion s : old.getList()) {
+                    String text = s.getText();
+                    Entry replacement = null;
+                    String lowerText = text.toLowerCase(Locale.ROOT);
+                    for (Entry e : module.replacementMap.values()) {
+                        if (!e.original.isEmpty() && lowerText.startsWith(e.original.toLowerCase(Locale.ROOT))) {
+                            replacement = e;
+                            break;
+                        }
+                    }
+                    String finalText = (replacement != null && !replacement.profile.isEmpty()) ? replacement.profile : text;
+                    builder.suggest(finalText);
+                }
+
+                fSuggestions.set(packet, builder.build());
+            } catch (Throwable ignored) {}
         }
     }
 }
