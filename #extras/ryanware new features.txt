@@ -1,7 +1,6 @@
 Inventory Tweaks (Mouse Drag Item Move)
-Better Chat (Prefix/Suffix/Anti-Spam)
+Better Chat (Anti-Spam)
 Better Tab
 Better Tooltips (Shulker previews, always on only)
-
 Nametags (Players and items only, text only, no armor etc)
 Auto Clicker
