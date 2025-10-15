@@ -3,6 +3,7 @@
   "id": "ryanware",
   "version": "${version}",
   "name": "RyanWare",
+  "icon": "icon.png",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan"],
   "contact": {
