@@ -1,0 +1,6 @@
+Chat2Discord ToDo
+ - On leave send message (not working cause tick doesn't trigger when left)
+ - Outgoing commands (not done with the chat method checking if it starts with / i wish)
+ - Option to add color codes to messages rather than just keeping them all plain
+ - Move "Forward" settings in their own settings catagory
+ - Add a catagory for "names" so each type can have it's own for each one rather than the standard for each.
