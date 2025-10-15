@@ -111,6 +111,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
         Modules.get().add(new RedirectPublicChat());
+        Modules.get().add(new SoundBlocker());
         Modules.get().add(new UserLookups());
 
         // Register Other Modules
