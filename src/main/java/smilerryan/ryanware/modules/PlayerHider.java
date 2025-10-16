@@ -32,11 +32,10 @@ public class PlayerHider extends Module {
 
     private final Setting<List<String>> playerEntries = sg.add(new StringListSetting.Builder()
             .name("player-entries")
-            .description("One entry per player. Format: enabled;original;display;profile. Example: true;Notch;§cCool Guy;Cool_Guy")
+            .description("One entry per player. Format: enabled;original;display;profile;hideSkin (1=true,0=false). Example: true;Notch;§cCool Guy;Cool_Guy;1")
             .build()
     );
 
-    // Two main toggles
     private final Setting<Boolean> replacePlayers = sg.add(new BoolSetting.Builder()
             .name("replace-players")
             .description("Replace tab list, chat tab autocomplete, and outgoing messages.")
@@ -55,6 +54,7 @@ public class PlayerHider extends Module {
     private final Map<String, Entry> fakeToRealMap = new HashMap<>();
     private final Map<UUID, String> originalProfileNames = new HashMap<>();
     private final Map<UUID, Text> originalEntryDisplayNames = new HashMap<>();
+    private final Map<UUID, com.mojang.authlib.properties.PropertyMap> originalSkins = new HashMap<>();
     private static Field gameProfileNameField;
 
     public PlayerHider() {
@@ -119,6 +119,7 @@ public class PlayerHider extends Module {
                     else entry.setDisplayName(null);
                 } catch (Throwable ignored) {}
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
+                if (replacementEntry.hideSkin) hidePlayerSkin(profile);
             } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
@@ -137,6 +138,7 @@ public class PlayerHider extends Module {
             if (replacementEntry != null) {
                 if (!originalProfileNames.containsKey(id)) originalProfileNames.put(id, currentName);
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
+                if (replacementEntry.hideSkin) hidePlayerSkin(profile);
             } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
@@ -202,6 +204,28 @@ public class PlayerHider extends Module {
                 }
             }
         } catch (Throwable ignored) {}
+        // restore skin if hidden
+        if (originalSkins.containsKey(id)) {
+            try {
+                profile.getProperties().clear();
+                profile.getProperties().putAll(originalSkins.get(id));
+            } catch (Throwable ignored) {}
+            originalSkins.remove(id);
+        }
+    }
+
+    private void hidePlayerSkin(GameProfile profile) {
+        if (profile == null) return;
+        try {
+            UUID id = profile.getId();
+            if (!originalSkins.containsKey(id)) {
+                // store original textures
+                com.mojang.authlib.properties.PropertyMap copy = new com.mojang.authlib.properties.PropertyMap();
+                copy.putAll(profile.getProperties());
+                originalSkins.put(id, copy);
+            }
+            profile.getProperties().removeAll("textures"); // hide skin
+        } catch (Throwable ignored) {}
     }
 
     @Override
@@ -221,6 +245,12 @@ public class PlayerHider extends Module {
                     if (originalEntryDisplayNames.containsKey(entry.getProfile().getId())) {
                         try { entry.setDisplayName(originalEntryDisplayNames.get(entry.getProfile().getId())); } catch (Throwable ignored) {}
                     }
+                    if (originalSkins.containsKey(id)) {
+                        try {
+                            entry.getProfile().getProperties().clear();
+                            entry.getProfile().getProperties().putAll(originalSkins.get(id));
+                        } catch (Throwable ignored) {}
+                    }
                 }
             }
 
@@ -237,6 +267,12 @@ public class PlayerHider extends Module {
                             else if (original != null) replaceGameProfileField(player, new GameProfile(id, original));
                         } catch (Throwable ignored) {}
                     }
+                    if (originalSkins.containsKey(id)) {
+                        try {
+                            profile.getProperties().clear();
+                            profile.getProperties().putAll(originalSkins.get(id));
+                        } catch (Throwable ignored) {}
+                    }
                 }
             }
         }
@@ -244,6 +280,7 @@ public class PlayerHider extends Module {
         originalEntryDisplayNames.clear();
         replacementMap.clear();
         fakeToRealMap.clear();
+        originalSkins.clear();
     }
 
     // -----------------------------
@@ -267,7 +304,7 @@ public class PlayerHider extends Module {
             }
         }
 
-        if (changed) event.message = replaced; // only modify if something changed
+        if (changed) event.message = replaced;
     }
 
     @EventHandler
@@ -292,12 +329,14 @@ public class PlayerHider extends Module {
         String original;
         String display;
         String profile;
+        boolean hideSkin;
 
-        Entry(boolean enabled, String original, String display, String profile) {
+        Entry(boolean enabled, String original, String display, String profile, boolean hideSkin) {
             this.enabled = enabled;
             this.original = original == null ? "" : original;
             this.display = display == null ? "" : display;
             this.profile = profile == null ? "" : profile;
+            this.hideSkin = hideSkin;
         }
 
         static Entry fromSettingLine(String line) {
@@ -307,6 +346,7 @@ public class PlayerHider extends Module {
             String original = "";
             String display = "";
             String profile = "";
+            boolean hideSkin = false;
 
             if (parts.length > 0) {
                 String e = parts[0].trim();
@@ -315,12 +355,15 @@ public class PlayerHider extends Module {
             if (parts.length > 1) original = parts[1].trim();
             if (parts.length > 2) display = parts[2];
             if (parts.length > 3) profile = parts[3].trim();
+            if (parts.length > 4) hideSkin = parts[4].trim().equals("1");
 
-            return new Entry(enabled, original, display, profile);
+            return new Entry(enabled, original, display, profile, hideSkin);
         }
 
         String toSettingLine() {
-            return (enabled ? "true" : "false") + ";" + (original == null ? "" : original) + ";" + (display == null ? "" : display) + ";" + (profile == null ? "" : profile);
+            return (enabled ? "true" : "false") + ";" + (original == null ? "" : original) + ";" +
+                   (display == null ? "" : display) + ";" + (profile == null ? "" : profile) + ";" +
+                   (hideSkin ? "1" : "0");
         }
     }
 
