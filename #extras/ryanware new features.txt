@@ -4,3 +4,10 @@ Better Tab
 Better Tooltips (Shulker previews, always on only)
 Nametags (Players and items only, text only, no armor etc)
 Auto Clicker
+
+Custom Crosshair
+ - Add option to hide original crosshair
+ - Choose between cross and Image (path and transparency).
+
+anti block break
+specific blocks you dont want to break just cant be mined (prevents normal, packet mine, etc).
