@@ -32,7 +32,7 @@ public class PlayerHider extends Module {
 
     private final Setting<List<String>> playerEntries = sg.add(new StringListSetting.Builder()
             .name("player-entries")
-            .description("One entry per player. Format: enabled;original;display;profile;hideSkin (1=true,0=false). Example: true;Notch;§cCool Guy;Cool_Guy;1")
+            .description("One entry per player. Format: enabled;original;display;profile;skin (0=keep, 1=default, URL=custom)")
             .build()
     );
 
@@ -119,7 +119,7 @@ public class PlayerHider extends Module {
                     else entry.setDisplayName(null);
                 } catch (Throwable ignored) {}
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
-                if (replacementEntry.hideSkin) hidePlayerSkin(profile);
+                if (!replacementEntry.skin.equals("0")) hidePlayerSkin(profile, replacementEntry.skin);
             } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
@@ -138,7 +138,7 @@ public class PlayerHider extends Module {
             if (replacementEntry != null) {
                 if (!originalProfileNames.containsKey(id)) originalProfileNames.put(id, currentName);
                 if (!replacementEntry.profile.isEmpty()) setProfileName(profile, replacementEntry.profile);
-                if (replacementEntry.hideSkin) hidePlayerSkin(profile);
+                if (!replacementEntry.skin.equals("0")) hidePlayerSkin(profile, replacementEntry.skin);
             } else if (originalProfileNames.containsKey(id)) restoreProfileName(profile, id);
         }
     }
@@ -204,7 +204,6 @@ public class PlayerHider extends Module {
                 }
             }
         } catch (Throwable ignored) {}
-        // restore skin if hidden
         if (originalSkins.containsKey(id)) {
             try {
                 profile.getProperties().clear();
@@ -214,17 +213,22 @@ public class PlayerHider extends Module {
         }
     }
 
-    private void hidePlayerSkin(GameProfile profile) {
+    private void hidePlayerSkin(GameProfile profile, String skin) {
         if (profile == null) return;
         try {
             UUID id = profile.getId();
             if (!originalSkins.containsKey(id)) {
-                // store original textures
                 com.mojang.authlib.properties.PropertyMap copy = new com.mojang.authlib.properties.PropertyMap();
                 copy.putAll(profile.getProperties());
                 originalSkins.put(id, copy);
             }
-            profile.getProperties().removeAll("textures"); // hide skin
+            if (skin.equals("0")) return; // keep original
+            else if (skin.equals("1")) profile.getProperties().removeAll("textures"); // default skin
+            else {
+                // treat as URL
+                profile.getProperties().removeAll("textures");
+                profile.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", skin));
+            }
         } catch (Throwable ignored) {}
     }
 
@@ -329,14 +333,14 @@ public class PlayerHider extends Module {
         String original;
         String display;
         String profile;
-        boolean hideSkin;
+        String skin; // 0=keep, 1=default, URL=custom
 
-        Entry(boolean enabled, String original, String display, String profile, boolean hideSkin) {
+        Entry(boolean enabled, String original, String display, String profile, String skin) {
             this.enabled = enabled;
             this.original = original == null ? "" : original;
             this.display = display == null ? "" : display;
             this.profile = profile == null ? "" : profile;
-            this.hideSkin = hideSkin;
+            this.skin = skin == null ? "0" : skin;
         }
 
         static Entry fromSettingLine(String line) {
@@ -346,7 +350,7 @@ public class PlayerHider extends Module {
             String original = "";
             String display = "";
             String profile = "";
-            boolean hideSkin = false;
+            String skin = "0"; // default: keep original
 
             if (parts.length > 0) {
                 String e = parts[0].trim();
@@ -355,15 +359,15 @@ public class PlayerHider extends Module {
             if (parts.length > 1) original = parts[1].trim();
             if (parts.length > 2) display = parts[2];
             if (parts.length > 3) profile = parts[3].trim();
-            if (parts.length > 4) hideSkin = parts[4].trim().equals("1");
+            if (parts.length > 4) skin = parts[4].trim();
 
-            return new Entry(enabled, original, display, profile, hideSkin);
+            return new Entry(enabled, original, display, profile, skin);
         }
 
         String toSettingLine() {
             return (enabled ? "true" : "false") + ";" + (original == null ? "" : original) + ";" +
                    (display == null ? "" : display) + ";" + (profile == null ? "" : profile) + ";" +
-                   (hideSkin ? "1" : "0");
+                   (skin == null ? "0" : skin);
         }
     }
 
