@@ -32,6 +32,13 @@ public class ForceYLevel extends Module {
             .build()
     );
 
+    private final Setting<Boolean> minHeightOnly = sg.add(new BoolSetting.Builder()
+            .name("minimum-height-only")
+            .description("Prevents the floor from rising automatically; only clamps to minimum height.")
+            .defaultValue(false)
+            .build()
+    );
+
     private Field fallDistanceField;
     private double floorY = 64.0;
     private boolean crouchDisabled = false;
@@ -70,8 +77,8 @@ public class ForceYLevel extends Module {
             crouchDisabled = false;
         }
 
-        // Floor automatically rises if player goes higher
-        if (player.getY() > floorY) {
+        // Floor automatically rises if player goes higher (unless disabled)
+        if (!minHeightOnly.get() && player.getY() > floorY) {
             floorY = player.getY();
         }
 
