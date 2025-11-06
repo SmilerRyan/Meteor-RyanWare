@@ -134,6 +134,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CommandAura());
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
+        Modules.get().add(new PacketDelayer());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
