@@ -13,198 +13,178 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Chat2Discord extends Module {
-    private final SettingGroup sgMain = settings.createGroup("Settings");
+    private final SettingGroup sgWebhook = settings.createGroup("Webhook Settings");
     private final SettingGroup sgForward = settings.createGroup("Forward Settings");
-    private final SettingGroup sgNames = settings.createGroup("Username Templates");
 
-    // Main settings
-    private final Setting<String> webhook = sgMain.add(new StringSetting.Builder()
-            .name("webhook")
-            .description("Discord webhook URL.")
-            .defaultValue("")
-            .build()
-    );
+    private final Setting<String> webhook = sgWebhook.add(new StringSetting.Builder()
+            .name("webhook").description("Discord webhook URL.").defaultValue("").build());
 
-    // Forward settings
+    private final Setting<String> usernameTemplate = sgWebhook.add(new StringSetting.Builder()
+            .name("username")
+            .description("Username for Discord messages. Supports %player% and %server%.")
+            .defaultValue("%player% on %server%").build());
+
     private final Setting<Boolean> forwardOutgoingChat = sgForward.add(new BoolSetting.Builder()
-            .name("forward-outgoing-chat")
-            .description("Forward outgoing chat messages.")
-            .defaultValue(false)
-            .build()
-    );
+            .name("forward-outgoing-chat").description("Forward outgoing chat messages.").defaultValue(false).build());
 
     private final Setting<Boolean> forwardIncomingChat = sgForward.add(new BoolSetting.Builder()
-            .name("forward-incoming-chat")
-            .description("Forward incoming chat messages.")
-            .defaultValue(false)
-            .build()
-    );
+            .name("forward-incoming-chat").description("Forward incoming chat messages.").defaultValue(false).build());
 
     private final Setting<Boolean> forwardJoinLeave = sgForward.add(new BoolSetting.Builder()
-            .name("forward-join-leave")
-            .description("Forward join and disconnect messages.")
-            .defaultValue(false)
-            .build()
-    );
-
-    // Username templates
-    private final Setting<String> outgoingTemplate = sgNames.add(new StringSetting.Builder()
-            .name("outgoing-username")
-            .description("Username for outgoing chat messages")
-            .defaultValue("%player% on %server%")
-            .build()
-    );
-
-    private final Setting<String> incomingTemplate = sgNames.add(new StringSetting.Builder()
-            .name("incoming-username")
-            .description("Username for incoming chat messages")
-            .defaultValue("%server%")
-            .build()
-    );
+            .name("forward-join-leave").description("Forward join/disconnect messages.").defaultValue(false).build());
 
     private ExecutorService executor;
+    private ScheduledExecutorService scheduler;
     private final AtomicBoolean active = new AtomicBoolean(false);
     private String lastServerAddress = null;
 
+    private final StringBuilder messageBuffer = new StringBuilder();
+    private volatile long lastMessageTime = 0;
+    private volatile String batchUsername = null;
+
     public Chat2Discord() {
         super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord",
-                "Forward chat and join/leave messages to a Discord webhook with plain text.");
+                "Forwards your chat to any Discord webhook.");
     }
 
     @Override
     public void onActivate() {
         executor = Executors.newSingleThreadExecutor();
+        scheduler = Executors.newSingleThreadScheduledExecutor();
         active.set(true);
-
-        // Detect join immediately if connected
-        ServerInfo current = mc.getCurrentServerEntry();
-        if (forwardJoinLeave.get() && current != null && lastServerAddress == null) {
-            lastServerAddress = current.address;
-            sendWebhook("joined server " + lastServerAddress, outgoingTemplate.get());
-        }
+        scheduler.scheduleAtFixedRate(this::tryFlushBuffer, 200, 200, TimeUnit.MILLISECONDS);
+        handleConnectionChange(true);
     }
 
     @Override
     public void onDeactivate() {
         active.set(false);
         if (executor != null) executor.shutdownNow();
-
-        // Detect disconnect immediately
-        if (forwardJoinLeave.get() && lastServerAddress != null) {
-            sendWebhook("disconnected from " + lastServerAddress, outgoingTemplate.get());
-            lastServerAddress = null;
-        }
+        if (scheduler != null) scheduler.shutdownNow();
+        flushBuffer();
+        handleConnectionChange(false);
     }
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        if (!active.get() || mc.player == null) return;
-
-        // Detect connection changes (for switching servers while active)
-        detectConnectionChange();
-
-        if (!forwardOutgoingChat.get()) return;
-
-        String msg = event.message;
-        if (msg != null && !msg.isEmpty()) sendWebhook(msg, outgoingTemplate.get());
+        handleMessage(event.message, forwardOutgoingChat.get(), "**sent** ");
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (!active.get() || mc.player == null) return;
-
-        // Detect connection changes (for switching servers while active)
-        detectConnectionChange();
-
-        if (!forwardIncomingChat.get()) return;
-
         Text text = event.getMessage();
-        if (text == null) return;
-
-        String plain = removeColorCodes(text.getString());
-        if (!plain.isEmpty()) sendWebhook(plain, incomingTemplate.get());
+        handleMessage(text != null ? removeColorCodes(text.getString()) : null, forwardIncomingChat.get(), "");
     }
 
-    private void detectConnectionChange() {
-        if (!forwardJoinLeave.get()) return;
+    private void handleMessage(String message, boolean enabled, String prefix) {
+        if (!active.get() || mc.player == null || !enabled || message == null || message.isEmpty()) return;
+        handleConnectionChange(true);
+        queueMessage(prefix + message);
+    }
 
+    private void handleConnectionChange(boolean joinCheck) {
+        if (!forwardJoinLeave.get()) return;
         ServerInfo current = mc.getCurrentServerEntry();
 
-        // Joined a server
-        if (current != null && lastServerAddress == null) {
+        if (joinCheck && current != null && lastServerAddress == null) {
             lastServerAddress = current.address;
-            sendWebhook("joined server " + lastServerAddress, outgoingTemplate.get());
-        }
-
-        // Disconnected from server
-        if (current == null && lastServerAddress != null) {
-            sendWebhook("disconnected from " + lastServerAddress, outgoingTemplate.get());
+            queueMessage("**joined server** " + lastServerAddress);
+        } else if (!joinCheck && lastServerAddress != null) {
+            queueMessage("**disconnected from** " + lastServerAddress);
             lastServerAddress = null;
         }
     }
 
-    private void sendWebhook(String message, String usernameTemplate) {
-        if (webhook.get() == null || webhook.get().isEmpty() || message == null || !active.get()) return;
+    private void queueMessage(String message) {
+        batchUsername = resolveUsername(usernameTemplate.get());
+        synchronized (messageBuffer) {
+            messageBuffer.append(message).append("\n");
+        }
+        lastMessageTime = System.currentTimeMillis();
+    }
 
-        final String username = resolveUsername(usernameTemplate);
-        final String finalContent = message;
+    private void tryFlushBuffer() {
+        if (!active.get()) return;
+        synchronized (messageBuffer) {
+            if (messageBuffer.length() == 0) return;
+        }
+        if (System.currentTimeMillis() - lastMessageTime >= 1000) flushBuffer();
+    }
 
+    private void flushBuffer() {
+        String content;
+        String username = batchUsername;
+        synchronized (messageBuffer) {
+            if (messageBuffer.length() == 0) return;
+            content = messageBuffer.toString();
+            messageBuffer.setLength(0);
+        }
+        batchUsername = null;
+        sendWebhook(content, username);
+    }
+
+    private void sendWebhook(String content, String username) {
+        if (webhook.get().isEmpty()) return;
         executor.execute(() -> {
             try {
-                URL url = new URL(webhook.get());
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setDoOutput(true);
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(5000);
-
-                String payload = "{\"content\":\"" + escapeJson(finalContent) + "\"";
-                if (username != null && !username.isEmpty()) {
-                    payload += ",\"username\":\"" + escapeJson(username) + "\"";
-                }
-                payload += "}";
-
-                byte[] out = payload.getBytes(StandardCharsets.UTF_8);
-                connection.setFixedLengthStreamingMode(out.length);
-                connection.connect();
-                try (OutputStream os = connection.getOutputStream()) {
-                    os.write(out);
-                }
-
-                int code = connection.getResponseCode();
-                if (code < 200 || code >= 300) notifyPlayerAsync("Webhook responded with HTTP " + code);
-            } catch (Exception e) {
-                notifyPlayerAsync("Failed to send webhook: " + e.getMessage());
-            }
+                if (content.length() <= 2000) sendJsonWebhook(content, username);
+                else sendFileWebhook(content);
+            } catch (Exception ignored) {}
         });
     }
 
-    private String resolveUsername(String template) {
-        if (template == null || template.isEmpty()) return null;
+    private void sendJsonWebhook(String content, String username) throws Exception {
+        URL url = new URL(webhook.get());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
 
+        String payload = "{\"content\":\"" + escapeJson(content) + "\"";
+        if (username != null && !username.isEmpty()) payload += ",\"username\":\"" + escapeJson(username) + "\"";
+        payload += "}";
+
+        byte[] out = payload.getBytes(StandardCharsets.UTF_8);
+        conn.setFixedLengthStreamingMode(out.length);
+        conn.connect();
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(out);
+        }
+    }
+
+    private void sendFileWebhook(String content) throws Exception {
+        String boundary = "----ChatBoundary" + System.currentTimeMillis();
+        URL url = new URL(webhook.get());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+
+        String header = "--" + boundary + "\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"chat.txt\"\r\n" +
+                "Content-Type: text/plain\r\n\r\n";
+        String footer = "\r\n--" + boundary + "--\r\n";
+
+        byte[] body = (header + content + footer).getBytes(StandardCharsets.UTF_8);
+        conn.setFixedLengthStreamingMode(body.length);
+        conn.connect();
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(body);
+        }
+    }
+
+    private String resolveUsername(String template) {
         String server = "singleplayer";
         try {
             ServerInfo info = mc.getCurrentServerEntry();
             if (info != null && info.address != null && !info.address.isEmpty()) server = info.address;
         } catch (Throwable ignored) {}
-
         String player = mc.player != null ? mc.player.getName().getString() : "unknown";
         return template.replace("%server%", server).replace("%player%", player);
-    }
-
-    private void notifyPlayerAsync(String message) {
-        if (mc == null) return;
-        mc.execute(() -> {
-            if (mc.player != null) {
-                mc.player.sendMessage(Text.literal("[Chat2Discord] ").append(Text.literal(message)), false);
-            }
-        });
     }
 
     private String escapeJson(String s) {
@@ -226,7 +206,6 @@ public class Chat2Discord extends Module {
     }
 
     private String removeColorCodes(String s) {
-        if (s == null) return "";
-        return s.replaceAll("§.", "");
+        return s == null ? "" : s.replaceAll("§.", "");
     }
 }
