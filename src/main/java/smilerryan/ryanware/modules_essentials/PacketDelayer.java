@@ -76,6 +76,14 @@ public class PacketDelayer extends Module {
             .build()
     );
 
+    private final Setting<Boolean> finishNotifyIncludeZero = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("send-details-on-deactivate-even-if-zero")
+            .description("Includes counts of zero in the summary message.")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Queue<Packet<?>> delayingC2S = new LinkedList<>();
     private final Queue<Packet<?>> delayingS2C = new LinkedList<>();
 
@@ -111,10 +119,10 @@ public class PacketDelayer extends Module {
 
         java.util.List<String> parts = new java.util.ArrayList<>();
 
-        if (delayedC2S > 0) parts.add(delayedC2S + " delayed C2S");
-        if (delayedS2C > 0) parts.add(delayedS2C + " delayed S2C");
-        if (droppedC2S_final > 0) parts.add(droppedC2S_final + " dropped C2S");
-        if (droppedS2C_final > 0) parts.add(droppedS2C_final + " dropped S2C");
+        if (finishNotifyIncludeZero.get() || delayedC2S > 0) parts.add("↑⌚ " + delayedC2S);
+        if (finishNotifyIncludeZero.get() || delayedS2C > 0) parts.add("↓⌚ " + delayedS2C);
+        if (finishNotifyIncludeZero.get() || droppedC2S_final > 0) parts.add("↑✖ " + droppedC2S_final);
+        if (finishNotifyIncludeZero.get() || droppedS2C_final > 0) parts.add("↓✖ " + droppedS2C_final);
 
         if (parts.isEmpty()) return;
 
