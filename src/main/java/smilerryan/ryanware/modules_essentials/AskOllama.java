@@ -184,6 +184,8 @@ public class AskOllama extends Module {
                             String[] lines = reply.split("\n");
                             for (String line : lines) {
                                 String trimmedLower = line.trim().toLowerCase(Locale.ROOT);
+                                if (line.length() > 200) line = line.substring(0, 200) + "... (trimmed)";
+
                                 if (STOP_COMMANDS.contains(trimmedLower)) return;
 
                                 if (trimmedLower.startsWith("/say ")) {
