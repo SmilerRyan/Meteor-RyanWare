@@ -24,9 +24,16 @@ import java.util.regex.Pattern;
 public class ChatEncryption extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
-    private final Setting<Boolean> enabled = sgGeneral.add(new BoolSetting.Builder()
-        .name("enabled")
+    private final Setting<Boolean> enabledSend = sgGeneral.add(new BoolSetting.Builder()
+        .name("enabled-send")
         .description("Enables chat encryption.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> enabledRecieve = sgGeneral.add(new BoolSetting.Builder()
+        .name("enabled-receive")
+        .description("Enables chat decryption.")
         .defaultValue(true)
         .build()
     );
@@ -94,7 +101,7 @@ public class ChatEncryption extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        if (!enabled.get() || event.message.startsWith("/")) return;
+        if (!enabledSend.get() || event.message.startsWith("/")) return;
 
         // Extract the original style from the message
         String encryptedMessage = switch (encryptionMode.get()) {
@@ -110,7 +117,7 @@ public class ChatEncryption extends Module {
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (!enabled.get()) return;
+        if (!enabledRecieve.get()) return;
 
         String raw = event.getMessage().getString();
         String prefixValue = Pattern.quote(prefix.get());

@@ -81,10 +81,13 @@ public class DeathCommands extends Module {
         // Handle delayed message
         if (deathDelayTicks >= 0 && pendingMessage != null) {
             if (deathDelayTicks == 0) {
-                if (pendingMessage.startsWith("/")) {
-                    mc.player.networkHandler.sendCommand(pendingMessage.substring(1));
-                } else {
-                    mc.player.networkHandler.sendChatMessage(pendingMessage);
+
+                if (mc.player != null && mc.player.networkHandler != null) {
+                    if (pendingMessage.startsWith("/")) {
+                        mc.player.networkHandler.sendChatCommand(pendingMessage.substring(1));
+                    } else {
+                        mc.player.networkHandler.sendChatMessage(pendingMessage);
+                    }
                 }
                 pendingMessage = null;
                 deathDelayTicks = -1;
