@@ -76,6 +76,13 @@ public class AskOllama extends Module {
         .build()
     );
 
+    private final Setting<Boolean> directSend = sgGeneral.add(new BoolSetting.Builder()
+        .name("direct-send-without-prefix")
+        .description("If enabled, responses without commands are sent directly to chat as if typed by you.")
+        .defaultValue(false)
+        .build()
+    );
+
     private final Setting<Integer> waitDelayMs = sgGeneral.add(new IntSetting.Builder()
         .name("wait-delay-ms")
         .description("How long to wait (in ms) before collecting messages and sending to AI.")
@@ -197,7 +204,19 @@ public class AskOllama extends Module {
                                     String guide = line.substring(7).trim();
                                     if (!guide.isEmpty()) mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Guide] " + guide));
                                 } else {
-                                    if (allowOtherResponses.get()) {
+                                    if (directSend.get()) {
+                                        String message = line.trim();
+                                        if (!allowRespondAsMe.get()) {
+                                            mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Blocked] " + message));
+                                            continue;
+                                        }
+                                        if (simulateRespondAsMe.get()) {
+                                            mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Simulated] " + message));
+                                        } else if (mc.player != null) {
+                                            if (message.startsWith("/")) mc.player.networkHandler.sendChatCommand(message.substring(1));
+                                            else mc.player.networkHandler.sendChatMessage(message);
+                                        }
+                                    } else if (allowOtherResponses.get()) {
                                         mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Other] " + line));
                                     }
                                 }
