@@ -17,10 +17,17 @@ import java.util.Queue;
 public class RedirectPublicChat extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
-    private final Setting<List<String>> redirectCommands = sgGeneral.add(new StringListSetting.Builder()
-        .name("redirect-commands")
-        .description("List of commands to send the message to (e.g., /msg Friend1).")
-        .defaultValue(List.of("/msg Friend1"))
+    private final Setting<List<String>> prefixCommands = sgGeneral.add(new StringListSetting.Builder()
+        .name("prefix-commands")
+        .description("Text/Commands to put BEFORE the original message.")
+        .defaultValue(List.of(""))
+        .build()
+    );
+
+    private final Setting<List<String>> suffixCommands = sgGeneral.add(new StringListSetting.Builder()
+        .name("suffix-commands")
+        .description("Text/Commands to put AFTER the message.")
+        .defaultValue(List.of(""))
         .build()
     );
 
@@ -34,6 +41,7 @@ public class RedirectPublicChat extends Module {
     );
 
     private final Queue<String> messageQueue = new LinkedList<>();
+    private boolean sending = false;
     private int tickCounter = 0;
 
     public RedirectPublicChat() {
@@ -42,31 +50,31 @@ public class RedirectPublicChat extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        String originalMessage = event.message;
-
-        if (originalMessage.startsWith("/")) return;
-
+        if (sending) return;
+        if (prefixCommands.get().isEmpty() || suffixCommands.get().isEmpty()) return;
         event.cancel();
-
-        for (String command : redirectCommands.get()) {
-            messageQueue.add(command + " " + originalMessage);
+        for (String prefix : prefixCommands.get()) {
+            for (String suffix : suffixCommands.get()) {
+                messageQueue.add(prefix + event.message + suffix);
+            }
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (messageQueue.isEmpty()) return;
-
-        tickCounter++;
-        if (tickCounter >= delay.get()) {
+        if (++tickCounter >= delay.get()) {
             tickCounter = 0;
-
-            String nextCommand = messageQueue.poll();
-            if (nextCommand != null && mc.player != null) {
-                String rawCommand = nextCommand.startsWith("/") ? nextCommand.substring(1) : nextCommand;
-                mc.player.networkHandler.sendChatCommand(rawCommand);
+            String next = messageQueue.poll();
+            if (next != null && mc.player != null) {
+                sending = true;
+                if (next.startsWith("/")) {
+                    mc.player.networkHandler.sendChatCommand(next.substring(1));
+                } else {
+                    mc.player.networkHandler.sendChatMessage(next);
+                }
+                sending = false;
             }
         }
     }
-
 }
