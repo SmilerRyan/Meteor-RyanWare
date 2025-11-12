@@ -63,10 +63,10 @@ public class Chat2Discord extends Module {
     @Override
     public void onDeactivate() {
         active.set(false);
+        flushBuffer(); // flush before shutdown
+        handleConnectionChange(false);
         if (executor != null) executor.shutdownNow();
         if (scheduler != null) scheduler.shutdownNow();
-        flushBuffer();
-        handleConnectionChange(false);
     }
 
     @EventHandler
@@ -128,7 +128,7 @@ public class Chat2Discord extends Module {
     }
 
     private void sendWebhook(String content, String username) {
-        if (webhook.get().isEmpty()) return;
+        if (webhook.get().isEmpty() || executor == null || executor.isShutdown()) return;
         executor.execute(() -> {
             try {
                 if (content.length() <= 2000) sendJsonWebhook(content, username);
