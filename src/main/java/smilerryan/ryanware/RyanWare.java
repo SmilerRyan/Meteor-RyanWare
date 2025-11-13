@@ -135,6 +135,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
+        Modules.get().add(new CommandRedirector());
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
         Modules.get().add(new PacketDelayer());
