@@ -2,9 +2,7 @@ package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
-import meteordevelopment.meteorclient.settings.StringListSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.packet.Packet;
@@ -31,6 +29,13 @@ public class CommandRedirector extends Module {
         .name("run-as")
         .description("Replacement commands matching order of listen-for. Supports {1}, {2}, {2-4}, {3-}.")
         .defaultValue(List.of())
+        .build()
+    );
+
+    private final Setting<Boolean> debugLogging = sgListen.add(new BoolSetting.Builder()
+        .name("debug-logging")
+        .description("Show info messages when commands are redirected.")
+        .defaultValue(false)
         .build()
     );
 
@@ -61,7 +66,7 @@ public class CommandRedirector extends Module {
         }
 
         redirecting = false;
-        info("Redirected chat command: " + msg + " -> " + redirected);
+        if (debugLogging.get()) info("\n-> " + msg + "\n-> " + redirected);
     }
 
     // Handles slash commands
@@ -92,7 +97,7 @@ public class CommandRedirector extends Module {
         }
 
         redirecting = false;
-        info("Redirected slash command: " + command + " -> " + redirected);
+        if (debugLogging.get()) info("\n-> " + command + "\n-> " + redirected);
     }
 
     private String tryRedirect(String fullCommand) {
