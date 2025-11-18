@@ -161,6 +161,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new RemoteViewProxyServer());
         Modules.get().add(new RemoteViewWebServer());
         Modules.get().add(new SkinBlinker());
+        Modules.get().add(new SpeechToText());
         Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemAutoLeave());
