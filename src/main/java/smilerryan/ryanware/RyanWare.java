@@ -166,6 +166,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemAutoLeave());
         Modules.get().add(new TotemBypass());
+        Modules.get().add(new WiderChat());
         Modules.get().add(new WorldDownloader());
 
         // Register commands
