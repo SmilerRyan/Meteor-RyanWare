@@ -1,7 +1,13 @@
 package smilerryan.ryanware.modules;
 
+import meteordevelopment.meteorclient.events.render.Render2DEvent;
+import meteordevelopment.meteorclient.renderer.text.TextRenderer;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.utils.render.color.Color;
+import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import meteordevelopment.orbit.EventHandler;
+
 import smilerryan.ryanware.RyanWare;
 
 import javax.sound.sampled.*;
@@ -10,8 +16,9 @@ import java.io.*;
 public class SpeechToText extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgOutput  = settings.createGroup("Output");
+    private final SettingGroup sgOverlay = settings.createGroup("Overlay");
 
-    // === Full Paths ===
+    // === Paths ===
     private final Setting<String> recordingsFolder = sgGeneral.add(new StringSetting.Builder()
         .name("recordings-folder")
         .defaultValue("./stt")
@@ -52,92 +59,176 @@ public class SpeechToText extends Module {
         .build()
     );
 
+    // === Overlay ===
+    private final Setting<Boolean> showOverlay = sgOverlay.add(new BoolSetting.Builder()
+        .name("show-overlay")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Integer> overlayX = sgOverlay.add(new IntSetting.Builder()
+        .name("x")
+        .defaultValue(10)
+        .min(0)
+        .max(3000)
+        .build()
+    );
+
+    private final Setting<Integer> overlayY = sgOverlay.add(new IntSetting.Builder()
+        .name("y")
+        .defaultValue(10)
+        .min(0)
+        .max(3000)
+        .build()
+    );
+
+    private final Setting<Double> overlayScale = sgOverlay.add(new DoubleSetting.Builder()
+        .name("scale")
+        .defaultValue(1.0)
+        .min(0.2)
+        .max(5.0)
+        .sliderMax(3.0)
+        .build()
+    );
+
+    private final Setting<SettingColor> overlayColor = sgOverlay.add(new ColorSetting.Builder()
+        .name("color")
+        .defaultValue(new SettingColor(255, 255, 255, 255))
+        .build()
+    );
+
     private TargetDataLine micLine;
     private Thread recordingThread;
     private File outputFile;
 
+    private String overlayText = "";
+
+    // used to cancel old STT results
+    private long generationId = 0;
+
     public SpeechToText() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Speech-To-Text", "Records and processes mic audio.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Speech-To-Text", "Records mic audio and processes it.");
     }
 
     @Override
     public void onActivate() {
+        long myGen = ++generationId;
+
+        overlayText = "Recording…";
         try {
             File folder = new File(recordingsFolder.get());
             folder.mkdirs();
             outputFile = new File(folder, "rec_" + System.currentTimeMillis() + ".wav");
+
             AudioFormat format = new AudioFormat(16000, 16, 1, true, false);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
             micLine = (TargetDataLine) AudioSystem.getLine(info);
+
             micLine.open(format);
             micLine.start();
+
             recordingThread = new Thread(() -> {
                 try (AudioInputStream ais = new AudioInputStream(micLine)) {
                     AudioSystem.write(ais, AudioFileFormat.Type.WAVE, outputFile);
                 } catch (Exception ignored) {}
             }, "STT-Recorder");
+
             recordingThread.start();
-            if (debug.get()) info("Recording started → " + outputFile.getAbsolutePath());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            overlayText = "Mic Error";
             error("Failed to start microphone.");
-            e.printStackTrace();
         }
     }
 
     @Override
     public void onDeactivate() {
+        long myGen = generationId;
+
         try {
             if (micLine != null) {
                 micLine.stop();
                 micLine.close();
             }
             if (recordingThread != null) recordingThread.join(200);
-            if (debug.get()) info("Recording stopped.");
-        } catch (Exception e) {
-            error("Error stopping mic.");
         }
-        new Thread(this::runSTT, "STT-Thread").start();
+        catch (Exception ignored) {}
+
+        new Thread(() -> runSTT(myGen), "STT-Thread").start();
     }
 
-    private void runSTT() {
+    private void runSTT(long myGen) {
+        File exe = new File(sttExePath.get());
+        if (!exe.exists()) {
+            if (myGen == generationId) overlayText = "Processor Missing";
+            return;
+        }
+
+        if (myGen == generationId) overlayText = "Processing…";
+
         try {
-            File exe = new File(sttExePath.get());
-            if (!exe.exists()) {
-                error("Processor not found at:\n" + sttExePath.get());
-                return;
-            }
             ProcessBuilder pb = new ProcessBuilder(exe.getAbsolutePath(), outputFile.getAbsolutePath());
             pb.redirectErrorStream(true);
             Process proc = pb.start();
-            StringBuilder textOut = new StringBuilder();
+
             BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            StringBuilder textOut = new StringBuilder();
+
             String line;
-            while ((line = br.readLine()) != null) {
-                if (debug.get()) info(line);
-                textOut.append(line).append("\n");
-            }
+            while ((line = br.readLine()) != null) textOut.append(line).append(" ");
             proc.waitFor();
+
             String finalText = textOut.toString().trim();
-            if (!finalText.isEmpty()) sendOutput(finalText);
-            if (!keepRecordings.get() && outputFile.exists()) {
-                if (debug.get()) info("Deleting recording: " + outputFile.getAbsolutePath());
-                outputFile.delete();
-            } else {
-                if (debug.get()) info("Keeping recording: " + outputFile.getAbsolutePath());
+
+            if (outputFile.exists() && !keepRecordings.get()) outputFile.delete();
+
+            if (myGen != generationId) return; // cancelled silently
+
+            // sanitize — remove newlines
+            finalText = finalText.replace("\n", " ").replace("\r", " ");
+
+            // replace invalid chars with '?'
+            finalText = finalText.replaceAll("[^\\x20-\\x7E]", "?");
+
+            // trim and collapse whitespace
+            finalText = finalText.trim().replaceAll("\\s+", " ");
+
+            // too long or empty → don't send, clear overlay
+            if (finalText.isEmpty() || finalText.length() > 200) {
+                overlayText = "";
+                return;
             }
-        } catch (Exception e) {
-            error("Failed to run STT Processing.");
-            e.printStackTrace();
+
+            sendOutput(finalText);
+            overlayText = "";
+        }
+        catch (Exception e) {
+            if (myGen == generationId) overlayText = "Processing Error";
         }
     }
 
     private void sendOutput(String text) {
         if (!sendToChat.get()) return;
+
         String msg = prefix.get() + text;
+
         if (msg.startsWith("/")) {
             mc.player.networkHandler.sendChatCommand(msg.substring(1));
         } else {
             mc.player.networkHandler.sendChatMessage(msg);
         }
+    }
+
+    @EventHandler
+    private void onRender2D(Render2DEvent event) {
+        if (!showOverlay.get()) return;
+        if (overlayText == null || overlayText.isEmpty()) return;
+
+        SettingColor sc = overlayColor.get();
+        Color c = new Color(sc.r, sc.g, sc.b, sc.a);
+
+        TextRenderer.get().begin(overlayScale.get().floatValue(), false, true);
+        TextRenderer.get().render(overlayText, overlayX.get(), overlayY.get(), c);
+        TextRenderer.get().end();
     }
 }
