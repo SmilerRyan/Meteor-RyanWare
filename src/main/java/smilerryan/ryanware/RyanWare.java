@@ -173,7 +173,8 @@ public class RyanWare extends MeteorAddon {
         Commands.add(new Command_GMC());
         Commands.add(new Command_Note());
         Commands.add(new Command_RandomNumber());
-        Commands.add(new Command_TAMsg1());        
+        Commands.add(new Command_showText());
+        Commands.add(new Command_TAMsg1());
         
     }
 

@@ -252,9 +252,6 @@ public class Command_TAMsg1 extends Command {
     }
 
     private void addMessageToChat(String message) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.inGameHud != null && mc.inGameHud.getChatHud() != null) {
-            mc.inGameHud.getChatHud().addMessage(Text.of(message));
-        }
+        MinecraftClient.getInstance().player.sendMessage(Text.of(message.replace('&', '§')), false);
     }
 }
