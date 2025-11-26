@@ -107,10 +107,12 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ForceYLevel());
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
         Modules.get().add(new RedirectPublicChat());
+        Modules.get().add(new Screenshotter());
         Modules.get().add(new SoundBlocker());
         Modules.get().add(new UserLookups());
 
@@ -132,6 +134,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new Chat2Discord());
         Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChatReplacer());
+        Modules.get().add(new ChatSpam());        
         Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
