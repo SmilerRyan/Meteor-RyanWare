@@ -108,6 +108,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerAlerter());
+        Modules.get().add(new PlayerTracers());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
