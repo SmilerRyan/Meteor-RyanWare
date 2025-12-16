@@ -27,6 +27,13 @@ public class NiceFlight extends Module {
         .build()
     );
 
+    private final Setting<Boolean> bypassAntiKick = sgGeneral.add(new BoolSetting.Builder()
+        .name("bypass-anti-kick")
+        .description("Bypasses vanilla anti-kick while flying.")
+        .defaultValue(true)
+        .build()
+    );
+
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private boolean wasJumping = false;
     private boolean isFlying = false;
@@ -101,6 +108,15 @@ public class NiceFlight extends Module {
             mc.player.getAbilities().setFlySpeed((float) (speed.get() * 0.05f));
         }
 
+        // Bypass Vanilla Anti-kick
+        if (isFlying && !mc.player.isOnGround() && bypassAntiKick.get() && mc.player.age % 10 < 2) {
+            mc.player.setVelocity(
+                mc.player.getVelocity().x,
+                mc.player.getVelocity().y + (mc.player.age % 10 == 0 ? -0.04 : 0.04),
+                mc.player.getVelocity().z
+            );
+        }
+        
         wasJumping = isJumping;
     }
-} 
+}

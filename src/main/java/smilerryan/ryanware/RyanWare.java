@@ -105,6 +105,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new ForceYLevel());
+        Modules.get().add(new ModuleMenu());
         Modules.get().add(new NiceFlight());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerAlerter());
