@@ -42,6 +42,13 @@ public class PlayerAlerter extends Module {
         .build()
     );
 
+    private final Setting<Boolean> vrIgnoreFakePlayers = sgTab.add(new BoolSetting.Builder()
+        .name("ignore-fake-players")
+        .defaultValue(true)
+        .description("Ignores fake players (e.g. NPCs) in your visual range.")
+        .build()
+    );
+
     private final Setting<Integer> vrDelay = sgVisual.add(new IntSetting.Builder()
         .name("leave-delay-ms")
         .defaultValue(500)
@@ -74,6 +81,13 @@ public class PlayerAlerter extends Module {
         .build()
     );
 
+    private final Setting<Boolean> tabIgnoreFakePlayers = sgTab.add(new BoolSetting.Builder()
+        .name("ignore-fake-players")
+        .defaultValue(true)
+        .description("Ignores fake players (e.g. NPCs) in the tab list.")
+        .build()
+    );
+
     private final Setting<Integer> tabDelay = sgTab.add(new IntSetting.Builder()
         .name("leave-delay-ms")
         .defaultValue(500)
@@ -100,14 +114,20 @@ public class PlayerAlerter extends Module {
         super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Player-Alerter", "Alerts you when players enter/leave range or tab.");
     }
 
-
-    // -------- Friends FIX --------
     private boolean isFriend(String name) {
         return Friends.get().get(name) != null;
     }
 
+    private boolean isFakePlayer(String name) {
+        String stripped = name.replaceAll("[§&].", "");
 
-    // -------- Sound FIX --------
+        boolean nameIsEmpty = stripped.isEmpty();
+        boolean nameStartsWithCIT = stripped.startsWith("CIT-");
+
+        return nameIsEmpty || nameStartsWithCIT;
+    }
+
+
     private void ping(boolean entering, boolean flashed) {
         if (mc.player == null) return;
 
@@ -146,6 +166,7 @@ public class PlayerAlerter extends Module {
                 visible.add(name);
 
                 if (vrIgnoreFriends.get() && isFriend(name)) continue;
+                if (vrIgnoreFakePlayers.get() && isFakePlayer(name)) continue;
 
                 if (!inVisual.contains(name)) {
                     inVisual.add(name);
@@ -184,6 +205,7 @@ public class PlayerAlerter extends Module {
                 tab.add(name);
 
                 if (tabIgnoreFriends.get() && isFriend(name)) continue;
+                if (tabIgnoreFakePlayers.get() && isFakePlayer(name)) continue;
 
                 // if we previously thought they left, and they re-appeared:
                 if (tabLeftTimes.containsKey(name)) {
