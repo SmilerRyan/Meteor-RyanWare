@@ -19,38 +19,38 @@ public class PlayerAlerter extends Module {
     private final SettingGroup sgTab = settings.createGroup("Tab List");
 
     private final Setting<Boolean> vrEnabled = sgVisual.add(new BoolSetting.Builder()
-        .name("enable")
+        .name("vr-enable")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> vrChat = sgVisual.add(new BoolSetting.Builder()
-        .name("chat")
+        .name("vr-chat")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> vrSound = sgVisual.add(new BoolSetting.Builder()
-        .name("sound")
+        .name("vr-sound")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> vrIgnoreFriends = sgVisual.add(new BoolSetting.Builder()
-        .name("ignore-friends")
+        .name("vr-ignore-friends")
         .defaultValue(true)
         .build()
     );
 
-    private final Setting<Boolean> vrIgnoreFakePlayers = sgTab.add(new BoolSetting.Builder()
-        .name("ignore-fake-players")
+    private final Setting<Boolean> vrIgnoreFakePlayers = sgVisual.add(new BoolSetting.Builder()
+        .name("vr-ignore-fake-players")
         .defaultValue(true)
         .description("Ignores fake players (e.g. NPCs) in your visual range.")
         .build()
     );
 
     private final Setting<Integer> vrDelay = sgVisual.add(new IntSetting.Builder()
-        .name("leave-delay-ms")
+        .name("vr-leave-delay-ms")
         .defaultValue(500)
         .min(0)
         .sliderMax(2000)
@@ -58,38 +58,38 @@ public class PlayerAlerter extends Module {
     );
 
     private final Setting<Boolean> tabEnabled = sgTab.add(new BoolSetting.Builder()
-        .name("enable")
+        .name("tab-enable")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> tabChat = sgTab.add(new BoolSetting.Builder()
-        .name("chat")
+        .name("tab-chat")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> tabSound = sgTab.add(new BoolSetting.Builder()
-        .name("sound")
+        .name("tab-sound")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> tabIgnoreFriends = sgTab.add(new BoolSetting.Builder()
-        .name("ignore-friends")
+        .name("tab-ignore-friends")
         .defaultValue(true)
         .build()
     );
 
     private final Setting<Boolean> tabIgnoreFakePlayers = sgTab.add(new BoolSetting.Builder()
-        .name("ignore-fake-players")
+        .name("tab-ignore-fake-players")
         .defaultValue(true)
         .description("Ignores fake players (e.g. NPCs) in the tab list.")
         .build()
     );
 
     private final Setting<Integer> tabDelay = sgTab.add(new IntSetting.Builder()
-        .name("leave-delay-ms")
+        .name("tab-leave-delay-ms")
         .defaultValue(500)
         .min(0)
         .sliderMax(2000)
@@ -97,7 +97,7 @@ public class PlayerAlerter extends Module {
     );
 
     private final Setting<Boolean> tabShowReenter = sgTab.add(new BoolSetting.Builder()
-        .name("show-reenter")
+        .name("tab-show-reenter")
         .defaultValue(false)
         .description("If true, shows 'Re-entered tab' when a player comes back within delay.")
         .build()
