@@ -135,9 +135,11 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BungeeJoinPackets());        
         Modules.get().add(new Chat2Discord());
         Modules.get().add(new ChatCleanup());
+        Modules.get().add(new ChatPlinger());
         Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChatSpam());        
         Modules.get().add(new ChunkBlockESP());
+        Modules.get().add(new Clicker());
         Modules.get().add(new ClickTP());
         Modules.get().add(new CommandAura());
         Modules.get().add(new CommandRedirector());
