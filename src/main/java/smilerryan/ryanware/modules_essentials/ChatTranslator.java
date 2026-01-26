@@ -17,6 +17,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
+import com.google.gson.*;
+
 public class ChatTranslator extends Module {
     public enum Mode {
         Reading, Sending, Both
@@ -65,7 +67,7 @@ public class ChatTranslator extends Module {
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
         if (mode.get() == Mode.Sending) return;
-        String original = event.getMessage().getString().trim();
+        String original = event.getMessage().getString().replaceAll("^<\\d{1,2}:\\d{2}(?::\\d{2})?>", "").trim();
 
         if (original.isEmpty() || original.startsWith(readingPrefix.get().replace("&", "§"))) return;
 
@@ -101,38 +103,18 @@ public class ChatTranslator extends Module {
             System.err.println("Translation send failed: " + e.getMessage());
         }
     }
-
+    
     public static String extractTranslation(String json) {
         try {
-            int startIndex = json.indexOf("\"translation\": \"") + 16;
-            if (startIndex < 16) return null;
-            int endIndex = json.indexOf('"', startIndex);
-            if (endIndex == -1) return null;
-            String input = json.substring(startIndex, endIndex);
-            StringBuilder builder = new StringBuilder();
-            int i = 0;
-            while (i < input.length()) {
-                char currentChar = input.charAt(i);
-                if (currentChar == '\\' && i + 1 < input.length() && input.charAt(i + 1) == 'u') {
-                    if (i + 5 < input.length()) {
-                        try {
-                            String hexCode = input.substring(i + 2, i + 6);
-                            char unicodeChar = (char) Integer.parseInt(hexCode, 16);
-                            builder.append(unicodeChar);
-                            i += 6;
-                            continue;
-                        } catch (NumberFormatException e) {
-                            // ignore
-                        }
-                    }
-                }
-                builder.append(currentChar);
-                i++;
-            }
-            return builder.toString();
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+
+            if (!root.has("translation")) return null;
+
+            return root.get("translation").getAsString();
         } catch (Exception e) {
             System.err.println("Translation extract failed: " + e.getMessage());
             return null;
         }
     }
+
 }
