@@ -90,6 +90,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AskOllama());
         Modules.get().add(new AtSomeone());
+        Modules.get().add(new AutoClickPlayers());
         Modules.get().add(new AutoFollowItems());
         Modules.get().add(new AutoFollowPlayers());
         Modules.get().add(new AutoMineNearby());
@@ -129,6 +130,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoRespawn());
         Modules.get().add(new AutoTotem());
+        Modules.get().add(new AutoWalkHome());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
