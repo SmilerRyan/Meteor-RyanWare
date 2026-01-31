@@ -2,11 +2,13 @@ package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
+import net.minecraft.network.packet.Packet;
 import smilerryan.ryanware.RyanWare;
 
 import java.io.OutputStream;
@@ -15,6 +17,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
+
 
 public class Chat2Discord extends Module {
     private final SettingGroup sgWebhook = settings.createGroup("Webhook Settings");
@@ -30,6 +36,9 @@ public class Chat2Discord extends Module {
 
     private final Setting<Boolean> forwardOutgoingChat = sgForward.add(new BoolSetting.Builder()
             .name("forward-outgoing-chat").description("Forward outgoing chat messages.").defaultValue(false).build());
+
+    private final Setting<Boolean> forwardOutgoingCommands = sgForward.add(new BoolSetting.Builder()
+            .name("forward-outgoing-commands").description("Forward outgoing commands.").defaultValue(false).build());
 
     private final Setting<Boolean> forwardIncomingChat = sgForward.add(new BoolSetting.Builder()
             .name("forward-incoming-chat").description("Forward incoming chat messages.").defaultValue(false).build());
@@ -71,7 +80,23 @@ public class Chat2Discord extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        handleMessage(event.message, forwardOutgoingChat.get(), "**sent** ");
+        handleMessage(event.message, forwardOutgoingChat.get(), "**sent chat** ");
+    }
+    
+    @EventHandler
+    private void onSendPacket(PacketEvent.Send event) {
+        Packet<?> packet = event.packet;
+        String command = null;
+
+        if (packet instanceof CommandExecutionC2SPacket cmdPacket) {
+            command = "/" + cmdPacket.command();
+        } else if (packet instanceof ChatCommandSignedC2SPacket signedPacket) {
+            command = "/" + signedPacket.command();
+        }
+
+        if (command != null) {
+            handleMessage(command, forwardOutgoingCommands.get(), "**sent command** ");
+        }
     }
 
     @EventHandler
