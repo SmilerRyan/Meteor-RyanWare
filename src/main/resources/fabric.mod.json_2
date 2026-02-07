@@ -3,7 +3,7 @@
   "id": "ryanware",
   "version": "0.1",
   "name": "NovaCore",
-  "icon": "icon.png",
+  "icon": "icon-plus.png",
   "description": "The NovaCore Addon for Meteor Client.",
   "authors": ["ChatGPT"],
   "environment": "client",

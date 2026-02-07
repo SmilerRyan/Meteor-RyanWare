@@ -3,7 +3,7 @@
   "id": "ryanware",
   "version": "${version}",
   "name": "RyanWare",
-  "icon": "icon.png",
+  "icon": "icon-plus.png",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan"],
   "contact": {
@@ -31,7 +31,7 @@
   },
   "depends": {
     "java": ">=17",
-    "minecraft": ">=@mc_version@",
+    "minecraft": ">=1.20.6",
     "meteor-client": "*"
   }
 }
