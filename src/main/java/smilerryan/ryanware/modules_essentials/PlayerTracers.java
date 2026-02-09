@@ -10,30 +10,65 @@ import smilerryan.ryanware.RyanWare;
 
 public class PlayerTracers extends Module {
 
+    private final Color tracerColor = new Color(255, 0, 0, 255);
+
     public PlayerTracers() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "PlayerTracers",
-                "Draws a line to all players.");
+        super(
+            RyanWare.CATEGORY,
+            RyanWare.modulePrefix_extras + "PlayerTracers",
+            "Draws stable tracers to real players."
+        );
     }
 
     @EventHandler
     private void onRender3D(Render3DEvent event) {
         if (mc.player == null || mc.world == null) return;
 
-        Color tracerColor = new Color(1.0f, 0.0f, 0.0f, 1.0f); // Red RGBA
+        float t = event.tickDelta;
+
+        // Interpolated eye position
+        double px = lerp(mc.player.prevX, mc.player.getX(), t);
+        double py = lerp(mc.player.prevY, mc.player.getY(), t)
+                + mc.player.getEyeHeight(mc.player.getPose());
+        double pz = lerp(mc.player.prevZ, mc.player.getZ(), t);
+
+        // Small forward offset keeps start point inside frustum
+        Vec3d forward = mc.player.getRotationVec(t).multiply(0.25);
+        double sx = px + forward.x;
+        double sy = py + forward.y;
+        double sz = pz + forward.z;
 
         for (PlayerEntity player : mc.world.getPlayers()) {
             if (player == mc.player || player.isInvisible()) continue;
 
-            // Start at center of your player instead of eyes
-            Vec3d start = mc.player.getPos().add(0, mc.player.getHeight() / 2, 0);
-            Vec3d end = player.getPos().add(0, player.getEyeHeight(player.getPose()), 0);
+            String name = stripFormatting(player.getName().getString());
+            if (name.isEmpty()
+                    || name.startsWith("CIT-")
+                    || name.startsWith("[NPC]")
+                    || name.startsWith("[BOT]")) continue;
 
-            // Draw line to other player
-            event.renderer.line(
-                    start.x, start.y, start.z,
-                    end.x, end.y, end.z,
-                    tracerColor
-            );
+            double tx = lerp(player.prevX, player.getX(), t);
+            double ty = lerp(player.prevY, player.getY(), t)
+                    + player.getEyeHeight(player.getPose());
+            double tz = lerp(player.prevZ, player.getZ(), t);
+
+            event.renderer.line(sx, sy, sz, tx, ty, tz, tracerColor);
         }
+    }
+
+    private double lerp(double a, double b, float t) {
+        return a + (b - a) * t;
+    }
+
+    private String stripFormatting(String s) {
+        if (s == null || s.isEmpty()) return "";
+
+        StringBuilder out = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '§') { i++; continue; }
+            out.append(c);
+        }
+        return out.toString().trim();
     }
 }
