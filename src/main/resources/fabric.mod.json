@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "id": "ryanware",
-  "version": "${version}",
-  "name": "RyanWare",
-  "icon": "icon-plus.png",
+  "version": "2.2",
+  "name": "Shadow Client",
+  "icon": "icon-d.png",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan"],
   "contact": {
-    "repo": "https://github.com/smilerryan/meteor-ryanware"
+    "repo": "https://github.com/smilerryan/meteor-shadow-client"
   },
   "environment": "client",
   "entrypoints": {
@@ -20,14 +20,14 @@
   ],
   "custom": {
     "meteor-client:color": "229,255,0",
-    "github:sha": "@gh_hash@",
-    "ryanware:addon-name": "RyanWare",
-    "ryanware:module-prefix-essentials": "RyanWare-E-",
-    "ryanware:module-prefix-extras": "RyanWare-+-",
-    "ryanware:cat-name-essentials": "RyanWare Essentials",
-    "ryanware:cat-name-extras": "RyanWare Extras",
-    "ryanware:icon-essentials": "sponge",
-    "ryanware:icon-extras": "sponge"
+    "github:sha": "",
+    "ryanware:addon-name": "ShadowClient",
+    "ryanware:module-prefix-essentials": "Shadow-",
+    "ryanware:module-prefix-extras": "Shadow-",
+    "ryanware:cat-name-essentials": "Shadow",
+    "ryanware:cat-name-extras": "ShadowPlus",
+    "ryanware:icon-essentials": "ender_pearl",
+    "ryanware:icon-extras": "ender_pearl"
   },
   "depends": {
     "java": ">=17",

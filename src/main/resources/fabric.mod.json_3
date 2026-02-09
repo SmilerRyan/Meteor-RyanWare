@@ -15,7 +15,7 @@
       "smilerryan.ryanware.RyanWare"
     ]
   },
-  "0mixins": [
+  "mixins": [
     "ryanware.mixins.json"
   ],
   "custom": {
