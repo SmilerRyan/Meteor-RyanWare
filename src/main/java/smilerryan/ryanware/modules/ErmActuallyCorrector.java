@@ -60,9 +60,11 @@ public class ErmActuallyCorrector extends Module {
         String sender = "unknown";
         if (raw.startsWith("<") && raw.contains(">")) {
             sender = raw.substring(1, raw.indexOf(">"));
+        } else {
+            return;
         }
 
-        if (sender.equalsIgnoreCase(mc.player.getName().getString())) return;
+        //if (sender.equalsIgnoreCase(mc.player.getName().getString())) return;
 
         String content = raw;
         if (raw.startsWith("<") && raw.contains("> ")) {
