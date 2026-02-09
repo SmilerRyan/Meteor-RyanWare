@@ -89,6 +89,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AntiHack());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AskOllama());
+        Modules.get().add(new AskOllamaAnnoyer());
         Modules.get().add(new AtSomeone());
         Modules.get().add(new AutoClickPlayers());
         Modules.get().add(new AutoFollowItems());
