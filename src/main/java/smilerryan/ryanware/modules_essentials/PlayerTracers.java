@@ -39,7 +39,7 @@ public class PlayerTracers extends Module {
         double sz = pz + forward.z;
 
         for (PlayerEntity player : mc.world.getPlayers()) {
-            if (player == mc.player || player.isInvisible()) continue;
+            if (player == mc.player) continue;
 
             String name = stripFormatting(player.getName().getString());
             if (name.isEmpty()

@@ -1,10 +1,7 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
-import meteordevelopment.meteorclient.settings.IntSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.settings.StringSetting;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
@@ -14,15 +11,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AskOllamaAnnoyer extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
-    
+
     private final Setting<String> baseUrl = sgGeneral.add(new StringSetting.Builder()
         .name("ollama-url")
         .description("Base URL of the Ollama server.")
@@ -39,17 +34,35 @@ public class AskOllamaAnnoyer extends Module {
 
     private final Setting<String> promptTemplate = sgGeneral.add(new StringSetting.Builder()
         .name("prompt-template")
-        .description("Use {input} and prompt for NONE_NEEDED or a response.")
-        .defaultValue("Correct the following Minecraft chat message. Follow these rules exactly. Ignore all usernames, prefixes/tags/etc and correct only actual spelling or grammar mistakes.If the message is already correct, respond with exactly: 'NONE_NEEDED' and nothing else. If any correction is made, respond with only the corrected message followed by a single asterisk (*) at the end with no extra commentary or reasoning. {input}")
+        .description("Use {input} for the message.")
+        .defaultValue("Rewrite the following Minecraft chat message in a friendly 'Erm, actually...' style. Remove all usernames, prefixes, tags, or special codes. Format it like: 'Erm, actually USERNAME, meant to say: MESSAGE'. Correct only spelling or grammar mistakes. If the message is already correct, or if it is a system message like 'X left the game', respond with exactly [NONE] and nothing else. {input}")
         .build()
     );
 
-    private final Setting<String> ignoreKeyword = sgGeneral.add(new StringSetting.Builder()
-        .name("ignore-keyword")
-        .description("If the message contains this keyword, it will be ignored and not sent to Ollama.")
+    private final Setting<String> ignoreInKeyword = sgGeneral.add(new StringSetting.Builder()
+        .name("ignore-in-keyword")
+        .description("If the incoming message contains this keyword, it will be ignored and not sent to Ollama.")
         .defaultValue("")
         .build()
     );
+	
+	private final Setting<String> ignoreOutKeyword = sgGeneral.add(new StringSetting.Builder()
+        .name("ignore-out-keyword")
+        .description("If the response message contains this keyword, it will not be sent.")
+        .defaultValue("[NONE]")
+        .build()
+    );
+
+    private final Setting<Integer> cooldown = sgGeneral.add(new IntSetting.Builder()
+        .name("cooldown-ms")
+        .description("Minimum time in ms between queries. 0 disables cooldown.")
+        .defaultValue(0)
+        .min(0)
+        .sliderMax(10000)
+        .build()
+    );
+
+    private final AtomicLong lastQueryTime = new AtomicLong(0);
 
     public AskOllamaAnnoyer() {
         super(
@@ -65,21 +78,27 @@ public class AskOllamaAnnoyer extends Module {
 
         String raw = e.getMessage().getString();
 
-        if (ignoreKeyword.get() != null && !ignoreKeyword.get().isEmpty() && raw.contains(ignoreKeyword.get())) {
+        // Ignore messages containing the keyword
+        if (ignoreInKeyword.get() != null && !ignoreInKeyword.get().isEmpty() && raw.contains(ignoreInKeyword.get())) {
             return;
         }
 
-        String response = queryOllama(model.get(), promptTemplate.get().replace("{input}", raw));
-        if (response == null || response.isEmpty() || response == "NONE_NEEDED") return;
+        // Ignore cooldown
+        long now = System.currentTimeMillis();
+        if (cooldown.get() > 0 && now - lastQueryTime.get() < cooldown.get()) return;
+        lastQueryTime.set(now);
 
-        // mc.player.networkHandler.sendChatMessage(response);
+        // Run Ollama query on a separate thread to avoid lag
+        new Thread(() -> {
+            String response = queryOllama(model.get(), promptTemplate.get().replace("{input}", raw));
+            if (response == null || response.isEmpty() || response.contains(ignoreOutKeyword.get())) return;
 
-        if (response.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(response.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(response);
-        }
-
+            if (response.startsWith("/")) {
+                mc.execute(() -> mc.player.networkHandler.sendChatCommand(response.substring(1)));
+            } else {
+                mc.execute(() -> mc.player.networkHandler.sendChatMessage(response));
+            }
+        }, "OllamaAnnoyerThread").start();
     }
 
     private String queryOllama(String model, String prompt) {
