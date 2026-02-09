@@ -149,6 +149,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CommandRedirector());
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new CoordNotifier());
+        Modules.get().add(new ErmActuallyCorrector());        
         Modules.get().add(new PacketDelayer());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
@@ -181,10 +182,10 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new WorldDownloader());
 
         // Register commands
+        Commands.add(new Command_addText());
         Commands.add(new Command_GMC());
         Commands.add(new Command_Note());
         Commands.add(new Command_RandomNumber());
-        Commands.add(new Command_showText());
         Commands.add(new Command_TAMsg1());
         
     }

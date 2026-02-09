@@ -9,10 +9,10 @@ import net.minecraft.client.MinecraftClient;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
-public class Command_showText extends Command {
+public class Command_addText extends Command {
 
-    public Command_showText() {
-        super("showText", "Prints any text you give it.");
+    public Command_addText() {
+        super("addText", "Add any text you provide to your chat.");
     }
 
     @Override
