@@ -143,7 +143,8 @@ public class AskOllama extends Module {
     }
 
     @EventHandler
-    private void onChat(ReceiveMessageEvent event) {
+    private void onReceiveMessage(ReceiveMessageEvent event) {
+    //private void onChat(ReceiveMessageEvent event) {
         if (!isActive() || event.getMessage() == null) return;
 
         String msg = event.getMessage().getString();
