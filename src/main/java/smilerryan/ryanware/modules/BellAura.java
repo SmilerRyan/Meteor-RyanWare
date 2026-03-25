@@ -13,6 +13,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import smilerryan.ryanware.RyanWare;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class BellAura extends Module {
     }
 
     public BellAura() {
-        super(smilerryan.ryanware.RyanWare.CATEGORY, "bell-aura", "Automatically looks at and clicks the nearest bell.");
+        super(smilerryan.ryanware.RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "bell-aura", "Automatically looks at and clicks the nearest bell.");
     }
 
     @EventHandler
