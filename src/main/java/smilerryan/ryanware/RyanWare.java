@@ -87,6 +87,7 @@ public class RyanWare extends MeteorAddon {
 
         // Register Essentials
         Modules.get().add(new AntiHack());
+        Modules.get().add(new AutoChatScreenshotter());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AskOllama());
         Modules.get().add(new AskOllama2());
@@ -130,6 +131,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new Aura());
         Modules.get().add(new AutoChestMover());
+        Modules.get().add(new AutoGroom());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoRespawn());
         Modules.get().add(new AutoTotem());
@@ -139,6 +141,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BritishChat());
         Modules.get().add(new BungeeJoinPackets());        
         Modules.get().add(new Chat2Discord());
+        Modules.get().add(new Chat2Discord_1_21_11());
         Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChatLogger());
         Modules.get().add(new ChatPlinger());
