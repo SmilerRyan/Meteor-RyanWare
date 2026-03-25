@@ -29,7 +29,7 @@
 Output:
 
 ```
-build/libs/
+./build/libs/RyanWare-XXXX-XX-XX-XX-XX-XX.jar
 ```
 
 ---
