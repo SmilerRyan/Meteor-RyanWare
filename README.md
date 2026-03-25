@@ -18,6 +18,9 @@
 
 > ⚠️ This is **NOT** a standalone client — Meteor Client is required for this addon to load.
 
+> This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.
+> Using this addon on any version that is not the latest should load, but it isn't supported.
+
 ---
 
 ## Building
