@@ -27,6 +27,13 @@ public class NiceFlight extends Module {
         .build()
     );
 
+    private final Setting<Boolean> enableEveryTick = sgGeneral.add(new BoolSetting.Builder()
+        .name("enable-flight-every-tick")
+        .description("Bypasses some anti-fly by re-enabling flight every tick.")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Boolean> bypassAntiKick = sgGeneral.add(new BoolSetting.Builder()
         .name("bypass-anti-kick")
         .description("Bypasses vanilla anti-kick while flying.")
@@ -37,7 +44,10 @@ public class NiceFlight extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private boolean wasJumping = false;
     private boolean isFlying = false;
-    private boolean canDoubleJump = true;
+
+    // Vanilla-like double tap timer (~7 ticks window)
+    private int jumpTimer = 0;
+    private static final int DOUBLE_TAP_WINDOW = 7;
 
     public NiceFlight() {
         super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Nice-Flight", "Toggle flying with double jump, like creative mode.");
@@ -47,7 +57,8 @@ public class NiceFlight extends Module {
     public void onActivate() {
         wasJumping = false;
         isFlying = false;
-        canDoubleJump = true;
+        jumpTimer = 0;
+
         if (mc.player != null) {
             mc.player.getAbilities().allowFlying = false;
             mc.player.getAbilities().flying = false;
@@ -68,39 +79,41 @@ public class NiceFlight extends Module {
 
         boolean isJumping = mc.options.jumpKey.isPressed();
 
-        // Handle instant takeoff if enabled
-        if (instantTakeoff.get() && !isFlying && isJumping && !mc.player.isOnGround()) {
-            isFlying = true;
-            mc.player.getAbilities().allowFlying = true;
-            mc.player.getAbilities().flying = true;
-            canDoubleJump = false;
-        }
-        // Only detect double jump when not flying and player is in air (for non-instant takeoff)
-        else if (!instantTakeoff.get() && !isFlying && !wasJumping && isJumping && !mc.player.isOnGround() && canDoubleJump) {
-            // Enable flying
-            isFlying = true;
-            mc.player.getAbilities().allowFlying = true;
-            mc.player.getAbilities().flying = true;
-            canDoubleJump = false;
-        }
-        // Detect double jump while flying to disable it (works in both modes)
-        else if (isFlying && !wasJumping && isJumping && !mc.player.isOnGround() && canDoubleJump) {
-            // Disable flying
-            isFlying = false;
-            mc.player.getAbilities().flying = false;
-            mc.player.getAbilities().allowFlying = false;
-            canDoubleJump = false;
+        // Instant takeoff mode
+        if (instantTakeoff.get()) {
+            if (!isFlying && isJumping && !mc.player.isOnGround()) {
+                isFlying = true;
+                mc.player.getAbilities().allowFlying = true;
+                mc.player.getAbilities().flying = true;
+            }
         }
 
-        // Reset double jump ability when player touches ground
-        if (mc.player.isOnGround()) {
-            canDoubleJump = true;
-            // Reset flying state when touching ground in instant takeoff mode
-            if (instantTakeoff.get() && isFlying) {
-                isFlying = false;
-                mc.player.getAbilities().flying = false;
-                mc.player.getAbilities().allowFlying = false;
+        // Double-tap detection (vanilla-like)
+        if (!wasJumping && isJumping) {
+            if (jumpTimer > 0) {
+                isFlying = !isFlying;
+                mc.player.getAbilities().allowFlying = !isFlying;
+                mc.player.getAbilities().flying = !isFlying;
+                jumpTimer = 0;
+            } else {
+                jumpTimer = DOUBLE_TAP_WINDOW;
             }
+        }
+
+        // Countdown timer
+        if (jumpTimer > 0) jumpTimer--;
+
+        // Reset on ground (vanilla behavior feel)
+        if (mc.player.isOnGround() && isFlying && instantTakeoff.get()) {
+            isFlying = false;
+            mc.player.getAbilities().allowFlying = false;
+            mc.player.getAbilities().flying = false;
+        }
+
+        // Apply allowFlying every tick
+        if (enableEveryTick.get() && isFlying) {
+            mc.player.getAbilities().allowFlying = true;
+            mc.player.getAbilities().flying = true;
         }
 
         // Apply flight speed when flying
