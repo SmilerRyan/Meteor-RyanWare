@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" href="src/main/resources/icon-plus.png" />
+        <title>RyanWare / Shadow Client</title>
+        <style>
+            body {
+                margin: 0;
+                background: #0d0d0d;
+                color: #e6e6e6;
+                font-family: Arial, sans-serif;
+                padding: 40px;
+            }
+            .container {
+                max-width: 900px;
+                margin: auto;
+                background: #121212;
+                padding: 30px;
+                border-radius: 10px;
+            }
+            pre {
+                background: #0a0a0a;
+                padding: 10px;
+                border-radius: 6px;
+                overflow-x: auto;
+            }
+            a {
+                cursor: pointer;
+                color: #8174a9;
+                font-weight: bold;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="content"></div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script>
+            fetch("README.md").then(res => res.text()).then(md => {
+                document.getElementById("content").innerHTML = marked.parse(md);
+            });
+        </script>
+    </body>
+</html>
