@@ -112,20 +112,16 @@ public class AntiFancyChat extends Module {
     }
 
     private Text normalizeFancyText(Text text) {
-        String content = text.getString();
-        String normalized = normalizeFancy(content);
-        
-        if (normalized.equals(content)) return text;
-        
-        MutableText newText = Text.literal(normalized).setStyle(text.getStyle());
-        
-        for (Text sibling : text.getSiblings()) {
-            newText.append(normalizeFancyText(sibling));
-        }
-        
-        return newText;
-    }
+        MutableText result = Text.empty().setStyle(text.getStyle());
 
+        text.visit((style, string) -> {
+            result.append(Text.literal(normalizeFancy(string)).setStyle(style));
+            return java.util.Optional.empty();
+        }, text.getStyle());
+
+        return result;
+    }
+    
     private String normalizeFancy(String input) {
         if (input == null || input.isEmpty()) {
             return input;
