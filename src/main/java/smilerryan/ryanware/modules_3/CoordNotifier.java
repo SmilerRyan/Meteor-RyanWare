@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -20,7 +20,7 @@ public class CoordNotifier extends Module {
     private final Setting<String> wholeCommand = sgGeneral.add(new StringSetting.Builder()
         .name("whole-command")
         .description("The whole command, auto replaces [x] [y] [z] [tag] with coordinates and tag.")
-        .defaultValue("ServerOwner")
+        .defaultValue("/teammsg [tag] [x] [y] [z]")
         .build()
     );
 
@@ -35,7 +35,7 @@ public class CoordNotifier extends Module {
     private static final String COORD_LEAK_TAG = "[Coord-TP-Leak]";
 
     public CoordNotifier() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
     }
 
     @EventHandler

@@ -24,10 +24,13 @@
     "ryanware:addon-name": "RyanWare",
     "ryanware:module-prefix-essentials": "RyanWare-E-",
     "ryanware:module-prefix-extras": "RyanWare-+-",
+    "ryanware:module-prefix-3": "RyanWare3-",
     "ryanware:cat-name-essentials": "RyanWare Essentials",
     "ryanware:cat-name-extras": "RyanWare Extras",
+    "ryanware:cat-name-3": "RyanWare3",
     "ryanware:icon-essentials": "sponge",
-    "ryanware:icon-extras": "sponge"
+    "ryanware:icon-extras": "sponge",
+    "ryanware:icon-3": "sponge"
   },
   "depends": {
     "java": ">=17",

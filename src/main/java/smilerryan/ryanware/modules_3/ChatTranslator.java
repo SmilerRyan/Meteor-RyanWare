@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
@@ -45,7 +45,7 @@ public class ChatTranslator extends Module {
     private final Setting<String> readingPrefix = sgReading.add(new StringSetting.Builder()
         .name("prefix")
         .description("Prefix to show for translated messages.")
-        .defaultValue("[English] ")
+        .defaultValue("&7[&cEnglish&7] &d")
         .build()
     );
 
@@ -61,7 +61,7 @@ public class ChatTranslator extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     public ChatTranslator() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Chat-Translator", "Translates chat messages via Google Translate.");
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Chat-Translator", "Translates chat messages via Google Translate.");
     }
 
     @EventHandler

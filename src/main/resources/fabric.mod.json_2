@@ -21,10 +21,13 @@
     "ryanware:addon-name": "NovaCore",
     "ryanware:module-prefix-essentials": "Nova-",
     "ryanware:module-prefix-extras": "WIP-",
+    "ryanware:module-prefix-3": "3-",
     "ryanware:cat-name-essentials": "NovaCore",
     "ryanware:cat-name-extras": "NovaBeta",
+    "ryanware:cat-name-3": "Nova3",
     "ryanware:icon-essentials": "nether_star",
-    "ryanware:icon-extras": "flint_and_steel"
+    "ryanware:icon-extras": "flint_and_steel",
+    "ryanware:icon-3": "sponge"
   },
   "depends": {
     "java": ">=17",

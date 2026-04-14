@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -99,7 +99,7 @@ public class AntiFancyChat extends Module {
     }
 
     public AntiFancyChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Anti-FancyChat", "Normalizes fancy Unicode chat text back to plain ASCII, while preserving chat colors.");
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix_extras + "Anti-Fancy-Chat", "Normalizes fancy Unicode chat text back to plain ASCII, while preserving chat colors.");
     }
 
     @EventHandler
