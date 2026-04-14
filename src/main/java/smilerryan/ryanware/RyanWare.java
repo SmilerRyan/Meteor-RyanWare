@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 import smilerryan.ryanware.modules_essentials.*;
+import smilerryan.ryanware.modules_3.*;
 import smilerryan.ryanware.commands.*;
 
 import java.util.Collections;
@@ -29,15 +30,19 @@ public class RyanWare extends MeteorAddon {
 
     public static String catName_essentials = "";
     public static String catName_extras = "";
+    public static String catName_3 = "";
 
     public static String modulePrefix_essentials = "";
     public static String modulePrefix_extras = "";
+    public static String modulePrefix3 = "";
 
     public static Item iconItem_essentials = Items.SPONGE;
     public static Item iconItem_extras = Items.SPONGE;
+    public static Item iconItem_3 = Items.SPONGE;
     
     public static Category CATEGORY;
     public static Category CATEGORY_ESSENTIALS;
+    public static Category CATEGORY3;
 
     static {
         try {
@@ -53,11 +58,17 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:module-prefix-extras") != null) {
                         modulePrefix_extras = meta.getCustomValue("ryanware:module-prefix-extras").getAsString();
                     }
+                    if (meta.getCustomValue("ryanware:module-prefix-3") != null) {
+                        modulePrefix3 = meta.getCustomValue("ryanware:module-prefix-3").getAsString();
+                    }
                     if (meta.getCustomValue("ryanware:cat-name-essentials") != null) {
                         catName_essentials = meta.getCustomValue("ryanware:cat-name-essentials").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:cat-name-extras") != null) {
                         catName_extras = meta.getCustomValue("ryanware:cat-name-extras").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:cat-name-3") != null) {
+                        catName_3 = meta.getCustomValue("ryanware:cat-name-3").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:icon-essentials") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon-essentials").getAsString().toLowerCase(Locale.ROOT);
@@ -69,6 +80,11 @@ public class RyanWare extends MeteorAddon {
                         Identifier id = Identifier.of("minecraft", iconName);
                         iconItem_extras = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
                     }
+                    if (meta.getCustomValue("ryanware:icon-3") != null) {
+                        String iconName = meta.getCustomValue("ryanware:icon-3").getAsString().toLowerCase(Locale.ROOT);
+                        Identifier id = Identifier.of("minecraft", iconName);
+                        iconItem_3 = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                    }
                 } catch (Exception e) {
                     LOG.error("Failed to read mod metadata or override values.", e);
                 }
@@ -79,6 +95,7 @@ public class RyanWare extends MeteorAddon {
 
         CATEGORY = new Category(catName_extras, iconItem_extras.getDefaultStack());
         CATEGORY_ESSENTIALS = new Category(catName_essentials, iconItem_essentials.getDefaultStack());
+        CATEGORY3 = new Category(catName_3, iconItem_3.getDefaultStack());
     }
 
     @Override
@@ -99,21 +116,16 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoResponder());;
         Modules.get().add(new ChatEncryption());
-        Modules.get().add(new ChatTranslator());
         Modules.get().add(new DeathCommands());
-        Modules.get().add(new DeathCoordsMessage());
         Modules.get().add(new ElytraFakeRockets());
         Modules.get().add(new ElytraFly());
         Modules.get().add(new f3_number_hider());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceColoredChat());
-        Modules.get().add(new ForceOpenTab());
         Modules.get().add(new ForceYLevel());
         Modules.get().add(new ModuleMenu());
-        Modules.get().add(new NiceFlight());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerAlerter());
-        Modules.get().add(new PlayerTracers());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
         Modules.get().add(new Recorder());
@@ -126,7 +138,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new _example());
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
-        Modules.get().add(new AntiFancyChat());
         Modules.get().add(new AskOllamaTranslator());
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new Aura());
@@ -139,12 +150,9 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
-        Modules.get().add(new BungeeJoinPackets());        
         Modules.get().add(new Chat2Discord());
-        Modules.get().add(new Chat2Discord_1_21_11());
         Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChatLogger());
-        Modules.get().add(new ChatPlinger());
         Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChatSpam());        
         Modules.get().add(new ChunkBlockESP());
@@ -153,7 +161,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CommandAura());
         Modules.get().add(new CommandRedirector());
         Modules.get().add(new CompletionCrash());
-        Modules.get().add(new CoordNotifier());
         Modules.get().add(new ErmActuallyCorrector());        
         Modules.get().add(new PacketDelayer());
         Modules.get().add(new CringeDetector());
@@ -186,6 +193,18 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new WiderChat());
         Modules.get().add(new WorldDownloader());
 
+        // Category3
+        Modules.get().add(new AntiFancyChat());
+        Modules.get().add(new BungeeSpoofer());
+        Modules.get().add(new ChatPlinger());
+        Modules.get().add(new ChatTranslator());
+        Modules.get().add(new CoordNotifier());
+        Modules.get().add(new DeathCoords());
+        Modules.get().add(new DiscordChatLogger());
+        Modules.get().add(new Flight());
+        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new PlayerTracers());
+
         // Register commands
         Commands.add(new Command_addText());
         Commands.add(new Command_GMC());
@@ -199,6 +218,7 @@ public class RyanWare extends MeteorAddon {
     public void onRegisterCategories() {
         Modules.registerCategory(CATEGORY);
         Modules.registerCategory(CATEGORY_ESSENTIALS);
+        Modules.registerCategory(CATEGORY3);
     }
 
     @Override

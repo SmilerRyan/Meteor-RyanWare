@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -11,7 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import java.util.List;
 
-public class DeathCoordsMessage extends Module {
+public class DeathCoords extends Module {
     private final SettingGroup sgGeneral   = settings.createGroup("General");
     private final SettingGroup sgProtected = settings.createGroup("Protected");
     private final SettingGroup sgLeaker    = settings.createGroup("Leaker");
@@ -82,8 +82,8 @@ public class DeathCoordsMessage extends Module {
     private double lastDeathX, lastDeathY, lastDeathZ;
     private boolean leaking = false;
 
-    public DeathCoordsMessage() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Death-Coords", "Sends coordinates on death.");
+    public DeathCoords() {
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Death-Coords", "Sends coordinates on death.");
     }
 
     @EventHandler

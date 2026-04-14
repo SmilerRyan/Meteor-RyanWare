@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Chat2Discord_1_21_11 extends Module {
+public class DiscordChatLogger extends Module {
 
     /* ================= SETTINGS ================= */
 
@@ -58,8 +58,8 @@ public class Chat2Discord_1_21_11 extends Module {
 
     /* ================= MODULE ================= */
 
-    public Chat2Discord_1_21_11() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord=1.21.11",
+    public DiscordChatLogger() {
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Discord-Chat-Logger",
                 "Forwards chat to Discord webhook.");
     }
 

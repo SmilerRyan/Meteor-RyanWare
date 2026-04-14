@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -16,7 +16,7 @@ public class ChatPlinger extends Module {
         new StringListSetting.Builder()
             .name("keywords")
             .description("Keywords to trigger the sound. Empty = all messages.")
-            .defaultValue()
+            .defaultValue( List.of("->", "Ryan", "Balls") )
             .build()
     );
 
@@ -38,7 +38,7 @@ public class ChatPlinger extends Module {
     );
 
     public ChatPlinger() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Plinger",
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Chat-Plinger",
             "Plays a sound when chat messages match keywords.");
     }
 
@@ -53,7 +53,7 @@ public class ChatPlinger extends Module {
         }
 
         for (String k : keywords.get()) {
-            if (m.contains(k)) {
+            if (m.toLowerCase().contains(k.toLowerCase())) {
                 play();
                 return;
             }

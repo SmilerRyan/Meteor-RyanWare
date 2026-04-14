@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -14,8 +14,8 @@ public class PlayerTracers extends Module {
 
     public PlayerTracers() {
         super(
-            RyanWare.CATEGORY,
-            RyanWare.modulePrefix_extras + "PlayerTracers",
+            RyanWare.CATEGORY3,
+            RyanWare.modulePrefix3 + "Player-Tracers",
             "Draws stable tracers to real players."
         );
     }

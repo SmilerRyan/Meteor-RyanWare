@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import smilerryan.ryanware.modules.BungeeJoinPackets;
+import smilerryan.ryanware.modules_3.BungeeSpoofer;
 
 @Mixin(HandshakeC2SPacket.class)
 public abstract class HandshakeC2SMixin {
@@ -23,17 +23,14 @@ public abstract class HandshakeC2SMixin {
     @Inject(method = "<init>(ILjava/lang/String;ILnet/minecraft/network/packet/c2s/handshake/ConnectionIntent;)V",
         at = @At("RETURN"))
     private void onInit(int protocol, String host, int port, ConnectionIntent intent, CallbackInfo ci) {
-        BungeeJoinPackets mod = Modules.get().get(BungeeJoinPackets.class);
 
-        // module must be on
+        BungeeSpoofer mod = Modules.get().get(BungeeSpoofer.class);
         if (!mod.isActive()) return;
-        // only spoof on LOGIN
         if (this.intendedState() != ConnectionIntent.LOGIN) return;
 
-        BungeeJoinPackets.Personality p = mod.getSelected();
-        if (p == null) return; // invalid index = no spoof
+        BungeeSpoofer.Personality p = mod.getSelected();
+        if (p == null) return;
 
-        // append \0IP\0UUID
         this.address += "\u0000" + p.ip + "\u0000" + p.uuid;
     }
 }
