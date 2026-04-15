@@ -1,6 +1,6 @@
 package smilerryan.ryanware.mixins;
 
-import smilerryan.ryanware.modules_3.f3_number_hider;
+import smilerryan.ryanware.modules_standard.f3_number_hider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.DebugHud;

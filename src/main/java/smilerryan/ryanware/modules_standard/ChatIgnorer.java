@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_3;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.StringListSetting;

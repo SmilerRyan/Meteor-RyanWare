@@ -73,7 +73,7 @@ Contributions are welcome:
 
 Guidelines:
 
-* Modules → `modules/` or `modules_3/`
+* Modules → `modules/` or `modules_standard/`
 * Commands → `commands/`
 * Core edits → `mixins/`
 

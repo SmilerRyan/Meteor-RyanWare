@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import smilerryan.ryanware.modules_3.BungeeSpoofer;
+import smilerryan.ryanware.modules_standard.BungeeSpoofer;
 
 @Mixin(HandshakeC2SPacket.class)
 public abstract class HandshakeC2SMixin {

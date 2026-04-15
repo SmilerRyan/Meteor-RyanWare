@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_3;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.settings.*;

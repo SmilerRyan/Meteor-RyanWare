@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
-import smilerryan.ryanware.modules_3.*;
+import smilerryan.ryanware.modules_standard.*;
 import smilerryan.ryanware.commands.*;
 
 import java.util.Collections;

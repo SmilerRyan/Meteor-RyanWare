@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_3;
+package smilerryan.ryanware.modules_standard;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
