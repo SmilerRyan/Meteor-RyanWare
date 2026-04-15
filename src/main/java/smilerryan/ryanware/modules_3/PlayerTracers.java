@@ -1,8 +1,9 @@
 package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.render.color.Color;
+import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
@@ -10,7 +11,14 @@ import smilerryan.ryanware.RyanWare;
 
 public class PlayerTracers extends Module {
 
-    private final Color tracerColor = new Color(255, 0, 0, 255);
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+
+    private final Setting<SettingColor> tracerColor = sgGeneral.add(new ColorSetting.Builder()
+        .name("color")
+        .description("Tracer color.")
+        .defaultValue(new SettingColor(255, 0, 0, 255))
+        .build()
+    );
 
     public PlayerTracers() {
         super(
@@ -52,7 +60,7 @@ public class PlayerTracers extends Module {
                     + player.getEyeHeight(player.getPose());
             double tz = lerp(player.prevZ, player.getZ(), t);
 
-            event.renderer.line(sx, sy, sz, tx, ty, tz, tracerColor);
+            event.renderer.line(sx, sy, sz, tx, ty, tz, tracerColor.get());
         }
     }
 
