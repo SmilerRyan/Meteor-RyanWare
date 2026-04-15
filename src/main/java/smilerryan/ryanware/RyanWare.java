@@ -149,7 +149,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
         Modules.get().add(new Chat2Discord());
-        Modules.get().add(new ChatCleanup());
         Modules.get().add(new ChatLogger());
         Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChatSpam());        
@@ -190,6 +189,7 @@ public class RyanWare extends MeteorAddon {
         // Category3
         Modules.get().add(new AntiFancyChat());
         Modules.get().add(new BungeeSpoofer());
+        Modules.get().add(new ChatIgnorer());
         Modules.get().add(new ChatPlinger());
         Modules.get().add(new ChatTranslator());
         Modules.get().add(new CoordNotifier());

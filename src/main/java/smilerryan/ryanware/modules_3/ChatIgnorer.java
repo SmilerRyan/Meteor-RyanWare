@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.StringListSetting;
@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ChatCleanup extends Module {
+public class ChatIgnorer extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<String>> annoyingChats = sgGeneral.add(new StringListSetting.Builder()
@@ -22,8 +22,8 @@ public class ChatCleanup extends Module {
         .build()
     );
 
-    public ChatCleanup() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Cleanup", "Ignores annoying chat messages using regex patterns.");
+    public ChatIgnorer() {
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Chat-Ignorer", "Ignores specific chat messages from your chat using regex patterns.");
     }
 
     @EventHandler
