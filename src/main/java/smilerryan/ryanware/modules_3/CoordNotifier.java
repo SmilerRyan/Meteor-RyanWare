@@ -31,8 +31,12 @@ public class CoordNotifier extends Module {
         .build()
     );
 
-
-    private static final String COORD_LEAK_TAG = "[Coord-TP-Leak]";
+    private final Setting<String> coordLeakTag = sgGeneral.add(new StringSetting.Builder()
+        .name("coord-leak-tag")
+        .description("The tag to identify coord leak messages, default is [Coord-TP-Leak].")
+        .defaultValue("[Coord-TP-Leak]")
+        .build()
+    );
 
     public CoordNotifier() {
         super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
@@ -49,7 +53,7 @@ public class CoordNotifier extends Module {
             String x = String.valueOf((int) MeteorClient.mc.player.getX());
             String y = String.valueOf((int) MeteorClient.mc.player.getY());
             String z = String.valueOf((int) MeteorClient.mc.player.getZ());
-            rawCommand = rawCommand.replace("[x]", x).replace("[y]", y).replace("[z]", z).replace("[tag]", COORD_LEAK_TAG);
+            rawCommand = rawCommand.replace("[x]", x).replace("[y]", y).replace("[z]", z).replace("[tag]", coordLeakTag.get());
 
             // if it's a command send it as a command, if not send it as a chat message
             if (rawCommand.startsWith("/")) {
@@ -63,7 +67,7 @@ public class CoordNotifier extends Module {
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (hideLeakedMessages.get() && event.getMessage().getString().contains(COORD_LEAK_TAG)) {event.cancel();}
+        if (hideLeakedMessages.get() && event.getMessage().getString().contains(coordLeakTag.get())) {event.cancel();}
     }
 
 }
