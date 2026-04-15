@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -11,8 +11,8 @@ public class WiderChat extends Module {
 
     public WiderChat() {
         super(
-            RyanWare.CATEGORY,
-            RyanWare.modulePrefix_extras + "Wider-Chat",
+            RyanWare.CATEGORY3,
+            RyanWare.modulePrefix3 + "Wider-Chat",
             "Unlimited chat width & chat history."
         );
         INSTANCE = this;

@@ -119,12 +119,10 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraFakeRockets());
         Modules.get().add(new ElytraFly());
-        Modules.get().add(new f3_number_hider());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceYLevel());
         Modules.get().add(new ModuleMenu());
-        Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
@@ -168,14 +166,12 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CrystalAura2());
         Modules.get().add(new CrystalAura3());
         Modules.get().add(new CustomCrosshair());
-        Modules.get().add(new CustomTabText());
         Modules.get().add(new Excavator());
         Modules.get().add(new EventAnnouncer());
         Modules.get().add(new FullBright());
         Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
-        Modules.get().add(new MorePing());
         Modules.get().add(new NewChunks());
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
@@ -184,13 +180,11 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RemoteViewProxyServer());
         Modules.get().add(new RemoteViewWebServer());
-        Modules.get().add(new SkinBlinker());
         Modules.get().add(new SpeechToText());
         Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemAutoLeave());
         Modules.get().add(new TotemBypass());
-        Modules.get().add(new WiderChat());
         Modules.get().add(new WorldDownloader());
 
         // Category3
@@ -199,11 +193,17 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ChatPlinger());
         Modules.get().add(new ChatTranslator());
         Modules.get().add(new CoordNotifier());
+        Modules.get().add(new CustomTabText());
         Modules.get().add(new DeathCoords());
         Modules.get().add(new DiscordChatLogger());
+        Modules.get().add(new f3_number_hider());
         Modules.get().add(new Flight());
         Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new MorePing());
+        Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerTracers());
+        Modules.get().add(new SkinBlinker());
+        Modules.get().add(new WiderChat());
 
         // Register commands
         Commands.add(new Command_addText());

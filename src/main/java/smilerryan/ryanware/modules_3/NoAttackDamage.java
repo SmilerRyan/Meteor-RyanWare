@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -25,9 +25,15 @@ public class NoAttackDamage extends Module {
         .description("Who not to attack.")
         .defaultValue(Mode.Everyone)
         .build());
+    
+    private final Setting<Boolean> showInfo = sg.add(new BoolSetting.Builder()
+        .name("show-info")
+        .description("Show info message when blocking an attack.")
+        .defaultValue(true)
+        .build());
 
     public NoAttackDamage() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "No-Attack-Damage", "Prevents dealing damage to others.");
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "No-Attack-Damage", "Prevents dealing damage to others.");
     }
 
     @EventHandler
@@ -62,13 +68,13 @@ public class NoAttackDamage extends Module {
                     if (mode.get() == Mode.Everyone) {
                         // Cancel all attack packets in Everyone mode
                         event.cancel();
-                        info("Blocked attack on player: " + playerName);
+                        if (showInfo.get()) info("Blocked attack on player: " + playerName);
                     } 
                     else if (mode.get() == Mode.FriendsOnly) {
                         // In FriendsOnly mode, check if the target is a friend
                         if (Friends.get().isFriend(player)) {
                             event.cancel();
-                            info("Blocked attack on friend: " + playerName);
+                            if (showInfo.get()) info("Blocked attack on friend: " + playerName);
                         }
                     }
                 }

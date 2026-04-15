@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -184,7 +184,7 @@ public class SkinBlinker extends Module {
     private int globalCounter = 0;
 
     public SkinBlinker() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "skin-blinker", "Automatically toggles skin layers (cape, hat, jacket, etc.) at configurable intervals.");
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "skin-blinker", "Automatically toggles skin layers (cape, hat, jacket, etc.) at configurable intervals.");
         
         // Initialize all counters
         for (PlayerModelPart part : PlayerModelPart.values()) {

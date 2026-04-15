@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_3;
 
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -74,7 +74,7 @@ public class CustomTabText extends Module {
     private Text serverFooter = null;
 
     public CustomTabText() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Custom-Tab-Text",
+        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Custom-Tab-Text",
             "Customize tab overlay header and footer.");
     }
 
