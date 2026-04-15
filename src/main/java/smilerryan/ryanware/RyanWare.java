@@ -87,6 +87,7 @@ public class RyanWare extends MeteorAddon {
 
         // Standard
         Modules.get().add(new AntiFancyChat());
+        Modules.get().add(new AutoWalkForwards());
         Modules.get().add(new BungeeSpoofer());
         Modules.get().add(new ChatIgnorer());
         Modules.get().add(new ChatPlinger());
