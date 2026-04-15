@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -9,7 +9,7 @@ import smilerryan.ryanware.RyanWare;
 public class AutoRespawn extends Module {
 
     public AutoRespawn() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Auto-Respawn", "Automatically requests a respawns if the current screen is a DeathScreen.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Auto-Respawn", "Automatically requests a respawn if on the death screen.");
     }
 
     @EventHandler

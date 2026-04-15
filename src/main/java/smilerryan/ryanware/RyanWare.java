@@ -87,6 +87,7 @@ public class RyanWare extends MeteorAddon {
 
         // Standard
         Modules.get().add(new AntiFancyChat());
+        Modules.get().add(new AutoRespawn());
         Modules.get().add(new AutoWalkForwards());
         Modules.get().add(new BungeeSpoofer());
         Modules.get().add(new ChatIgnorer());
@@ -125,7 +126,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoGroom());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new AutoRespawn());
         Modules.get().add(new AutoResponder());;
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoTotem());
