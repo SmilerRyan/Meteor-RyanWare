@@ -23,7 +23,7 @@ public class ChatIgnorer extends Module {
     );
 
     public ChatIgnorer() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Chat-Ignorer", "Ignores specific chat messages from your chat using regex patterns.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Chat-Ignorer", "Ignores specific chat messages from your chat using regex patterns.");
     }
 
     @EventHandler

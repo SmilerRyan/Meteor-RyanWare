@@ -59,7 +59,7 @@ public class DiscordChatLogger extends Module {
     /* ================= MODULE ================= */
 
     public DiscordChatLogger() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Discord-Chat-Logger",
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Discord-Chat-Logger",
                 "Forwards chat to Discord webhook.");
     }
 

@@ -45,7 +45,7 @@ public class RedirectPublicChat extends Module {
     private int tickCounter = 0;
 
     public RedirectPublicChat() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Redirect-Public-Chat", "Redirects public chat messages to specified commands.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Redirect-Public-Chat", "Redirects public chat messages to specified commands.");
     }
 
     @EventHandler

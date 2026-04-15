@@ -56,7 +56,7 @@ public class Chat2Discord extends Module {
     private volatile String batchUsername = null;
 
     public Chat2Discord() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat2Discord",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Chat2Discord",
                 "Forwards your chat to any Discord webhook.");
     }
 

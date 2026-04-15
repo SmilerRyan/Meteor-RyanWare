@@ -38,7 +38,7 @@ public class ChatPlinger extends Module {
     );
 
     public ChatPlinger() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Chat-Plinger",
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Chat-Plinger",
             "Plays a sound when chat messages match keywords.");
     }
 

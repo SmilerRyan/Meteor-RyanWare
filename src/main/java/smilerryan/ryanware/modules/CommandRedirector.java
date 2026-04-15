@@ -42,7 +42,7 @@ public class CommandRedirector extends Module {
     private boolean redirecting = false;
 
     public CommandRedirector() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Command-Redirector",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Command-Redirector",
             "Redirects any command (slash or chat) based on ordered pattern matching with argument placeholders.");
     }
 

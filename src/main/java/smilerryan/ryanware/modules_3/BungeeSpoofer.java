@@ -56,8 +56,8 @@ public class BungeeSpoofer extends Module {
 
     public BungeeSpoofer() {
         super(
-            RyanWare.CATEGORY3,
-            RyanWare.modulePrefix_extras + "Bungee-Spoofer",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Bungee-Spoofer",
             "Spoofs BungeeCord handshake with UUID + IP."
         );
     }

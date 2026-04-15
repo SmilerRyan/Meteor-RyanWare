@@ -56,7 +56,7 @@ public class Clicker extends Module {
 
     public Clicker() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "Clicker",
             "Simple left/right clicker using tick delays."
         );

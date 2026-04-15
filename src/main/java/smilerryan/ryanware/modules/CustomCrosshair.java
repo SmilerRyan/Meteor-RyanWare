@@ -49,7 +49,7 @@ public class CustomCrosshair extends Module {
 
 
     public CustomCrosshair() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "custom-crosshair", "Draws a custom crosshair using a '+' symbol.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "custom-crosshair", "Draws a custom crosshair using a '+' symbol.");
     }
 
     @EventHandler

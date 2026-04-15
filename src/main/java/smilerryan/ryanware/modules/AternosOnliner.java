@@ -58,7 +58,7 @@ public class AternosOnliner extends Module {
     private String displayName = "none";
 
     public AternosOnliner() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Aternos-Onliner",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Aternos-Onliner",
             "Keeps Aternos servers online by jumping and sending periodic chat commands.");
     }
 

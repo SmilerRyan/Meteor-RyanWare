@@ -11,7 +11,7 @@ import net.minecraft.util.math.Vec3d;
 public class NoBlockDamage extends Module {
 
     public NoBlockDamage() {
-        super(RyanWare.CATEGORY,
+        super(RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "No-Block-Damage",
             "Prevents elytra collision damage.");
     }

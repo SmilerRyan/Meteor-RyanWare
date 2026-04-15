@@ -107,7 +107,7 @@ public class SpeechToText extends Module {
     private long generationId = 0;
 
     public SpeechToText() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Speech-To-Text", "Records mic audio and processes it.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Speech-To-Text", "Records mic audio and processes it.");
     }
 
     @Override

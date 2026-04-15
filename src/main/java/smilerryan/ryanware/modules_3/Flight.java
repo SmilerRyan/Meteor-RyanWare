@@ -50,7 +50,7 @@ public class Flight extends Module {
     private static final int DOUBLE_TAP_WINDOW = 7;
 
     public Flight() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Flight", "Toggle flying with double jump, like creative mode.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Flight", "Toggle flying with double jump, like creative mode.");
     }
 
     @Override

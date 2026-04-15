@@ -91,7 +91,7 @@ public class PlayerShapeESP extends Module {
     );
 
     public PlayerShapeESP() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Shape-ESP", "Renders 3D shapes around players.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Player-Shape-ESP", "Renders 3D shapes around players.");
     }
 
     @EventHandler

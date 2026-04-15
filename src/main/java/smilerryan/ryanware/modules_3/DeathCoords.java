@@ -83,7 +83,7 @@ public class DeathCoords extends Module {
     private boolean leaking = false;
 
     public DeathCoords() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Death-Coords", "Sends coordinates on death.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Death-Coords", "Sends coordinates on death.");
     }
 
     @EventHandler

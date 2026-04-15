@@ -47,7 +47,7 @@ public class MorePing extends Module {
 
     // Constructor
     public MorePing() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "More-Ping", "Modify your ping with minimum and random extra delay.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "More-Ping", "Modify your ping with minimum and random extra delay.");
     }
 
     // Overrides

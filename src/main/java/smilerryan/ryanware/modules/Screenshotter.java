@@ -36,7 +36,7 @@ public class Screenshotter extends Module {
     private Thread screenshotThread;
 
     public Screenshotter() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Screenshotter",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Screenshotter",
             "Takes screenshots of ALL monitors using ffmpeg with an optional interval and beep sound.");
     }
 

@@ -58,7 +58,7 @@ public class ChatLogger extends Module {
             DateTimeFormatter.ofPattern("HH-mm-ss");
 
     public ChatLogger() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "ChatLogger",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "ChatLogger",
                 "High performance chat logger with session-based filenames.");
     }
 

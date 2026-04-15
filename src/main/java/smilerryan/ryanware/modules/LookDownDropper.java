@@ -64,7 +64,7 @@ public class LookDownDropper extends Module {
     private boolean isDisabling = false;
 
     public LookDownDropper() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "LookDownDropper", "Slowly looks down, drops held item (optional), looks back up, and then optionally repeats.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "LookDownDropper", "Slowly looks down, drops held item (optional), looks back up, and then optionally repeats.");
     }
 
     @Override

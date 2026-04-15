@@ -20,14 +20,14 @@
   ],
   "custom": {
     "meteor-client:color": "229,255,0",
-    "github:sha": "@gh_hash@",
+    "github:sha": "",
     "ryanware:addon-name": "RyanWare",
-    "ryanware:module-prefix-extras": "RyanWare-",
-    "ryanware:module-prefix-3": "RyanWare3-",
+    "ryanware:module-prefix-extras": "RyanWare-Plus-",
+    "ryanware:module-prefix-standard": "RyanWare-",
     "ryanware:cat-name-extras": "RyanWare Extras",
-    "ryanware:cat-name-3": "RyanWare 3",
+    "ryanware:cat-name-standard": "RyanWare",
     "ryanware:icon-extras": "sponge",
-    "ryanware:icon-3": "sponge"
+    "ryanware:icon-standard": "sponge"
   },
   "depends": {
     "java": ">=17",

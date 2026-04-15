@@ -64,7 +64,7 @@ public class AskOllama2 extends Module {
 
     public AskOllama2() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "AskOllama2",
             "Answers chat for you with AI."
         );

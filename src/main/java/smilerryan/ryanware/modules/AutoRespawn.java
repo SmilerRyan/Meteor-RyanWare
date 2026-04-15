@@ -9,7 +9,7 @@ import smilerryan.ryanware.RyanWare;
 public class AutoRespawn extends Module {
 
     public AutoRespawn() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Auto-Respawn", "Automatically requests a respawns if the current screen is a DeathScreen.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Auto-Respawn", "Automatically requests a respawns if the current screen is a DeathScreen.");
     }
 
     @EventHandler

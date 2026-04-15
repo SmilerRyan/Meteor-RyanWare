@@ -133,7 +133,7 @@ public class AskOllama extends Module {
     ));
 
     public AskOllama() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override

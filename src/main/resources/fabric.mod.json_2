@@ -19,12 +19,12 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "",
     "ryanware:addon-name": "NovaCore",
-    "ryanware:module-prefix-extras": "WIP-",
-    "ryanware:module-prefix-3": "3-",
+    "ryanware:module-prefix-extras": "NovaWIP-",
+    "ryanware:module-prefix-standard": "Nova-",
     "ryanware:cat-name-extras": "NovaWIP",
-    "ryanware:cat-name-3": "Nova3",
+    "ryanware:cat-name-standard": "Nova",
     "ryanware:icon-extras": "flint_and_steel",
-    "ryanware:icon-3": "sponge"
+    "ryanware:icon-standard": "sponge"
   },
   "depends": {
     "java": ">=17",

@@ -22,8 +22,8 @@ public class PlayerTracers extends Module {
 
     public PlayerTracers() {
         super(
-            RyanWare.CATEGORY3,
-            RyanWare.modulePrefix3 + "Player-Tracers",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Player-Tracers",
             "Draws stable tracers to real players."
         );
     }

@@ -32,7 +32,7 @@ public class ElytraFakeRockets extends Module {
     private int cooldown = 0;
 
     public ElytraFakeRockets() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Elytra-Fake-Rockets", "Simulates Elytra rocket boosting without actual rockets.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Elytra-Fake-Rockets", "Simulates Elytra rocket boosting without actual rockets.");
     }
 
     @EventHandler

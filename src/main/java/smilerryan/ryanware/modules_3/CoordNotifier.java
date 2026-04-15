@@ -39,7 +39,7 @@ public class CoordNotifier extends Module {
     );
 
     public CoordNotifier() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Coord-Notifier", "Notifies a player when you get teleported and hides coord leak messages.");
     }
 
     @EventHandler

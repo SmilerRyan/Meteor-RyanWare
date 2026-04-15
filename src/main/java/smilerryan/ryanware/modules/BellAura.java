@@ -42,7 +42,7 @@ public class BellAura extends Module {
     }
 
     public BellAura() {
-        super(smilerryan.ryanware.RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "bell-aura", "Automatically looks at and clicks the nearest bell.");
+        super(smilerryan.ryanware.RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "bell-aura", "Automatically looks at and clicks the nearest bell.");
     }
 
     @EventHandler

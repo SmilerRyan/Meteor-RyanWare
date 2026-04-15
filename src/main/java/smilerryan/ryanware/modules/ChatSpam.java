@@ -33,7 +33,7 @@ public class ChatSpam extends Module {
     private int ticksLeft = 0;
 
     public ChatSpam() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Spam",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Chat-Spam",
             "Sends each chat message/command with delay, once, then disables itself.");
     }
 

@@ -99,7 +99,7 @@ public class AntiFancyChat extends Module {
     }
 
     public AntiFancyChat() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix_extras + "Anti-Fancy-Chat", "Normalizes fancy Unicode chat text back to plain ASCII, while preserving chat colors.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Anti-Fancy-Chat", "Normalizes fancy Unicode chat text back to plain ASCII, while preserving chat colors.");
     }
 
     @EventHandler

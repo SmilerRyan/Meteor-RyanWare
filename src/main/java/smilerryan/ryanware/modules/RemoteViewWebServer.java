@@ -73,7 +73,7 @@ public class RemoteViewWebServer extends Module {
     private final Map<String, Long> activeClients = new ConcurrentHashMap<>();
 
     public RemoteViewWebServer() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Remote-View-Web-Server", "A Remote View Web Server that works on 1.21.1");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Remote-View-Web-Server", "A Remote View Web Server that works on 1.21.1");
         INSTANCE = this;
         //MeteorClient.EVENT_BUS.subscribe(this);
     }

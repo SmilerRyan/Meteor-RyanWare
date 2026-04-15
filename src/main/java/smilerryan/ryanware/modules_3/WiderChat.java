@@ -11,8 +11,8 @@ public class WiderChat extends Module {
 
     public WiderChat() {
         super(
-            RyanWare.CATEGORY3,
-            RyanWare.modulePrefix3 + "Wider-Chat",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Wider-Chat",
             "Unlimited chat width."
         );
         INSTANCE = this;

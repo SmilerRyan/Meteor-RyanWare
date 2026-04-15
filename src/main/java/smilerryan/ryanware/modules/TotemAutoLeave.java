@@ -67,7 +67,7 @@ public class TotemAutoLeave extends Module {
     private boolean firstActionDone;
 
     public TotemAutoLeave() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "TotemAutoLeave", "Leaves, warns, or runs commands when you run out of totems.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "TotemAutoLeave", "Leaves, warns, or runs commands when you run out of totems.");
     }
 
     @Override

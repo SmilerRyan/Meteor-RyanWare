@@ -39,7 +39,7 @@ public class Radio extends Module {
     private int lastVolume = -1;
 
     public Radio() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Radio", "It's a fucking in-game radio!");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Radio", "It's a fucking in-game radio!");
     }
 
     @Override

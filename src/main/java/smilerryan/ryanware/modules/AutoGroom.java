@@ -124,7 +124,7 @@ public class AutoGroom extends Module {
     private int shiftTimer = 0;
 
     public AutoGroom() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AutoGroom",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoGroom",
             "Follows the nearest player, sends messages, and does the shifting.");
     }
 

@@ -91,7 +91,7 @@ public class PacketDelayer extends Module {
     private int droppedS2C = 0;
 
     public PacketDelayer() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "PacketDelayer", "Delays or drops selected packets.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "PacketDelayer", "Delays or drops selected packets.");
     }
 
     @Override

@@ -45,7 +45,7 @@ public class ErmActuallyCorrector extends Module {
 
     public ErmActuallyCorrector() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "ErmActually-Corrector",
             "Corrects bad English in chat using the LanguageTool.org API."
         );

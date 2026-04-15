@@ -64,7 +64,7 @@ public class ClickTP extends Module {
     private boolean isProcessing = false;
 
     public ClickTP() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "ClickTP", "Teleports you to where you click.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "ClickTP", "Teleports you to where you click.");
     }
 
     public void onActivate() {

@@ -33,7 +33,7 @@ public class ChatReplacer extends Module {
     );
 
     public ChatReplacer() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Replacer", "Replaces matched words in chat with replacements or stars.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Chat-Replacer", "Replaces matched words in chat with replacements or stars.");
     }
 
     @EventHandler

@@ -111,7 +111,7 @@ public class PlayerAlerter extends Module {
 
 
     public PlayerAlerter() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Alerter", "Alerts you when players enter/leave range or tab.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Player-Alerter", "Alerts you when players enter/leave range or tab.");
     }
 
     private boolean isFriend(String name) {

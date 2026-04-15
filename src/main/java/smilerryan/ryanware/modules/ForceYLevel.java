@@ -44,7 +44,7 @@ public class ForceYLevel extends Module {
     private boolean crouchDisabled = false;
 
     public ForceYLevel() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Force-Y-Level", "Run/jump/crouch in the air and clamp falls to a Y-level.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Force-Y-Level", "Run/jump/crouch in the air and clamp falls to a Y-level.");
         initFallDistanceField();
     }
 

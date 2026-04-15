@@ -39,7 +39,7 @@ public class RedirectMsgCommands extends Module {
     );
 
     public RedirectMsgCommands() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Redirect-MSG-Commands", "Redirects message commands to any format.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Redirect-MSG-Commands", "Redirects message commands to any format.");
     }
 
     @EventHandler

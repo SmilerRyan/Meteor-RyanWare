@@ -96,7 +96,7 @@ public class Aura extends Module {
     private boolean isProcessing = false;
 
     public Aura() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Aura", "Automatically attacks entities around you.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Aura", "Automatically attacks entities around you.");
     }
 
     public void onActivate() {

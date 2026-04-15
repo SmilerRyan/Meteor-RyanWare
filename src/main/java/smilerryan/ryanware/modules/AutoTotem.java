@@ -42,7 +42,7 @@ public class AutoTotem extends Module {
     private int disconnectDelay = -1; // ticks until disconnect, -1 = none
 
     public AutoTotem() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AutoTotem", "Always equips the largest totem stacks, consolidates them, and can hold one in both hands.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoTotem", "Always equips the largest totem stacks, consolidates them, and can hold one in both hands.");
     }
 
     @Override

@@ -39,7 +39,7 @@ public class AntiBlockBreak extends Module {
     );
 
     public AntiBlockBreak() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Anti-Block-Break", "Prevents you from breaking certain blocks.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Anti-Block-Break", "Prevents you from breaking certain blocks.");
     }
 
     public void onTick() {

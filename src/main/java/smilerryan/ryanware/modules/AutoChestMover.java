@@ -101,7 +101,7 @@ public class AutoChestMover extends Module {
     private final Random rand = new Random();
 
     public AutoChestMover() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AutoChestMover", "Automatically moves items from source chests to destination chests.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoChestMover", "Automatically moves items from source chests to destination chests.");
     }
 
     @Override

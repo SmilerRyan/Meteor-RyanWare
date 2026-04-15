@@ -52,7 +52,7 @@ public class AskOllamaTranslator extends Module {
 
     public AskOllamaTranslator() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "AskOllamaTranslator",
             "Sends outgoing chat messages through Ollama and posts the model output directly."
         );

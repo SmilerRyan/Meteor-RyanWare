@@ -98,7 +98,7 @@ public class EventAnnouncer extends Module {
     private boolean initPos = false;
 
     public EventAnnouncer() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Event-Announcer",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Event-Announcer",
                 "Announce game events with customizable messages and batching.");
     }
 

@@ -89,7 +89,7 @@ public class NewChunks extends Module {
     }
 
     public NewChunks() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "NewChunks", "Highlights new and old chunks.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "NewChunks", "Highlights new and old chunks.");
     }
 
     @Override

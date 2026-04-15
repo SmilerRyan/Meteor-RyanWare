@@ -66,7 +66,7 @@ public class AskOllamaAnnoyer extends Module {
 
     public AskOllamaAnnoyer() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "AskOllamaAnnoyer",
             "Corrects bad English with AI."
         );

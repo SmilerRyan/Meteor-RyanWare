@@ -80,7 +80,7 @@ public class AutoClickPlayers extends Module {
     private int nextDelay = 0;
 
     public AutoClickPlayers() {
-        super(RyanWare.CATEGORY,
+        super(RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "AutoClickPlayers",
             "Automatically clicks on players you are looking at.");
     }

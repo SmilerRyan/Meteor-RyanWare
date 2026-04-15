@@ -70,7 +70,7 @@ public class CustomTabText extends Module {
     private Text serverFooter = null;
 
     public CustomTabText() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "Custom-Tab-Text",
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Custom-Tab-Text",
             "Customize tab overlay header and footer.");
     }
 

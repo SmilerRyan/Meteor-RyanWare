@@ -52,7 +52,7 @@ public class AutoChatScreenshotter extends Module {
 
     public AutoChatScreenshotter() {
         super(
-            RyanWare.CATEGORY,
+            RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "Auto-Chat-Screenshotter",
             "Takes a screenshot when specific chat messages appear."
         );

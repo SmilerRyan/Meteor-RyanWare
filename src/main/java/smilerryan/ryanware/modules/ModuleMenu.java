@@ -25,7 +25,7 @@ public class ModuleMenu extends Module {
     private boolean leftMouseDownLast = false;
 
     public ModuleMenu() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "ModuleMenu", "Displays all modules.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "ModuleMenu", "Displays all modules.");
     }
 
     @EventHandler

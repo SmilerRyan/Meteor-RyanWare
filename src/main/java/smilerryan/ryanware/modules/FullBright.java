@@ -12,7 +12,7 @@ public class FullBright extends Module {
     private double originalGamma = -1;
 
     public FullBright() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "FullBright", "Forces brightness to full and restores your setting when turned off.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "FullBright", "Forces brightness to full and restores your setting when turned off.");
     }
 
     @Override

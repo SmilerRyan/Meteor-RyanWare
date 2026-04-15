@@ -18,7 +18,7 @@ public class WorldDownloader extends Module {
     private File regionDir;
 
     public WorldDownloader() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "WorldDownloader", "Saves loaded chunks as a valid singleplayer world.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "WorldDownloader", "Saves loaded chunks as a valid singleplayer world.");
     }
 
     @Override

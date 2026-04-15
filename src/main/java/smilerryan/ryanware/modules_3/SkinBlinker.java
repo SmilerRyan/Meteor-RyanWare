@@ -184,7 +184,7 @@ public class SkinBlinker extends Module {
     private int globalCounter = 0;
 
     public SkinBlinker() {
-        super(RyanWare.CATEGORY3, RyanWare.modulePrefix3 + "skin-blinker", "Automatically toggles skin layers (cape, hat, jacket, etc.) at configurable intervals.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "skin-blinker", "Automatically toggles skin layers (cape, hat, jacket, etc.) at configurable intervals.");
         
         // Initialize all counters
         for (PlayerModelPart part : PlayerModelPart.values()) {

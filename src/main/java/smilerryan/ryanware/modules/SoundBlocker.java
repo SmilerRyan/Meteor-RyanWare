@@ -24,7 +24,7 @@ public class SoundBlocker extends Module {
     );
 
     public SoundBlocker() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "sound-blocker", "Blocks out specific selected sounds.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "sound-blocker", "Blocks out specific selected sounds.");
     }
 
     @EventHandler

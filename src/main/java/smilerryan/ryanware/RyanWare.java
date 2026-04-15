@@ -28,16 +28,16 @@ public class RyanWare extends MeteorAddon {
     public static String addonName = "RyanWare";
 
     public static String catName_extras = "";
-    public static String catName_3 = "";
+    public static String catName_standard = "";
 
     public static String modulePrefix_extras = "";
-    public static String modulePrefix3 = "";
+    public static String modulePrefix_standard = "";
 
-    public static Item iconItem_extras = Items.SPONGE;
-    public static Item iconItem_3 = Items.SPONGE;
+    public static Item iconItem_extras = Items.GLOWSTONE;
+    public static Item iconItem_standard = Items.GLOWSTONE;
     
-    public static Category CATEGORY;
-    public static Category CATEGORY3;
+    public static Category CATEGORY_EXTRAS;
+    public static Category CATEGORY_STANDARD;
 
     static {
         try {
@@ -50,19 +50,24 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:module-prefix-extras") != null) {
                         modulePrefix_extras = meta.getCustomValue("ryanware:module-prefix-extras").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:module-prefix-3") != null) {
-                        modulePrefix3 = meta.getCustomValue("ryanware:module-prefix-3").getAsString();
+                    if (meta.getCustomValue("ryanware:module-prefix-standard") != null) {
+                        modulePrefix_standard = meta.getCustomValue("ryanware:module-prefix-standard").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:cat-name-extras") != null) {
                         catName_extras = meta.getCustomValue("ryanware:cat-name-extras").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:cat-name-3") != null) {
-                        catName_3 = meta.getCustomValue("ryanware:cat-name-3").getAsString();
+                    if (meta.getCustomValue("ryanware:cat-name-standard") != null) {
+                        catName_standard = meta.getCustomValue("ryanware:cat-name-standard").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:icon-extras") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon-extras").getAsString().toLowerCase(Locale.ROOT);
                         Identifier id = Identifier.of("minecraft", iconName);
                         iconItem_extras = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                    }
+                    if (meta.getCustomValue("ryanware:icon-standard") != null) {
+                        String iconName = meta.getCustomValue("ryanware:icon-standard").getAsString().toLowerCase(Locale.ROOT);
+                        Identifier id = Identifier.of("minecraft", iconName);
+                        iconItem_standard = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
                     }
                 } catch (Exception e) {
                     LOG.error("Failed to read mod metadata or override values.", e);
@@ -72,15 +77,34 @@ public class RyanWare extends MeteorAddon {
             LOG.error("Failed to access mod container", e);
         }
 
-        CATEGORY = new Category(catName_extras, iconItem_extras.getDefaultStack());
-        CATEGORY3 = new Category(catName_3, iconItem_3.getDefaultStack());
+        CATEGORY_EXTRAS = new Category(catName_extras, iconItem_extras.getDefaultStack());
+        CATEGORY_STANDARD = new Category(catName_standard, iconItem_standard.getDefaultStack());
     }
 
     @Override
     public void onInitialize() {
         LOG.info("Initializing {} Addon.", addonName);
 
-        // Register Other Modules
+        // Standard
+        Modules.get().add(new AntiFancyChat());
+        Modules.get().add(new BungeeSpoofer());
+        Modules.get().add(new ChatIgnorer());
+        Modules.get().add(new ChatPlinger());
+        Modules.get().add(new ChatTranslator());
+        Modules.get().add(new CoordNotifier());
+        Modules.get().add(new CustomTabText());
+        Modules.get().add(new DeathCoords());
+        Modules.get().add(new DiscordChatLogger());
+        Modules.get().add(new f3_number_hider());
+        Modules.get().add(new Flight());
+        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new MorePing());
+        Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new PlayerTracers());
+        Modules.get().add(new SkinBlinker());
+        Modules.get().add(new WiderChat());
+
+        // Extras
         Modules.get().add(new _example());
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
@@ -162,25 +186,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
 
-        // Category3
-        Modules.get().add(new AntiFancyChat());
-        Modules.get().add(new BungeeSpoofer());
-        Modules.get().add(new ChatIgnorer());
-        Modules.get().add(new ChatPlinger());
-        Modules.get().add(new ChatTranslator());
-        Modules.get().add(new CoordNotifier());
-        Modules.get().add(new CustomTabText());
-        Modules.get().add(new DeathCoords());
-        Modules.get().add(new DiscordChatLogger());
-        Modules.get().add(new f3_number_hider());
-        Modules.get().add(new Flight());
-        Modules.get().add(new ForceOpenTab());
-        Modules.get().add(new MorePing());
-        Modules.get().add(new NoAttackDamage());
-        Modules.get().add(new PlayerTracers());
-        Modules.get().add(new SkinBlinker());
-        Modules.get().add(new WiderChat());
-
         // Register commands
         Commands.add(new Command_addText());
         Commands.add(new Command_GMC());
@@ -192,8 +197,8 @@ public class RyanWare extends MeteorAddon {
 
     @Override
     public void onRegisterCategories() {
-        Modules.registerCategory(CATEGORY);
-        Modules.registerCategory(CATEGORY3);
+        Modules.registerCategory(CATEGORY_EXTRAS);
+        Modules.registerCategory(CATEGORY_STANDARD);
     }
 
     @Override

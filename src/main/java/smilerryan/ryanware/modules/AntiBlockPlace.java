@@ -38,7 +38,7 @@ public class AntiBlockPlace extends Module {
     );
 
     public AntiBlockPlace() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Anti-Block-Place", "Prevents you from placing certain blocks.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Anti-Block-Place", "Prevents you from placing certain blocks.");
     }
 
     @EventHandler

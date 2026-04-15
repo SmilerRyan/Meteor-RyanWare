@@ -58,7 +58,7 @@ public class PlayerHider extends Module {
     private static Field gameProfileNameField;
 
     public PlayerHider() {
-        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Hider",
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Player-Hider",
                 "Replace players' display names, chat, and command suggestions with fake names.");
         INSTANCE = this;
         initReflection();
