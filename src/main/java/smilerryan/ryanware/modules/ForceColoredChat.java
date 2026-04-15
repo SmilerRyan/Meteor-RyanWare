@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -14,7 +14,7 @@ public class ForceColoredChat extends Module {
     private final Pattern colorCodePattern = Pattern.compile("&([0-9a-fk-or])", Pattern.CASE_INSENSITIVE);
 
     public ForceColoredChat() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Force-Colored-Chat", "Replaces & with § in received messages.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Force-Colored-Chat", "Replaces & with § in received messages.");
     }
 
     @EventHandler

@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.ModuleListSetting;
@@ -24,7 +24,7 @@ public class AntiHack extends Module {
     );
 
     public AntiHack() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AntiHack", "Literally stops you from hacking, forces everything except the allowed modules off.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AntiHack", "Literally stops you from hacking, forces everything except the allowed modules off.");
     }
 
     @EventHandler

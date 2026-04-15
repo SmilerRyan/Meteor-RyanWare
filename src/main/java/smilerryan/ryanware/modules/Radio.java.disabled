@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -45,7 +45,7 @@ public class Radio extends Module {
     private String currentUrl = "";
 
     public Radio() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Radio", "It's a fucking in-game radio!");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Radio", "It's a fucking in-game radio!");
     }
 
     @Override

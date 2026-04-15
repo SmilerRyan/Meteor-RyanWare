@@ -15,7 +15,6 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
-import smilerryan.ryanware.modules_essentials.*;
 import smilerryan.ryanware.modules_3.*;
 import smilerryan.ryanware.commands.*;
 
@@ -28,20 +27,16 @@ public class RyanWare extends MeteorAddon {
 
     public static String addonName = "RyanWare";
 
-    public static String catName_essentials = "";
     public static String catName_extras = "";
     public static String catName_3 = "";
 
-    public static String modulePrefix_essentials = "";
     public static String modulePrefix_extras = "";
     public static String modulePrefix3 = "";
 
-    public static Item iconItem_essentials = Items.SPONGE;
     public static Item iconItem_extras = Items.SPONGE;
     public static Item iconItem_3 = Items.SPONGE;
     
     public static Category CATEGORY;
-    public static Category CATEGORY_ESSENTIALS;
     public static Category CATEGORY3;
 
     static {
@@ -52,17 +47,11 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:addon-name") != null) {
                         addonName = meta.getCustomValue("ryanware:addon-name").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:module-prefix-essentials") != null) {
-                        modulePrefix_essentials = meta.getCustomValue("ryanware:module-prefix-essentials").getAsString();
-                    }
                     if (meta.getCustomValue("ryanware:module-prefix-extras") != null) {
                         modulePrefix_extras = meta.getCustomValue("ryanware:module-prefix-extras").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:module-prefix-3") != null) {
                         modulePrefix3 = meta.getCustomValue("ryanware:module-prefix-3").getAsString();
-                    }
-                    if (meta.getCustomValue("ryanware:cat-name-essentials") != null) {
-                        catName_essentials = meta.getCustomValue("ryanware:cat-name-essentials").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:cat-name-extras") != null) {
                         catName_extras = meta.getCustomValue("ryanware:cat-name-extras").getAsString();
@@ -70,20 +59,10 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:cat-name-3") != null) {
                         catName_3 = meta.getCustomValue("ryanware:cat-name-3").getAsString();
                     }
-                    if (meta.getCustomValue("ryanware:icon-essentials") != null) {
-                        String iconName = meta.getCustomValue("ryanware:icon-essentials").getAsString().toLowerCase(Locale.ROOT);
-                        Identifier id = Identifier.of("minecraft", iconName);
-                        iconItem_essentials = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
-                    }
                     if (meta.getCustomValue("ryanware:icon-extras") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon-extras").getAsString().toLowerCase(Locale.ROOT);
                         Identifier id = Identifier.of("minecraft", iconName);
                         iconItem_extras = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
-                    }
-                    if (meta.getCustomValue("ryanware:icon-3") != null) {
-                        String iconName = meta.getCustomValue("ryanware:icon-3").getAsString().toLowerCase(Locale.ROOT);
-                        Identifier id = Identifier.of("minecraft", iconName);
-                        iconItem_3 = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
                     }
                 } catch (Exception e) {
                     LOG.error("Failed to read mod metadata or override values.", e);
@@ -94,7 +73,6 @@ public class RyanWare extends MeteorAddon {
         }
 
         CATEGORY = new Category(catName_extras, iconItem_extras.getDefaultStack());
-        CATEGORY_ESSENTIALS = new Category(catName_essentials, iconItem_essentials.getDefaultStack());
         CATEGORY3 = new Category(catName_3, iconItem_3.getDefaultStack());
     }
 
@@ -102,53 +80,36 @@ public class RyanWare extends MeteorAddon {
     public void onInitialize() {
         LOG.info("Initializing {} Addon.", addonName);
 
-        // Register Essentials
-        Modules.get().add(new AntiHack());
-        Modules.get().add(new AutoChatScreenshotter());
-        Modules.get().add(new AutoTotem());
-        Modules.get().add(new AskOllama());
-        Modules.get().add(new AskOllama2());
-        Modules.get().add(new AskOllamaAnnoyer());
-        Modules.get().add(new AtSomeone());
-        Modules.get().add(new AutoClickPlayers());
-        Modules.get().add(new AutoFollowItems());
-        Modules.get().add(new AutoFollowPlayers());
-        Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new AutoResponder());;
-        Modules.get().add(new ChatEncryption());
-        Modules.get().add(new DeathCommands());
-        Modules.get().add(new ElytraFakeRockets());
-        Modules.get().add(new ElytraFly());
-        Modules.get().add(new FocusCommands());
-        Modules.get().add(new ForceColoredChat());
-        Modules.get().add(new ForceYLevel());
-        Modules.get().add(new ModuleMenu());
-        Modules.get().add(new PlayerAlerter());
-        Modules.get().add(new PublicChatTags());
-        Modules.get().add(new Radio());
-        Modules.get().add(new Recorder());
-        Modules.get().add(new RedirectPublicChat());
-        Modules.get().add(new Screenshotter());
-        Modules.get().add(new SoundBlocker());
-        Modules.get().add(new UserLookups());
-
         // Register Other Modules
         Modules.get().add(new _example());
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
+        Modules.get().add(new AntiHack());
+        Modules.get().add(new AskOllama());
+        Modules.get().add(new AskOllama2());
+        Modules.get().add(new AskOllamaAnnoyer());
         Modules.get().add(new AskOllamaTranslator());
         Modules.get().add(new AternosOnliner());
+        Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
+        Modules.get().add(new AutoChatScreenshotter());
         Modules.get().add(new AutoChestMover());
+        Modules.get().add(new AutoClickPlayers());
+        Modules.get().add(new AutoFollowItems());
+        Modules.get().add(new AutoFollowPlayers());
         Modules.get().add(new AutoGroom());
         Modules.get().add(new AutoHighwayBuilder());
+        Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoRespawn());
+        Modules.get().add(new AutoResponder());;
+        Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoWalkHome());
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
         Modules.get().add(new Chat2Discord());
+        Modules.get().add(new ChatEncryption());
         Modules.get().add(new ChatLogger());
         Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChatSpam());        
@@ -158,32 +119,47 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CommandAura());
         Modules.get().add(new CommandRedirector());
         Modules.get().add(new CompletionCrash());
-        Modules.get().add(new ErmActuallyCorrector());        
-        Modules.get().add(new PacketDelayer());
         Modules.get().add(new CringeDetector());
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
         Modules.get().add(new CrystalAura3());
         Modules.get().add(new CustomCrosshair());
-        Modules.get().add(new Excavator());
+        Modules.get().add(new DeathCommands());
+        Modules.get().add(new ElytraFakeRockets());
+        Modules.get().add(new ElytraFly());
+        Modules.get().add(new ErmActuallyCorrector());        
         Modules.get().add(new EventAnnouncer());
+        Modules.get().add(new Excavator());
+        Modules.get().add(new FocusCommands());
+        Modules.get().add(new ForceColoredChat());
+        Modules.get().add(new ForceYLevel());
         Modules.get().add(new FullBright());
         Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
+        Modules.get().add(new ModuleMenu());
         Modules.get().add(new NewChunks());
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
+        Modules.get().add(new PacketDelayer());
+        Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PlayerHider());
         Modules.get().add(new PlayerShapeESP());
+        Modules.get().add(new PublicChatTags());
+        Modules.get().add(new Radio());
+        Modules.get().add(new Recorder());
         Modules.get().add(new RedirectMsgCommands());
+        Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new RemoteViewProxyServer());
         Modules.get().add(new RemoteViewWebServer());
+        Modules.get().add(new Screenshotter());
+        Modules.get().add(new SoundBlocker());
         Modules.get().add(new SpeechToText());
         Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemAutoLeave());
         Modules.get().add(new TotemBypass());
+        Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
 
         // Category3
@@ -217,7 +193,6 @@ public class RyanWare extends MeteorAddon {
     @Override
     public void onRegisterCategories() {
         Modules.registerCategory(CATEGORY);
-        Modules.registerCategory(CATEGORY_ESSENTIALS);
         Modules.registerCategory(CATEGORY3);
     }
 

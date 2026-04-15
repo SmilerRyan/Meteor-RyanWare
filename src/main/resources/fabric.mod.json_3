@@ -22,15 +22,12 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "",
     "ryanware:addon-name": "ShadowClient",
-    "ryanware:module-prefix-essentials": "Shadow-",
     "ryanware:module-prefix-extras": "Shadow-",
     "ryanware:module-prefix-3": "Shadow3-",
-    "ryanware:cat-name-essentials": "Shadow",
     "ryanware:cat-name-extras": "ShadowPlus",
     "ryanware:cat-name-3": "Shadow3",
-    "ryanware:icon-essentials": "ender_pearl",
     "ryanware:icon-extras": "ender_pearl",
-    "ryanware:icon-3": "sponge"
+    "ryanware:icon-3": "ender_pearl"
   },
   "depends": {
     "java": ">=17",

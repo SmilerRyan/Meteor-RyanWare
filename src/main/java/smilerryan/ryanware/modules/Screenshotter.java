@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.*;
@@ -36,7 +36,7 @@ public class Screenshotter extends Module {
     private Thread screenshotThread;
 
     public Screenshotter() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Screenshotter",
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Screenshotter",
             "Takes screenshots of ALL monitors using ffmpeg with an optional interval and beep sound.");
     }
 

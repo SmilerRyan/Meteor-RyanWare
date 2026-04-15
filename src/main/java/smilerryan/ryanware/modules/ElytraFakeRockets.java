@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.IntSetting;
@@ -32,7 +32,7 @@ public class ElytraFakeRockets extends Module {
     private int cooldown = 0;
 
     public ElytraFakeRockets() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Elytra-Fake-Rockets", "Simulates Elytra rocket boosting without actual rockets.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Elytra-Fake-Rockets", "Simulates Elytra rocket boosting without actual rockets.");
     }
 
     @EventHandler

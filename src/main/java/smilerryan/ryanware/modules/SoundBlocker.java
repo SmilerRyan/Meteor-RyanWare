@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.PlaySoundEvent;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -24,7 +24,7 @@ public class SoundBlocker extends Module {
     );
 
     public SoundBlocker() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "sound-blocker", "Blocks out specific selected sounds.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "sound-blocker", "Blocks out specific selected sounds.");
     }
 
     @EventHandler

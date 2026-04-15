@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -33,7 +33,7 @@ public class ChatSpam extends Module {
     private int ticksLeft = 0;
 
     public ChatSpam() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_extras + "Chat-Spam",
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Spam",
             "Sends each chat message/command with delay, once, then disables itself.");
     }
 

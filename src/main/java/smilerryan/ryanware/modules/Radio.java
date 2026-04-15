@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -39,7 +39,7 @@ public class Radio extends Module {
     private int lastVolume = -1;
 
     public Radio() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Radio", "It's a fucking in-game radio!");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Radio", "It's a fucking in-game radio!");
     }
 
     @Override

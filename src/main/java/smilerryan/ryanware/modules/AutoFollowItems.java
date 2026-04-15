@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -56,7 +56,7 @@ public class AutoFollowItems extends Module {
     private long lastManualInputTime = 0;
 
     public AutoFollowItems() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AutoFollowItems", "Automatically walks/jumps towards items with a whitelist/blacklist/max-range.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AutoFollowItems", "Automatically walks/jumps towards items with a whitelist/blacklist/max-range.");
     }
 
     @EventHandler

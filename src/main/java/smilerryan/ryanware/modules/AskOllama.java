@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -133,7 +133,7 @@ public class AskOllama extends Module {
     ));
 
     public AskOllama() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override

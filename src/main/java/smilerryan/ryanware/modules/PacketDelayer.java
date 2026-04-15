@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import smilerryan.ryanware.RyanWare;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -91,7 +91,7 @@ public class PacketDelayer extends Module {
     private int droppedS2C = 0;
 
     public PacketDelayer() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "PacketDelayer", "Delays or drops selected packets.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "PacketDelayer", "Delays or drops selected packets.");
     }
 
     @Override

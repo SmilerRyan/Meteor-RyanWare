@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -111,7 +111,7 @@ public class PlayerAlerter extends Module {
 
 
     public PlayerAlerter() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Player-Alerter", "Alerts you when players enter/leave range or tab.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Player-Alerter", "Alerts you when players enter/leave range or tab.");
     }
 
     private boolean isFriend(String name) {

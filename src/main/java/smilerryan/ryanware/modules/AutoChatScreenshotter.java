@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -52,8 +52,8 @@ public class AutoChatScreenshotter extends Module {
 
     public AutoChatScreenshotter() {
         super(
-            RyanWare.CATEGORY_ESSENTIALS,
-            RyanWare.modulePrefix_essentials + "Auto-Chat-Screenshotter",
+            RyanWare.CATEGORY,
+            RyanWare.modulePrefix_extras + "Auto-Chat-Screenshotter",
             "Takes a screenshot when specific chat messages appear."
         );
     }

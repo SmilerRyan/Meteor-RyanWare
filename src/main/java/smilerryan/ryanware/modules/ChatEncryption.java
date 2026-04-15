@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
@@ -96,7 +96,7 @@ public class ChatEncryption extends Module {
     }
 
     public ChatEncryption() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Encryption", "Encrypts non-command chat and auto-decrypts embedded encrypted messages.");
     }
 
     @EventHandler

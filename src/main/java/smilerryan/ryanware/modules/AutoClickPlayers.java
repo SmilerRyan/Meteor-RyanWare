@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.*;
@@ -80,8 +80,8 @@ public class AutoClickPlayers extends Module {
     private int nextDelay = 0;
 
     public AutoClickPlayers() {
-        super(RyanWare.CATEGORY_ESSENTIALS,
-            RyanWare.modulePrefix_essentials + "AutoClickPlayers",
+        super(RyanWare.CATEGORY,
+            RyanWare.modulePrefix_extras + "AutoClickPlayers",
             "Automatically clicks on players you are looking at.");
     }
 

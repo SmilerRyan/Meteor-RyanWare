@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.StringListSetting;
@@ -74,7 +74,7 @@ public class AutoResponder extends Module {
     }
 
     public AutoResponder() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Auto-Responder", "Reads and responds to chat.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Auto-Responder", "Reads and responds to chat.");
     }
 
     @EventHandler

@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -26,7 +26,7 @@ public class PublicChatTags extends Module {
     );
 
     public PublicChatTags() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials + "Chat-Tags", "Adds a prefix and suffix to public messages per server.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras + "Chat-Tags", "Adds a prefix and suffix to public messages per server.");
     }
 
     private String getServerIp() {

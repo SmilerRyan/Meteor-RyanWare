@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_essentials;
+package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -27,7 +27,7 @@ public class FocusCommands extends Module {
     private boolean lastFocused = true;
 
     public FocusCommands() {
-        super(RyanWare.CATEGORY_ESSENTIALS, RyanWare.modulePrefix_essentials+"Focus-Commands", "Sends commands when window focus changes.");
+        super(RyanWare.CATEGORY, RyanWare.modulePrefix_extras+"Focus-Commands", "Sends commands when window focus changes.");
     }
 
     @EventHandler
