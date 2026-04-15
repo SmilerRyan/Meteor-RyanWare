@@ -38,11 +38,9 @@ public class CustomTabText extends Module {
             "Use & for color codes, \\n for new lines.\n" +
             "Placeholders:\n" +
             "  {players} - online player count\n" +
-            "  {ping}    - your current ping\n" +
-            "\n" +
-            "Example: &aOnline: {players} &7| Ping: {ping}ms\\n&bWelcome to the server!"
+            "  {ping}    - your current ping"
         )
-        .defaultValue("").visible(customHeaderEnabled::get).build()
+        .defaultValue("&f&l{players} Online&7&l, &c&l{ping}ms ping").visible(customHeaderEnabled::get).build()
     );
 
     private final Setting<Boolean> customFooterEnabled = sgFooter.add(new BoolSetting.Builder()
@@ -50,7 +48,7 @@ public class CustomTabText extends Module {
     );
 
     private final Setting<FooterMode> footerMode = sgFooter.add(new EnumSetting.Builder<FooterMode>()
-        .name("footer-mode").description("How to handle the server's footer.").defaultValue(FooterMode.Replace)
+        .name("footer-mode").description("How to handle the server's footer.").defaultValue(FooterMode.Remove)
         .visible(customFooterEnabled::get).build()
     );
 
@@ -61,9 +59,7 @@ public class CustomTabText extends Module {
             "Use & for color codes, \\n for new lines.\n" +
             "Placeholders:\n" +
             "  {players} - online player count\n" +
-            "  {ping}    - your current ping\n" +
-            "\n" +
-            "Example: &7Have fun!\\n&aPlayers online: {players}"
+            "  {ping}    - your current ping"
         )
         .defaultValue("").visible(customFooterEnabled::get).build()
     );
