@@ -7,7 +7,6 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
@@ -19,8 +18,8 @@ public class CoordNotifier extends Module {
 
     private final Setting<String> wholeCommand = sgGeneral.add(new StringSetting.Builder()
         .name("whole-command")
-        .description("The whole command, auto replaces [x] [y] [z] [tag] with coordinates and tag.")
-        .defaultValue("/teammsg [tag] [x] [y] [z]")
+        .description("The whole command, auto replaces [ox] [oy] [oz] [nx] [ny] [nz] [tag] with coordinates and tag.")
+        .defaultValue("/teammsg [tag] from [ox] [oy] [oz] TO [nx] [ny] [nz]")
         .build()
     );
 
@@ -46,22 +45,35 @@ public class CoordNotifier extends Module {
     private void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof PlayerPositionLookS2CPacket) {
 
-            // get the whole command
+            if (MeteorClient.mc.player == null) return;
+
             String rawCommand = wholeCommand.get();
 
-            // replace [x], [y], [z] [tag] with coordinates and tag seperately
-            String x = String.valueOf((int) MeteorClient.mc.player.getX());
-            String y = String.valueOf((int) MeteorClient.mc.player.getY());
-            String z = String.valueOf((int) MeteorClient.mc.player.getZ());
-            rawCommand = rawCommand.replace("[x]", x).replace("[y]", y).replace("[z]", z).replace("[tag]", coordLeakTag.get());
+            int old_x = (int) MeteorClient.mc.player.getX();
+            int old_y = (int) MeteorClient.mc.player.getY();
+            int old_z = (int) MeteorClient.mc.player.getZ();
 
-            // if it's a command send it as a command, if not send it as a chat message
-            if (rawCommand.startsWith("/")) {
-                MeteorClient.mc.player.networkHandler.sendChatCommand(rawCommand.substring(1));
-            } else {
-                MeteorClient.mc.player.networkHandler.sendChatMessage(rawCommand);
-            }
+            // Delay one tick so position updates
+            MeteorClient.mc.execute(() -> {
+                int new_x = (int) MeteorClient.mc.player.getX();
+                int new_y = (int) MeteorClient.mc.player.getY();
+                int new_z = (int) MeteorClient.mc.player.getZ();
 
+                String cmd = rawCommand
+                    .replace("[ox]", String.valueOf(old_x))
+                    .replace("[oy]", String.valueOf(old_y))
+                    .replace("[oz]", String.valueOf(old_z))
+                    .replace("[nx]", String.valueOf(new_x))
+                    .replace("[ny]", String.valueOf(new_y))
+                    .replace("[nz]", String.valueOf(new_z))
+                    .replace("[tag]", coordLeakTag.get());
+
+                if (cmd.startsWith("/")) {
+                    MeteorClient.mc.player.networkHandler.sendChatCommand(cmd.substring(1));
+                } else {
+                    MeteorClient.mc.player.networkHandler.sendChatMessage(cmd);
+                }
+            });
         }
     }
 
