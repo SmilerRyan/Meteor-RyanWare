@@ -148,6 +148,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CrystalAura());
         Modules.get().add(new CrystalAura2());
         Modules.get().add(new CrystalAura3());
+        Modules.get().add(new CrystalKillAura());
         Modules.get().add(new CustomCrosshair());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraFakeRockets());
