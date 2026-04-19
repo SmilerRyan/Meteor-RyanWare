@@ -26,8 +26,10 @@ public class f3_number_hider extends Module {
     }
 
     public enum ReplacementMode {
-        REPEAT_PATTERN, // use replacement string cyclically per character to match original length
-        EXACT           // replace the whole matched number with the exact replacement string (no length matching)
+        EXACT_FOR_EACH_CHAR,    // replace each character in the match with replaceWith (can expand)
+        EXACT_FOR_WHOLE_MATCH,  // replace the whole matched number with replaceWith
+        REPEAT_FOR_WHOLE_MATCH, // repeat pattern to match matched number length
+        REPEAT_FOR_WHOLE_LINE   // repeat pattern across the entire line (continues across matches)
     }
 
     private final Setting<Mode> mode = sg.add(new EnumSetting.Builder<Mode>()
@@ -47,14 +49,14 @@ public class f3_number_hider extends Module {
 
     private final Setting<ReplacementMode> replacementMode = sg.add(new EnumSetting.Builder<ReplacementMode>()
         .name("replacement-mode")
-        .description("Choose how the replacement string is applied: repeat per-character to match length, or use exact string for each match.")
-        .defaultValue(ReplacementMode.REPEAT_PATTERN)
+        .description("How to apply the replacement string.")
+        .defaultValue(ReplacementMode.REPEAT_FOR_WHOLE_MATCH)
         .build()
     );
 
     private final Setting<String> replaceWith = sg.add(new StringSetting.Builder()
         .name("replace-with")
-        .description("String used to replace digits or matches. Can be empty to remove numbers. In REPEAT_PATTERN mode characters are used per-character cyclically (e.g., \"67\" -> 6,7,6,7...).")
+        .description("String used to replace digits or matches. Can be empty to remove numbers.")
         .defaultValue("*")
         .build()
     );
@@ -76,17 +78,20 @@ public class f3_number_hider extends Module {
         INSTANCE = null;
     }
 
-    /**
-     * Build a replacement string of exactly 'length' characters by cycling through 'pattern'.
-     * If pattern is empty, returns an empty string.
-     */
-    private String buildRepeatReplacement(int length, String pattern) {
-        if (pattern == null || pattern.isEmpty()) return ""; // allow empty => deletion
-        StringBuilder sb = new StringBuilder(length);
+    // Build a string by repeating pattern until size reached (if pattern empty -> empty)
+    private String buildRepeat(int size, String pattern) {
+        if (pattern == null || pattern.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(size);
         int plen = pattern.length();
-        for (int i = 0; i < length; i++) {
-            sb.append(pattern.charAt(i % plen));
-        }
+        for (int i = 0; i < size; i++) sb.append(pattern.charAt(i % plen));
+        return sb.toString();
+    }
+
+    // For EXACT_FOR_EACH_CHAR: repeat replaceWith once per original char (concatenate replaceWith repeatedly)
+    private String buildExactEachChar(int charCount, String replace) {
+        if (replace == null) replace = "";
+        StringBuilder sb = new StringBuilder(charCount * Math.max(1, replace.length()));
+        for (int i = 0; i < charCount; i++) sb.append(replace);
         return sb.toString();
     }
 
@@ -103,22 +108,33 @@ public class f3_number_hider extends Module {
     public String hideCoordinateString(String text) {
         if (!isActive()) return text;
 
-        String repl = replaceWith.get(); // may be null or empty (empty allowed)
-
-        // Choose regex: digits only or digits plus '.' and '-'
+        String repl = replaceWith.get(); // may be null or empty
         String patternStr = hidePunctuation.get() ? "[0-9\\.\\-]+" : "\\d+";
         Pattern numberPattern = Pattern.compile(patternStr);
 
         if (mode.get() == Mode.ALL_NUMBERS) {
+            // Simple one-pass over the whole text (no line-scoped REPEAT_FOR_WHOLE_LINE)
             StringBuffer result = new StringBuffer();
             Matcher matcher = numberPattern.matcher(text);
             while (matcher.find()) {
                 String match = matcher.group();
                 String replacement;
-                if (replacementMode.get() == ReplacementMode.REPEAT_PATTERN) {
-                    replacement = buildRepeatReplacement(match.length(), repl);
-                } else { // EXACT
-                    replacement = (repl == null) ? "" : repl;
+                switch (replacementMode.get()) {
+                    case EXACT_FOR_EACH_CHAR:
+                        replacement = buildExactEachChar(match.length(), repl);
+                        break;
+                    case EXACT_FOR_WHOLE_MATCH:
+                        replacement = (repl == null) ? "" : repl;
+                        break;
+                    case REPEAT_FOR_WHOLE_MATCH:
+                        replacement = buildRepeat(match.length(), repl);
+                        break;
+                    case REPEAT_FOR_WHOLE_LINE:
+                        // REPEAT_FOR_WHOLE_LINE in ALL_NUMBERS mode behaves like REPEAT_FOR_WHOLE_MATCH
+                        replacement = buildRepeat(match.length(), repl);
+                        break;
+                    default:
+                        replacement = buildRepeat(match.length(), repl);
                 }
                 matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
             }
@@ -131,20 +147,59 @@ public class f3_number_hider extends Module {
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 if (filters != null && !filters.isEmpty() && lineMatchesFilters(line, filters)) {
-                    StringBuffer lineResult = new StringBuffer();
-                    Matcher matcher = numberPattern.matcher(line);
-                    while (matcher.find()) {
-                        String match = matcher.group();
-                        String replacement;
-                        if (replacementMode.get() == ReplacementMode.REPEAT_PATTERN) {
-                            replacement = buildRepeatReplacement(match.length(), repl);
-                        } else { // EXACT
-                            replacement = (repl == null) ? "" : repl;
+                    if (replacementMode.get() == ReplacementMode.REPEAT_FOR_WHOLE_LINE) {
+                        // Build replacement across the entire line: create a char-by-char transformed line
+                        StringBuilder transformed = new StringBuilder();
+                        int patternIndex = 0;
+                        String pat = (repl == null) ? "" : repl;
+                        for (int ci = 0; ci < line.length(); ) {
+                            Matcher m = numberPattern.matcher(line);
+                            if (m.find(ci) && m.start() == ci) {
+                                String match = m.group();
+                                // produce replacement by cycling pattern across the match, but continue patternIndex across matches
+                                StringBuilder rep = new StringBuilder();
+                                if (pat.isEmpty()) {
+                                    // deletion: skip adding anything
+                                } else {
+                                    for (int k = 0; k < match.length(); k++) {
+                                        rep.append(pat.charAt(patternIndex % pat.length()));
+                                        patternIndex++;
+                                    }
+                                }
+                                transformed.append(rep.toString());
+                                ci = m.end();
+                            } else {
+                                // non-matching char: append as-is and advance; patternIndex not changed
+                                transformed.append(line.charAt(ci));
+                                ci++;
+                            }
                         }
-                        matcher.appendReplacement(lineResult, Matcher.quoteReplacement(replacement));
+                        out.append(transformed.toString());
+                    } else {
+                        // Per-match replacements, pattern does not carry across matches
+                        StringBuffer lineResult = new StringBuffer();
+                        Matcher matcher = numberPattern.matcher(line);
+                        while (matcher.find()) {
+                            String match = matcher.group();
+                            String replacement;
+                            switch (replacementMode.get()) {
+                                case EXACT_FOR_EACH_CHAR:
+                                    replacement = buildExactEachChar(match.length(), repl);
+                                    break;
+                                case EXACT_FOR_WHOLE_MATCH:
+                                    replacement = (repl == null) ? "" : repl;
+                                    break;
+                                case REPEAT_FOR_WHOLE_MATCH:
+                                    replacement = buildRepeat(match.length(), repl);
+                                    break;
+                                default:
+                                    replacement = buildRepeat(match.length(), repl);
+                            }
+                            matcher.appendReplacement(lineResult, Matcher.quoteReplacement(replacement));
+                        }
+                        matcher.appendTail(lineResult);
+                        out.append(lineResult.toString());
                     }
-                    matcher.appendTail(lineResult);
-                    out.append(lineResult.toString());
                 } else {
                     out.append(line);
                 }
