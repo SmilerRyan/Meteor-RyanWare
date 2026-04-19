@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 public class f3_number_hider extends Module {
 
     public f3_number_hider() {
-        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "F3-Number-Hider", "Hide coordinates in F3 menu replacing them with asterisks or custom string.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "F3-Number-Hider", "Hide coordinates in F3 menu replacing them with custom string or pattern.");
     }
 
     public static f3_number_hider INSTANCE;
@@ -23,6 +23,11 @@ public class f3_number_hider extends Module {
     public enum Mode {
         ALL_NUMBERS,
         LINES_CONTAINING
+    }
+
+    public enum ReplacementMode {
+        REPEAT_PATTERN, // use replacement string cyclically per character to match original length
+        EXACT           // replace the whole matched number with the exact replacement string (no length matching)
     }
 
     private final Setting<Mode> mode = sg.add(new EnumSetting.Builder<Mode>()
@@ -40,10 +45,24 @@ public class f3_number_hider extends Module {
         .build()
     );
 
+    private final Setting<ReplacementMode> replacementMode = sg.add(new EnumSetting.Builder<ReplacementMode>()
+        .name("replacement-mode")
+        .description("Choose how the replacement string is applied: repeat per-character to match length, or use exact string for each match.")
+        .defaultValue(ReplacementMode.REPEAT_PATTERN)
+        .build()
+    );
+
     private final Setting<String> replaceWith = sg.add(new StringSetting.Builder()
         .name("replace-with")
-        .description("String used to replace each digit. Default is \"*\". Characters are used per-digit cyclically (e.g., \"67\" -> digits become 6,7,6,7...).")
+        .description("String used to replace digits or matches. Can be empty to remove numbers. In REPEAT_PATTERN mode characters are used per-character cyclically (e.g., \"67\" -> 6,7,6,7...).")
         .defaultValue("*")
+        .build()
+    );
+
+    private final Setting<Boolean> hidePunctuation = sg.add(new BoolSetting.Builder()
+        .name("hide-punctuation")
+        .description("If enabled, treat '.' and '-' as part of numbers and hide them too.")
+        .defaultValue(false)
         .build()
     );
 
@@ -57,12 +76,16 @@ public class f3_number_hider extends Module {
         INSTANCE = null;
     }
 
-    private String buildReplacement(int length, String repl) {
-        if (repl == null || repl.isEmpty()) repl = "*";
+    /**
+     * Build a replacement string of exactly 'length' characters by cycling through 'pattern'.
+     * If pattern is empty, returns an empty string.
+     */
+    private String buildRepeatReplacement(int length, String pattern) {
+        if (pattern == null || pattern.isEmpty()) return ""; // allow empty => deletion
         StringBuilder sb = new StringBuilder(length);
-        int rlen = repl.length();
+        int plen = pattern.length();
         for (int i = 0; i < length; i++) {
-            sb.append(repl.charAt(i % rlen));
+            sb.append(pattern.charAt(i % plen));
         }
         return sb.toString();
     }
@@ -80,17 +103,23 @@ public class f3_number_hider extends Module {
     public String hideCoordinateString(String text) {
         if (!isActive()) return text;
 
-        String repl = replaceWith.get();
-        if (repl == null || repl.isEmpty()) repl = "*";
+        String repl = replaceWith.get(); // may be null or empty (empty allowed)
 
-        Pattern digits = Pattern.compile("\\d+");
+        // Choose regex: digits only or digits plus '.' and '-'
+        String patternStr = hidePunctuation.get() ? "[0-9\\.\\-]+" : "\\d+";
+        Pattern numberPattern = Pattern.compile(patternStr);
 
         if (mode.get() == Mode.ALL_NUMBERS) {
             StringBuffer result = new StringBuffer();
-            Matcher matcher = digits.matcher(text);
+            Matcher matcher = numberPattern.matcher(text);
             while (matcher.find()) {
                 String match = matcher.group();
-                String replacement = buildReplacement(match.length(), repl);
+                String replacement;
+                if (replacementMode.get() == ReplacementMode.REPEAT_PATTERN) {
+                    replacement = buildRepeatReplacement(match.length(), repl);
+                } else { // EXACT
+                    replacement = (repl == null) ? "" : repl;
+                }
                 matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
             }
             matcher.appendTail(result);
@@ -103,10 +132,15 @@ public class f3_number_hider extends Module {
                 String line = lines[i];
                 if (filters != null && !filters.isEmpty() && lineMatchesFilters(line, filters)) {
                     StringBuffer lineResult = new StringBuffer();
-                    Matcher matcher = digits.matcher(line);
+                    Matcher matcher = numberPattern.matcher(line);
                     while (matcher.find()) {
                         String match = matcher.group();
-                        String replacement = buildReplacement(match.length(), repl);
+                        String replacement;
+                        if (replacementMode.get() == ReplacementMode.REPEAT_PATTERN) {
+                            replacement = buildRepeatReplacement(match.length(), repl);
+                        } else { // EXACT
+                            replacement = (repl == null) ? "" : repl;
+                        }
                         matcher.appendReplacement(lineResult, Matcher.quoteReplacement(replacement));
                     }
                     matcher.appendTail(lineResult);
