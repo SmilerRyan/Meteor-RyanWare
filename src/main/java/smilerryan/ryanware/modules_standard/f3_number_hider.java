@@ -8,6 +8,8 @@ import smilerryan.ryanware.RyanWare;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.ArrayList;
+import java.util.List;
 
 public class f3_number_hider extends Module {
 
@@ -35,14 +37,14 @@ public class f3_number_hider extends Module {
     private final Setting<Mode> mode = sg.add(new EnumSetting.Builder<Mode>()
         .name("mode")
         .description("Choose whether to hide all numbers or only numbers on lines containing a filter string.")
-        .defaultValue(Mode.ALL_NUMBERS)
+        .defaultValue(Mode.LINES_CONTAINING)
         .build()
     );
 
     private final Setting<String> lineFilter = sg.add(new StringSetting.Builder()
         .name("line-filter")
         .description("When mode is LINES_CONTAINING, only lines containing any of these comma-separated strings will have their numbers hidden.")
-        .defaultValue("XYZ")
+        .defaultValue("XYZ,Block,Chunk,Facing,CH")
         .visible(() -> mode.get() == Mode.LINES_CONTAINING)
         .build()
     );
@@ -50,21 +52,28 @@ public class f3_number_hider extends Module {
     private final Setting<ReplacementMode> replacementMode = sg.add(new EnumSetting.Builder<ReplacementMode>()
         .name("replacement-mode")
         .description("How to apply the replacement string.")
-        .defaultValue(ReplacementMode.REPEAT_FOR_WHOLE_MATCH)
+        .defaultValue(ReplacementMode.EXACT_FOR_EACH_CHAR)
         .build()
     );
 
     private final Setting<String> replaceWith = sg.add(new StringSetting.Builder()
         .name("replace-with")
         .description("String used to replace digits or matches. Can be empty to remove numbers.")
-        .defaultValue("*")
+        .defaultValue("§e*§f")
         .build()
     );
 
     private final Setting<Boolean> hidePunctuation = sg.add(new BoolSetting.Builder()
         .name("hide-punctuation")
         .description("If enabled, treat '.' and '-' as part of numbers and hide them too.")
-        .defaultValue(false)
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<String> hideWords = sg.add(new StringSetting.Builder()
+        .name("hide-words")
+        .description("Comma-separated words to hide (treated like numbers). Empty to disable.")
+        .defaultValue("e Z,e X,north,east,south,west,positiv,negativ")
         .build()
     );
 
@@ -105,11 +114,38 @@ public class f3_number_hider extends Module {
         return false;
     }
 
+    // Build alternation for hideWords CSV, escaping each word for regex.
+    private String buildWordAlternation(String csv) {
+        if (csv == null) return "";
+        String[] parts = csv.split(",");
+        List<String> escaped = new ArrayList<>();
+        for (String p : parts) {
+            String w = p.trim();
+            if (!w.isEmpty()) {
+                escaped.add(Pattern.quote(w));
+            }
+        }
+        if (escaped.isEmpty()) return "";
+        return String.join("|", escaped);
+    }
+
+    // Build the combined regex pattern string depending on settings.
+    private String buildCombinedPatternString() {
+        String numberPart = hidePunctuation.get() ? "[0-9\\.\\-]+" : "\\d+";
+        String wordsPart = buildWordAlternation(hideWords.get());
+        if (!wordsPart.isEmpty()) {
+            // match either a number (numberPart) or any of the words (wordsPart)
+            return "(?:" + numberPart + "|" + wordsPart + ")";
+        } else {
+            return numberPart;
+        }
+    }
+
     public String hideCoordinateString(String text) {
         if (!isActive()) return text;
 
         String repl = replaceWith.get(); // may be null or empty
-        String patternStr = hidePunctuation.get() ? "[0-9\\.\\-]+" : "\\d+";
+        String patternStr = buildCombinedPatternString();
         Pattern numberPattern = Pattern.compile(patternStr);
 
         if (mode.get() == Mode.ALL_NUMBERS) {
