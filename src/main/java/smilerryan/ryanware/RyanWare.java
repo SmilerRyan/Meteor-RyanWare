@@ -111,6 +111,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
         Modules.get().add(new AntiHack());
+        Modules.get().add(new AntiTouch());
         Modules.get().add(new AskOllama());
         Modules.get().add(new AskOllama2());
         Modules.get().add(new AskOllamaAnnoyer());
@@ -126,7 +127,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoGroom());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new AutoMoveFromPlayers());
         Modules.get().add(new AutoResponder());;
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoTotem());
