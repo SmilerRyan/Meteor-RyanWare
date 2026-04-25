@@ -39,7 +39,14 @@ public class AutoOBSReplays extends Module {
 
     private final Setting<Integer> killDelay = sgKills.add(new IntSetting.Builder()
         .name("kills-delay-ticks")
-        .defaultValue(35)
+        .defaultValue(20)
+        .min(0)
+        .build()
+    );
+
+    private final Setting<Integer> killsAssumeDeadDelay = sgKills.add(new IntSetting.Builder()
+        .name("kills-assume-killed-delay-ticks")
+        .defaultValue(20)
         .min(0)
         .build()
     );
@@ -149,7 +156,7 @@ public class AutoOBSReplays extends Module {
             Entity entity = mc.world.getEntityById(entityId);
             if (entity == null) {
                 int lastSeen = entityLastSeenTick.getOrDefault(entityId, hitTick);
-                if (tickCounter - hitTick < 40 && saveKills.get()) {
+                if (tickCounter - hitTick < killsAssumeDeadDelay.get() && saveKills.get()) {
                     schedule(killDelay.get());
                 }
                 it.remove();
@@ -158,7 +165,7 @@ public class AutoOBSReplays extends Module {
             }
             if (entity instanceof PlayerEntity player) {
                 if (player.getHealth() <= 0 || player.isDead()) {
-                    if (saveKills.get() && tickCounter - hitTick < 40) {
+                    if (saveKills.get() && tickCounter - hitTick < killsAssumeDeadDelay.get()) {
                         schedule(killDelay.get());
                     }
                     it.remove();
