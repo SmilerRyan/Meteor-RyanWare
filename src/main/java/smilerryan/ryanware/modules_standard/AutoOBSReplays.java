@@ -9,6 +9,7 @@ import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
@@ -24,7 +25,6 @@ public class AutoOBSReplays extends Module {
     private final SettingGroup sgChat = settings.createGroup("Chat");
     private final SettingGroup sgObs = settings.createGroup("OBS");
 
-
     private final Setting<Boolean> saveKills = sgKills.add(new BoolSetting.Builder()
         .name("kills-enabled")
         .defaultValue(true)
@@ -37,7 +37,6 @@ public class AutoOBSReplays extends Module {
         .min(0)
         .build()
     );
-
 
     private final Setting<Boolean> saveDeaths = sgDeaths.add(new BoolSetting.Builder()
         .name("deaths-enabled")
@@ -54,12 +53,11 @@ public class AutoOBSReplays extends Module {
 
     private final Setting<List<String>> fallbackKeywords = sgChat.add(new StringListSetting.Builder()
         .name("chat-keywords")
-        .description("Triggers OBS if these appear in chat.")
         .defaultValue("slain by", "killed by", "you won", "you lost")
         .build()
     );
 
-    private final Setting<Integer> sgChat = sgChat.add(new IntSetting.Builder()
+    private final Setting<Integer> chatDelay = sgChat.add(new IntSetting.Builder()
         .name("chat-delay-ticks")
         .defaultValue(35)
         .min(0)
@@ -72,34 +70,39 @@ public class AutoOBSReplays extends Module {
         .build()
     );
 
-    private final Set<Integer> recentlyHit = new HashSet<>();
-    private final Set<Integer> processedDead = new HashSet<>();
+    private final Map<Integer, Integer> lastHitTick = new HashMap<>();
+    private final Map<Integer, Integer> entityLastSeenTick = new HashMap<>();
+
     private final List<ScheduledTrigger> queue = new ArrayList<>();
+
+    private int tickCounter = 0;
     private boolean wasAlive = true;
 
     public AutoOBSReplays() {
-        super(RyanWare.CATEGORY_STANDARD,
-            RyanWare.modulePrefix_standard + "Auto-OBS-Replays", "Saves OBS replay on kills, deaths, or chat keywords.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Auto-OBS-Replays", "Saves OBS replay on kills, deaths, or chat keywords.");
     }
 
     @Override
     public void onActivate() {
-        recentlyHit.clear();
-        processedDead.clear();
+        lastHitTick.clear();
+        entityLastSeenTick.clear();
         queue.clear();
+        tickCounter = 0;
         wasAlive = true;
     }
 
+
     @EventHandler
     private void onAttack(AttackEntityEvent e) {
-        if (e.entity instanceof PlayerEntity) {
-            recentlyHit.add(e.entity.getId());
+        if (e.entity != null) {
+            lastHitTick.put(e.entity.getId(), tickCounter);
         }
     }
 
     @EventHandler
     private void onChat(ReceiveMessageEvent e) {
         String msg = e.getMessage().getString().toLowerCase();
+
         for (String key : fallbackKeywords.get()) {
             if (msg.contains(key.toLowerCase())) {
                 schedule(chatDelay.get());
@@ -112,37 +115,62 @@ public class AutoOBSReplays extends Module {
     private void onTick(TickEvent.Post e) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world == null || mc.player == null) return;
+
+        tickCounter++;
+
+        // Death - GUI detection
+        if (saveDeaths.get() && mc.currentScreen instanceof DeathScreen) {
+            schedule(deathDelay.get());
+        }
+
+        // Death - health detection
         boolean alive = mc.player.getHealth() > 0 && !mc.player.isDead();
         if (wasAlive && !alive && saveDeaths.get()) {
             schedule(deathDelay.get());
         }
         wasAlive = alive;
+
+        // kill detection - existence after hit
         for (Entity entity : mc.world.getEntities()) {
-            if (!(entity instanceof PlayerEntity player)) continue;
-            if (player == mc.player) continue;
-            int id = player.getId();
-            if ((player.isDead() || player.getHealth() <= 0)) {
-                if (!processedDead.contains(id) && recentlyHit.contains(id)) {
-                    if (saveKills.get()) {
+            entityLastSeenTick.put(entity.getId(), tickCounter);
+        }
+        Iterator<Map.Entry<Integer, Integer>> it = lastHitTick.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, Integer> entry = it.next();
+            int entityId = entry.getKey();
+            int hitTick = entry.getValue();
+            Entity entity = mc.world.getEntityById(entityId);
+            if (entity == null) {
+                int lastSeen = entityLastSeenTick.getOrDefault(entityId, hitTick);
+                if (tickCounter - hitTick < 40 && saveKills.get()) {
+                    schedule(killDelay.get());
+                }
+                it.remove();
+                entityLastSeenTick.remove(entityId);
+                continue;
+            }
+            if (entity instanceof PlayerEntity player) {
+                if (player.getHealth() <= 0 || player.isDead()) {
+                    if (saveKills.get() && tickCounter - hitTick < 40) {
                         schedule(killDelay.get());
                     }
-                    processedDead.add(id);
+                    it.remove();
                 }
             }
         }
-
-        Iterator<ScheduledTrigger> it = queue.iterator();
-        while (it.hasNext()) {
-            ScheduledTrigger t = it.next();
+        // process queue
+        Iterator<ScheduledTrigger> q = queue.iterator();
+        while (q.hasNext()) {
+            ScheduledTrigger t = q.next();
             t.ticks--;
+
             if (t.ticks <= 0) {
                 triggerReplay();
-                it.remove();
+                q.remove();
             }
         }
-
-        if (recentlyHit.size() > 100) recentlyHit.clear();
-        if (processedDead.size() > 200) processedDead.clear();
+        if (lastHitTick.size() > 200) lastHitTick.clear();
+        if (entityLastSeenTick.size() > 300) entityLastSeenTick.clear();
     }
 
     private void schedule(int delayTicks) {
