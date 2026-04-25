@@ -31,6 +31,12 @@ public class AutoOBSReplays extends Module {
         .build()
     );
 
+    private final Setting<Boolean> saveKillsPlayersOnly = sgKills.add(new BoolSetting.Builder()
+        .name("kills-players-only")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Integer> killDelay = sgKills.add(new IntSetting.Builder()
         .name("kills-delay-ticks")
         .defaultValue(35)
@@ -95,6 +101,7 @@ public class AutoOBSReplays extends Module {
     @EventHandler
     private void onAttack(AttackEntityEvent e) {
         if (e.entity != null) {
+            if (saveKillsPlayersOnly.get() && !(e.entity instanceof PlayerEntity)) return;
             lastHitTick.put(e.entity.getId(), tickCounter);
         }
     }
