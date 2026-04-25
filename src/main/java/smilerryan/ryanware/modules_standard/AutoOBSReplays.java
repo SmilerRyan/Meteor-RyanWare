@@ -39,7 +39,7 @@ public class AutoOBSReplays extends Module {
 
     private final Setting<Integer> killDelay = sgKills.add(new IntSetting.Builder()
         .name("kills-delay-ticks")
-        .defaultValue(20)
+        .defaultValue(35)
         .min(0)
         .build()
     );
