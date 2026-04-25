@@ -2,6 +2,7 @@ package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.events.entity.player.AttackEntityEvent;
+import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -18,60 +19,76 @@ import java.util.concurrent.CompletionStage;
 
 public class AutoOBSReplays extends Module {
 
-    private final SettingGroup sgGeneral = settings.createGroup("General");
+    private final SettingGroup sgKills = settings.createGroup("Kills");
+    private final SettingGroup sgDeaths = settings.createGroup("Deaths");
+    private final SettingGroup sgChat = settings.createGroup("Chat");
+    private final SettingGroup sgObs = settings.createGroup("OBS");
 
-    private final Setting<Boolean> saveKills = sgGeneral.add(new BoolSetting.Builder()
-        .name("save-kills")
+
+    private final Setting<Boolean> saveKills = sgKills.add(new BoolSetting.Builder()
+        .name("kills-enabled")
         .defaultValue(true)
         .build()
     );
 
-    private final Setting<Boolean> saveDeaths = sgGeneral.add(new BoolSetting.Builder()
-        .name("save-deaths")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Integer> cooldown = sgGeneral.add(new IntSetting.Builder()
-        .name("cooldown-ticks")
-        .defaultValue(20)
+    private final Setting<Integer> killDelay = sgKills.add(new IntSetting.Builder()
+        .name("kills-delay-ticks")
+        .defaultValue(35)
         .min(0)
         .build()
     );
 
-    private final Setting<Boolean> debug = sgGeneral.add(new BoolSetting.Builder()
-        .name("debug")
+
+    private final Setting<Boolean> saveDeaths = sgDeaths.add(new BoolSetting.Builder()
+        .name("deaths-enabled")
         .defaultValue(true)
         .build()
     );
 
-    private final Setting<String> host = sgGeneral.add(new StringSetting.Builder()
-        .name("obs-host")
+    private final Setting<Integer> deathDelay = sgDeaths.add(new IntSetting.Builder()
+        .name("deaths-delay-ticks")
+        .defaultValue(35)
+        .min(0)
+        .build()
+    );
+
+    private final Setting<List<String>> fallbackKeywords = sgChat.add(new StringListSetting.Builder()
+        .name("chat-keywords")
+        .description("Triggers OBS if these appear in chat.")
+        .defaultValue("slain by", "killed by", "you won", "you lost")
+        .build()
+    );
+
+    private final Setting<Integer> sgChat = sgChat.add(new IntSetting.Builder()
+        .name("chat-delay-ticks")
+        .defaultValue(35)
+        .min(0)
+        .build()
+    );
+
+    private final Setting<String> host = sgObs.add(new StringSetting.Builder()
+        .name("OBS-host")
         .defaultValue("ws://127.0.0.1:4455")
         .build()
     );
 
     private final Set<Integer> recentlyHit = new HashSet<>();
     private final Set<Integer> processedDead = new HashSet<>();
-
-    private int timer = 0;
+    private final List<ScheduledTrigger> queue = new ArrayList<>();
     private boolean wasAlive = true;
 
     public AutoOBSReplays() {
         super(RyanWare.CATEGORY_STANDARD,
-            RyanWare.modulePrefix_standard + "Auto-OBS-Replays",
-            "Saves OBS replay on kills or deaths (stateless connection).");
+            RyanWare.modulePrefix_standard + "Auto-OBS-Replays", "Saves OBS replay on kills, deaths, or chat keywords.");
     }
 
     @Override
     public void onActivate() {
         recentlyHit.clear();
         processedDead.clear();
+        queue.clear();
         wasAlive = true;
-        timer = 0;
     }
-
-    // ---------------- ATTACK TRACK ----------------
 
     @EventHandler
     private void onAttack(AttackEntityEvent e) {
@@ -80,81 +97,80 @@ public class AutoOBSReplays extends Module {
         }
     }
 
-    // ---------------- TICK LOOP ----------------
+    @EventHandler
+    private void onChat(ReceiveMessageEvent e) {
+        String msg = e.getMessage().getString().toLowerCase();
+        for (String key : fallbackKeywords.get()) {
+            if (msg.contains(key.toLowerCase())) {
+                schedule(chatDelay.get());
+                break;
+            }
+        }
+    }
 
     @EventHandler
     private void onTick(TickEvent.Post e) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world == null || mc.player == null) return;
-
-        if (timer > 0) timer--;
-
-        // --- YOUR death
         boolean alive = mc.player.getHealth() > 0 && !mc.player.isDead();
-
-        if (wasAlive && !alive) {
-            if (saveDeaths.get() && timer <= 0) {
-                triggerReplay("Death");
-                timer = cooldown.get();
-            }
+        if (wasAlive && !alive && saveDeaths.get()) {
+            schedule(deathDelay.get());
         }
-
         wasAlive = alive;
-
-        // --- kills
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PlayerEntity player)) continue;
             if (player == mc.player) continue;
-
             int id = player.getId();
-
             if ((player.isDead() || player.getHealth() <= 0)) {
                 if (!processedDead.contains(id) && recentlyHit.contains(id)) {
-
-                    if (saveKills.get() && timer <= 0) {
-                        triggerReplay("Kill");
-                        timer = cooldown.get();
+                    if (saveKills.get()) {
+                        schedule(killDelay.get());
                     }
-
                     processedDead.add(id);
                 }
             }
         }
 
-        // cleanup
+        Iterator<ScheduledTrigger> it = queue.iterator();
+        while (it.hasNext()) {
+            ScheduledTrigger t = it.next();
+            t.ticks--;
+            if (t.ticks <= 0) {
+                triggerReplay();
+                it.remove();
+            }
+        }
+
         if (recentlyHit.size() > 100) recentlyHit.clear();
         if (processedDead.size() > 200) processedDead.clear();
     }
 
-    // ---------------- OBS (STATELESS) ----------------
+    private void schedule(int delayTicks) {
+        queue.add(new ScheduledTrigger(delayTicks));
+    }
 
-    private void triggerReplay(String reason) {
-        if (debug.get()) info("Triggering OBS (" + reason + ")");
+    private static class ScheduledTrigger {
+        int ticks;
+        ScheduledTrigger(int ticks) {this.ticks = ticks;}
+    }
 
+    private void triggerReplay() {
         HttpClient.newHttpClient()
             .newWebSocketBuilder()
-            .buildAsync(URI.create(host.get()), new OBSHandler(reason))
+            .buildAsync(URI.create(host.get()), new OBSHandler())
             .exceptionally(err -> {
-                if (debug.get()) info("OBS connect failed: " + err.getMessage());
+                err.printStackTrace();
                 return null;
             });
     }
 
-    // ---------------- INNER HANDLER ----------------
-
     private class OBSHandler implements WebSocket.Listener {
-        private final String reason;
         private WebSocket ws;
         private boolean sent = false;
-
-        OBSHandler(String reason) {
-            this.reason = reason;
-        }
 
         @Override
         public void onOpen(WebSocket webSocket) {
             this.ws = webSocket;
-            if (debug.get()) info("OBS Connected (" + reason + ")");
             webSocket.request(1);
         }
 
@@ -162,35 +178,13 @@ public class AutoOBSReplays extends Module {
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
             String msg = data.toString();
 
-            if (debug.get()) info("OBS RECV: " + msg);
-
-            // Hello → Identify (no auth)
             if (msg.contains("\"op\":0")) {
-                String identify = "{"
-                    + "\"op\":1,"
-                    + "\"d\":{"
-                    + "\"rpcVersion\":1"
-                    + "}}";
-
-                ws.sendText(identify, true);
-                if (debug.get()) info("Sent Identify");
+                ws.sendText("{\"op\":1,\"d\":{\"rpcVersion\":1}}", true);
             }
 
-            // Identified → send request ONCE then close
             if (!sent && msg.contains("\"op\":2")) {
                 sent = true;
-
-                String request = "{"
-                    + "\"op\":6,"
-                    + "\"d\":{"
-                    + "\"requestType\":\"SaveReplayBuffer\","
-                    + "\"requestId\":\"1\""
-                    + "}}";
-
-                ws.sendText(request, true);
-
-                if (debug.get()) info("Replay saved (" + reason + ")");
-
+                ws.sendText("{\"op\":6,\"d\":{\"requestType\":\"SaveReplayBuffer\",\"requestId\":\"1\"}}", true);
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
             }
 
