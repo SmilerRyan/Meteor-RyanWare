@@ -99,12 +99,12 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CustomTabText());
         Modules.get().add(new DeathCoords());
         Modules.get().add(new DiscordChatLogger());
+        Modules.get().add(new DurabilityBlocker());
         Modules.get().add(new f3_number_hider());
         Modules.get().add(new Flight());
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoAttackDamage());
-        Modules.get().add(new OneDurabilityToolBlocker());
         Modules.get().add(new PlayerTracers());
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new WiderChat());
