@@ -8,6 +8,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -33,6 +34,12 @@ public class AntiTouch extends Module {
 
     private final Setting<Boolean> rotate = sg.add(new BoolSetting.Builder()
         .name("rotate").defaultValue(true).build());
+
+    private final Setting<Boolean> includeMobs = sg.add(new BoolSetting.Builder()
+        .name("include-mobs")
+        .description("Avoid mobs that are looking at you.")
+        .defaultValue(false)
+        .build());
 
     private final Setting<Integer> stuckTicks = sg.add(new IntSetting.Builder()
         .name("stuck-ticks").defaultValue(6).min(1).sliderMax(40).build());
@@ -62,7 +69,7 @@ public class AntiTouch extends Module {
     public AntiTouch() {
         super(RyanWare.CATEGORY_EXTRAS,
             RyanWare.modulePrefix_extras + "Anti-Touch",
-            "Automatically moves away from players that get too close to you.");
+            "Automatically moves away from players or mobs looking at you.");
     }
 
     @Override
@@ -95,7 +102,6 @@ public class AntiTouch extends Module {
 
         if (dist > trapRange.get() * trapRange.get()) return;
 
-        // detect placement (air -> solid)
         if (event.oldState.isAir() && !event.newState.isAir()) {
             panicTicks = 10;
         }
@@ -113,7 +119,7 @@ public class AntiTouch extends Module {
 
         Vec3d pos = new Vec3d(mc.player.getX(), mc.player.getY(), mc.player.getZ());
 
-        // --- PANIC (instant reaction) ---
+        // PANIC
         if (panicTicks > 0) {
             panicTicks--;
 
@@ -130,13 +136,12 @@ public class AntiTouch extends Module {
             }
 
             mc.options.jumpKey.setPressed(true);
-
             return;
         }
 
         boolean danger = hasNearbyThreat();
 
-        // --- stuck detection ---
+        // stuck detection
         if (danger && lastPos != null) {
             if (pos.distanceTo(lastPos) < 0.03) stuck++;
             else stuck = 0;
@@ -157,7 +162,7 @@ public class AntiTouch extends Module {
 
         controlling = true;
 
-        // --- escape mode ---
+        // ESCAPE
         if (escapeTicks > 0) {
             escapeTicks--;
 
@@ -170,11 +175,10 @@ public class AntiTouch extends Module {
 
             strongStrafe();
             jumpIfColliding();
-
             return;
         }
 
-        // --- OPEN SPACE SCORING ---
+        // OPEN SPACE SCORING
         Vec3d bestDir = null;
         double bestScore = -999;
 
@@ -184,7 +188,7 @@ public class AntiTouch extends Module {
 
             double score = 0;
 
-            // scan forward
+            // terrain scan
             for (int d = 1; d <= 3; d++) {
                 Vec3d check = pos.add(dir.multiply(d));
                 BlockPos bp = new BlockPos((int)check.x, (int)check.y, (int)check.z);
@@ -193,7 +197,7 @@ public class AntiTouch extends Module {
                 else score += 2;
             }
 
-            // predictive player penalty
+            // player penalty
             for (PlayerEntity p : mc.world.getPlayers()) {
                 if (p == mc.player) continue;
                 if (!shouldAvoid(p)) continue;
@@ -210,6 +214,28 @@ public class AntiTouch extends Module {
                 if (dot > 0.3) score -= 4;
             }
 
+            // mob penalty (LOOKING AT YOU)
+            if (includeMobs.get()) {
+                for (MobEntity m : mc.world.getEntitiesByClass(
+                        MobEntity.class,
+                        mc.player.getBoundingBox().expand(safeDistance.get()),
+                        e -> true)) {
+
+                    if (!isMobLookingAtMe(m)) continue;
+
+                    double dist = mc.player.distanceTo(m);
+                    if (dist > safeDistance.get()) continue;
+
+                    Vec3d predicted = new Vec3d(m.getX(), m.getY(), m.getZ())
+                        .add(m.getVelocity().multiply(5));
+
+                    Vec3d toMob = predicted.subtract(pos).normalize();
+                    double dot = dir.dotProduct(toMob);
+
+                    if (dot > 0.3) score -= 4;
+                }
+            }
+
             if (score > bestScore) {
                 bestScore = score;
                 bestDir = dir;
@@ -221,7 +247,6 @@ public class AntiTouch extends Module {
         if (rotate.get()) {
             float targetYaw = (float)(Math.toDegrees(Math.atan2(bestDir.z, bestDir.x)) - 90f);
             mc.player.setYaw(smooth(mc.player.getYaw(), targetYaw, 20f));
-
             pressForward();
         } else {
             moveBackwards();
@@ -232,12 +257,40 @@ public class AntiTouch extends Module {
     }
 
     private boolean hasNearbyThreat() {
+        // players
         for (PlayerEntity p : mc.world.getPlayers()) {
             if (p == mc.player) continue;
             if (!shouldAvoid(p)) continue;
             if (mc.player.distanceTo(p) <= safeDistance.get()) return true;
         }
+
+        // mobs (LOOKING AT YOU)
+        if (includeMobs.get()) {
+            for (MobEntity m : mc.world.getEntitiesByClass(
+                    MobEntity.class,
+                    mc.player.getBoundingBox().expand(safeDistance.get()),
+                    e -> true)) {
+
+                if (!isMobLookingAtMe(m)) continue;
+
+                if (mc.player.distanceTo(m) <= safeDistance.get()) return true;
+            }
+        }
+
         return false;
+    }
+
+    // --- NEW: LOOK DETECTION ---
+    private boolean isMobLookingAtMe(MobEntity m) {
+        Vec3d mobEyes = m.getEyePos();
+        Vec3d playerEyes = mc.player.getEyePos();
+
+        Vec3d look = m.getRotationVec(1.0f).normalize();
+        Vec3d toPlayer = playerEyes.subtract(mobEyes).normalize();
+
+        double dot = look.dotProduct(toPlayer);
+
+        return dot > 0.65;
     }
 
     private void pressForward() {
