@@ -31,6 +31,9 @@ public class AntiTouch extends Module {
     private final Setting<Boolean> sprint = sg.add(new BoolSetting.Builder()
         .name("sprint").defaultValue(true).build());
 
+    private final Setting<Boolean> rotate = sg.add(new BoolSetting.Builder()
+        .name("rotate").defaultValue(true).build());
+
     private final Setting<Integer> stuckTicks = sg.add(new IntSetting.Builder()
         .name("stuck-ticks").defaultValue(6).min(1).sliderMax(40).build());
 
@@ -58,7 +61,7 @@ public class AntiTouch extends Module {
 
     public AntiTouch() {
         super(RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "Anti-Touch-(Auto-Move-From-Players)",
+            RyanWare.modulePrefix_extras + "Anti-Touch",
             "Automatically moves away from players that get too close to you.");
     }
 
@@ -116,11 +119,15 @@ public class AntiTouch extends Module {
 
             controlling = true;
 
-            float yaw = mc.player.getYaw() + (float)(random.nextInt(360) - 180);
-            mc.player.setYaw(yaw);
-
-            pressForward();
-            strongStrafe();
+            if (rotate.get()) {
+                float yaw = mc.player.getYaw() + (float)(random.nextInt(360) - 180);
+                mc.player.setYaw(yaw);
+                pressForward();
+                strongStrafe();
+            } else {
+                moveBackwards();
+                strongStrafe();
+            }
 
             mc.options.jumpKey.setPressed(true);
 
@@ -154,8 +161,13 @@ public class AntiTouch extends Module {
         if (escapeTicks > 0) {
             escapeTicks--;
 
-            mc.player.setYaw(escapeYaw);
-            pressForward();
+            if (rotate.get()) {
+                mc.player.setYaw(escapeYaw);
+                pressForward();
+            } else {
+                moveBackwards();
+            }
+
             strongStrafe();
             jumpIfColliding();
 
@@ -206,10 +218,15 @@ public class AntiTouch extends Module {
 
         if (bestDir == null) return;
 
-        float targetYaw = (float)(Math.toDegrees(Math.atan2(bestDir.z, bestDir.x)) - 90f);
-        mc.player.setYaw(smooth(mc.player.getYaw(), targetYaw, 20f));
+        if (rotate.get()) {
+            float targetYaw = (float)(Math.toDegrees(Math.atan2(bestDir.z, bestDir.x)) - 90f);
+            mc.player.setYaw(smooth(mc.player.getYaw(), targetYaw, 20f));
 
-        pressForward();
+            pressForward();
+        } else {
+            moveBackwards();
+        }
+
         randomStrafe();
         jumpIfColliding();
     }
@@ -226,6 +243,12 @@ public class AntiTouch extends Module {
     private void pressForward() {
         mc.options.forwardKey.setPressed(true);
         mc.options.backKey.setPressed(false);
+        if (sprint.get()) mc.player.setSprinting(true);
+    }
+
+    private void moveBackwards() {
+        mc.options.forwardKey.setPressed(false);
+        mc.options.backKey.setPressed(true);
         if (sprint.get()) mc.player.setSprinting(true);
     }
 
