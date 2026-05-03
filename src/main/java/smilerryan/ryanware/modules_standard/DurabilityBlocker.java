@@ -26,6 +26,11 @@ public class DurabilityBlocker extends Module {
         .max(100)
         .build());
 
+    private final Setting<Boolean> playSound = sg.add(new BoolSetting.Builder()
+        .name("play-sound")
+        .defaultValue(true)
+        .build());
+
     public DurabilityBlocker() {
         super(RyanWare.CATEGORY_STANDARD,
             RyanWare.modulePrefix_standard + "Durability-Blocker",
@@ -50,7 +55,11 @@ public class DurabilityBlocker extends Module {
         if (blocked()) {
             mc.options.attackKey.setPressed(false);
             mc.options.useKey.setPressed(false);
-            mc.player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0.6f, 0.8f);
+            if (playSound.get()) {
+                if (mc.player.age % 15 == 0) {
+                    mc.player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), 0.6f, 0.8f);
+                }
+            }
         }
     }
 }
