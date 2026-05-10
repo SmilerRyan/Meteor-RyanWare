@@ -33,13 +33,18 @@
 
 ## Building
 
+You need to download <a href="https://services.gradle.org/distributions/gradle-8.13-bin.zip">Gradle 8.13</a> and <a href="https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.zip">Java 21 JDK</a> before the build step will work.
+<br>
+The build script will use the ``gradle-8.13`` and ``jdk-21.0.11`` directories in this automatically if found, or just manually run:
+
 ```
-./gradlew build
+./gradlew clean build --no-daemon
 ````
 
 Output:
 
 ```
+./build/libs/meteor-RyanWare-0.1.jar
 ./build/libs/RyanWare-XXXX-XX-XX-XX-XX-XX.jar
 ```
 
