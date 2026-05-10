@@ -3,7 +3,7 @@
   "id": "ryanware",
   "version": "2.2",
   "name": "Shadow Client",
-  "icon": "icon-d.png",
+  "icon": "icons/dichi.png",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan"],
   "contact": {

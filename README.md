@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="src/main/resources/icon-plus.png" width="120" alt="RyanWare Logo"/>
-  <img src="src/main/resources/icon-d.png" width="120" alt="D Logo"/>
+  <img src="src/main/resources/icons/plus.png" width="120" alt="RyanWare Logo"/>
+  <img src="src/main/resources/icons/dichi.png" width="120" alt="D Logo"/>
 </p>
 
 <h1 align="center">RyanWare / Shadow Client</h1>
