@@ -1,9 +1,10 @@
 <p align="center">
-  <img src="src/main/resources/icons/plus.png" width="120" alt="RyanWare Logo"/>
-  <img src="src/main/resources/icons/dichi.png" width="120" alt="D Logo"/>
+  <img src="src/main/resources/icons/plus.png" width="100" alt="RyanWare Icon"/>
+  <img src="src/main/resources/icons/dichi.png" width="100" alt="Dichi Icon"/>
+  <img src="src/main/resources/icons/knowledge_book.png" width="100" alt="Knowledge Book Icon"/>
 </p>
 
-<h1 align="center">RyanWare / Shadow Client</h1>
+<h1 align="center">Meteor RyanWare Add-on</h1>
 <p align="center">A powerful addon for Meteor Client designed to make things easy</p>
 
 <p align="center">
