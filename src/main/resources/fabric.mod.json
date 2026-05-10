@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "ryanware",
+  "version": "2.2",
+  "name": "ChatGPT Client",
+  "icon": "icons/knowledge_book.png",
+  "description": "Just another Addon for the Meteor Client.",
+  "authors": ["SmilerRyan", "ChatGPT"],
+  "contact": {
+    "repo": "https://github.com/smilerryan/meteor-ryanware"
+  },
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "smilerryan.ryanware.RyanWare"
+    ]
+  },
+  "mixins": [
+    "ryanware.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "229,255,0",
+    "github:sha": "",
+    "ryanware:addon-name": "ChatGPT Client",
+    "ryanware:module-prefix-extras": "ChatGPT-Plus-",
+    "ryanware:module-prefix-standard": "ChatGPT-",
+    "ryanware:cat-name-extras": "ChatGPT Plus",
+    "ryanware:cat-name-standard": "ChatGPT",
+    "ryanware:icon-extras": "KNOWLEDGE_BOOK",
+    "ryanware:icon-standard": "ENCHANTED_BOOK"
+  },
+  "depends": {
+    "java": ">=17",
+    "minecraft": ">=1.20.6",
+    "meteor-client": "*"
+  }
+}
