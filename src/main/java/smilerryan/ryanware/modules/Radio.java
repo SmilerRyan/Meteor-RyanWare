@@ -65,6 +65,11 @@ public class Radio extends Module {
     @Override
     public void onActivate() {
         stopRequested = false;
+
+        currentUrl = getActiveUrl();
+        lastVolume = volume.get();
+        lastMode = playbackMode.get();
+
         startRadio();
     }
 
@@ -80,7 +85,17 @@ public class Radio extends Module {
         int vol = volume.get();
         PlaybackMode mode = playbackMode.get();
 
-        if (!newUrl.equals(currentUrl) || vol != lastVolume || mode != lastMode) {
+        boolean urlChanged = !newUrl.equals(currentUrl);
+        boolean modeChanged = mode != lastMode;
+        boolean volumeChanged = vol != lastVolume;
+
+        // FFPLAY requires restart for volume changes
+        boolean shouldRestart =
+            urlChanged ||
+            modeChanged ||
+            (mode == PlaybackMode.FFPLAY && volumeChanged);
+
+        if (shouldRestart) {
             currentUrl = newUrl;
             lastVolume = vol;
             lastMode = mode;
@@ -94,14 +109,18 @@ public class Radio extends Module {
             return;
         }
 
+        // FFMPEG supports live volume changes
+        if (mode == PlaybackMode.FFMPEG && volumeChanged) {
+            lastVolume = vol;
+            setVolume(vol);
+        }
+
         if (mode == PlaybackMode.FFPLAY) {
             if (ffplayProcess != null && !ffplayProcess.isAlive()) {
                 stopRadio();
                 startRadio();
             }
         } else {
-            setVolume(vol);
-
             if (ffmpegProcess != null && !ffmpegProcess.isAlive()) {
                 stopRequested = true;
                 stopRadio();
