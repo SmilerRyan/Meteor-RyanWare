@@ -173,6 +173,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PacketDelayer());
+        Modules.get().add(new PacketLimiter());
         Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PlayerHider());
         Modules.get().add(new PlayerShapeESP());

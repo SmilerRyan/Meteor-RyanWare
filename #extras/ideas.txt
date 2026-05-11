@@ -11,11 +11,7 @@ Aka EnderTP like a enderman
 Also a hack that sends multiple enderperls at once in different directions at once for escaping would also be fire
  - Interesting idea. I'll need to make a list now lmao
 
-Btw to ryanware you need to add a packet limiter to block the player from getting kicked by capping your max exceeded packets 
-So people can use nuker without getting kicked but to its max efficiency
 Also anti crash like on meteor rejects iirc
- - the NoTooManyPackets module lmao doubt that'd be too hard to make, just count them and if it's too many cancel it.
- - probably.
 
 Could you work on a module that like makes you flicker/teleport all around you
 Some person said they made one themselves they named it quiver
