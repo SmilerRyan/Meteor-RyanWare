@@ -14,8 +14,7 @@
 <p align="center">
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare">View on GitHub</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/archive/refs/heads/main.zip">Download source as zip</a>]
-    <!-- [<a onclick="alert('Sorry, there are no official builds offered here.')">Download prebuilt jar</a>] -->
-    [<a href="RyanWare.jar">Download prebuilt jar</a>]
+    [<a href="#prebuilt_jar">Download prebuilt jar</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/commits/main/">Commit History</a>]
 </p>
 
@@ -27,8 +26,18 @@
 
 > ⚠️ This is **NOT** a standalone client — Meteor Client is required for this addon to load.
 
-> This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.
+> This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
 > Using this addon on any version that is not the latest should load, but it isn't supported.
+
+
+---
+
+## Installation
+
+1. Install Meteor Client 1.21.11 (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>)
+2. Build the RyanWare `.jar` from source or <a id="prebuilt_jar" href="RyanWare.jar">download it from GitHub</a> directly.
+3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder
+4. Launch with Fabric
 
 ---
 
@@ -48,15 +57,6 @@ Output:
 ./build/libs/meteor-RyanWare-0.1.jar
 ./build/libs/RyanWare-XXXX-XX-XX-XX-XX-XX.jar
 ```
-
----
-
-## Installation
-
-1. Install Meteor Client
-2. Build or download the RyanWare `.jar`
-3. Put it in your `.minecraft/mods` folder
-4. Launch with Fabric
 
 ---
 

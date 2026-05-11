@@ -27,6 +27,7 @@ jobs:
           mkdir dist
           copy /Y index.html dist\index.html
           copy /Y README.md dist\README.md
+          copy /Y meteor-client-1.21.11-82.jar dist\meteor-client-1.21.11-82.jar
           copy /Y build\libs\meteor-RyanWare-0.1.jar dist\RyanWare.jar
           mkdir dist\src\main\resources\icons
           xcopy /E /I /Y src\main\resources\icons dist\src\main\resources\icons
