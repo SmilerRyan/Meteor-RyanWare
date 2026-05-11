@@ -26,8 +26,8 @@
     "ryanware:module-prefix-standard": "ChatGPT-",
     "ryanware:cat-name-extras": "ChatGPT Plus",
     "ryanware:cat-name-standard": "ChatGPT",
-    "ryanware:icon-extras": "KNOWLEDGE_BOOK",
-    "ryanware:icon-standard": "ENCHANTED_BOOK"
+    "ryanware:icon-extras": "ENCHANTED_BOOK",
+    "ryanware:icon-standard": "KNOWLEDGE_BOOK"
   },
   "depends": {
     "java": ">=17",
