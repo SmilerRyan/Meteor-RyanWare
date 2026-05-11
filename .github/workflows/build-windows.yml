@@ -17,22 +17,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Build JAR
+      - name: Build JAR and prepare dist folder
         shell: cmd
         run: |
           set NO_PAUSE=1
           call "#install_build_tools.bat"
           call "#build.bat"
-
-      - name: Prepare dist folder
-        shell: cmd
-        run: |
+          
           mkdir dist
-
           copy /Y index.html dist\index.html
           copy /Y README.md dist\README.md
-          copy /Y build\libs\*.jar dist\RyanWare.jar
-
+          copy /Y build\libs\RyanWare-*.jar dist\RyanWare.jar
           mkdir dist\src\main\resources\icons
           xcopy /E /I /Y src\main\resources\icons dist\src\main\resources\icons
 
