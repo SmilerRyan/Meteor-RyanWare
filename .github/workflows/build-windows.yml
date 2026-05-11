@@ -1,20 +1,26 @@
-name: Build-Windows
+name: Build
+
 on:
   push:
     branches: [main]
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - shell: cmd
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Build Tools and Build
+        shell: cmd
         run: |
           set NO_PAUSE=1
           call "#install_build_tools.bat"
           call "#build.bat"
-      - uses: marvinpinto/action-automatic-releases@latest
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: latest
-          title: Latest Build
-          files: ./builds/libs/*.jar
+          name: build
+          path: ./build/libs/*.jar
