@@ -1,3 +1,5 @@
 bin/main/
 .gradle/
 build/
+gradle-8.13/
+jdk-21.0.11/
