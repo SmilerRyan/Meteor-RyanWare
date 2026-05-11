@@ -415,8 +415,19 @@ public class Radio extends Module {
     }
 
     public enum PlaybackMode {
-        FFPLAY,
-        FFMPEG
+        FFMPEG("Convert with ffmpeg and stream in game"),
+        FFPLAY("Directly play with ffplay");
+
+        private final String title;
+
+        PlaybackMode(String title) {
+            this.title = title;
+        }
+
+        @Override
+        public String toString() {
+            return title;
+        }
     }
 
     public enum Radios {
