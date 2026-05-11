@@ -1,0 +1,20 @@
+name: Build-Windows
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: cmd
+        run: |
+          set NO_PAUSE=1
+          call "#install_build_tools.bat"
+          call "#build.bat"
+      - uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          title: Latest Build
+          files: ./builds/libs/*.jar

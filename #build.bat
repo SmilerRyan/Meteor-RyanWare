@@ -20,4 +20,4 @@ for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd-HH-m
 
 move "%cd%\build\libs\meteor-RyanWare-0.1.jar" "%cd%\build\libs\RyanWare-%TS%.jar"
 
-pause
+if not defined NO_PAUSE pause

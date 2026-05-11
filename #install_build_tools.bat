@@ -44,4 +44,4 @@ if not exist "jdk-21.0.11\bin\java.exe" (
 echo Done.
 echo.
 
-pause
+if not defined NO_PAUSE pause
