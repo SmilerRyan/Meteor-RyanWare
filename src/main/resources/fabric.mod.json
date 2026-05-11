@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "ryanware",
   "version": "2.2",
-  "name": "ChatGPT Client",
+  "name": "RyanWare ChatGPT Client",
   "icon": "icons/knowledge_book.png",
   "description": "Just another Addon for the Meteor Client.",
   "authors": ["SmilerRyan", "ChatGPT"],
@@ -21,7 +21,7 @@
   "custom": {
     "meteor-client:color": "229,255,0",
     "github:sha": "",
-    "ryanware:addon-name": "ChatGPT Client",
+    "ryanware:addon-name": "RyanWare ChatGPT Client",
     "ryanware:module-prefix-extras": "ChatGPT-Plus-",
     "ryanware:module-prefix-standard": "ChatGPT-",
     "ryanware:cat-name-extras": "ChatGPT Plus",

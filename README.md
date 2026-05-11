@@ -4,7 +4,7 @@
   <img src="src/main/resources/icons/knowledge_book.png" width="100" alt="Knowledge Book Icon"/>
 </p>
 
-<h1 align="center">Meteor RyanWare Add-on</h1>
+<h1 align="center">RyanWare ChatGPT Client</h1>
 <p align="center">A powerful addon for Meteor Client designed to make things easy</p>
 
 <p align="center">
