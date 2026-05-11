@@ -6,6 +6,8 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 
 import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,12 +19,13 @@ public class Radio extends Module {
     private final Setting<PlaybackMode> playbackMode = sgGeneral.add(new EnumSetting.Builder<PlaybackMode>()
         .name("Playback Mode")
         .description("How the radio audio should be played.")
-        .defaultValue(PlaybackMode.FFPLAY)
+        .defaultValue(PlaybackMode.FFMPEG_STREAM)
         .build()
     );
 
     private final Setting<Radios> radioChannel = sgGeneral.add(new EnumSetting.Builder<Radios>()
         .name("Radio Channel")
+        .description("The radio channel to play.")
         .defaultValue(Radios.Radio1)
         .build()
     );
@@ -39,37 +42,30 @@ public class Radio extends Module {
         .name("Volume")
         .description("Adjusts the volume of the radio.")
         .defaultValue(50)
-        .range(0, 100)
+        // .range(0, 100)
         .sliderRange(0, 100)
         .build()
     );
 
-    // ffplay
     private Process ffplayProcess;
-
-    // ffmpeg
     private Process ffmpegProcess;
     private CompletableFuture<Void> radioThread;
     private volatile SourceDataLine dataLine;
-
-    // shared
     private volatile boolean stopRequested = false;
     private String currentUrl = "";
     private int lastVolume = -1;
     private PlaybackMode lastMode = null;
 
     public Radio() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Radio", "It's a fucking in-game radio!");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Radio", "It's an in-game radio!");
     }
 
     @Override
     public void onActivate() {
         stopRequested = false;
-
         currentUrl = getActiveUrl();
         lastVolume = volume.get();
         lastMode = playbackMode.get();
-
         startRadio();
     }
 
@@ -80,354 +76,161 @@ public class Radio extends Module {
     }
 
     @EventHandler
-    private void onTick(TickEvent.Pre e) {
+    private void onTick(TickEvent.Pre event) {
+        if (!isActive()) return;
         String newUrl = getActiveUrl();
-        int vol = volume.get();
-        PlaybackMode mode = playbackMode.get();
-
+        int newVolume = volume.get();
+        PlaybackMode newMode = playbackMode.get();
         boolean urlChanged = !newUrl.equals(currentUrl);
-        boolean modeChanged = mode != lastMode;
-        boolean volumeChanged = vol != lastVolume;
+        boolean modeChanged = newMode != lastMode;
+        boolean volumeChanged = newVolume != lastVolume;
 
-        // FFPLAY requires restart for volume changes
-        boolean shouldRestart =
-            urlChanged ||
-            modeChanged ||
-            (mode == PlaybackMode.FFPLAY && volumeChanged);
+        // FFPLAY volume changes require restarting the process, FFMPEG_STREAM volume changes can be handled live.
+        boolean shouldRestart = urlChanged || modeChanged || (newMode == PlaybackMode.FFPLAY && volumeChanged);
 
         if (shouldRestart) {
             currentUrl = newUrl;
-            lastVolume = vol;
-            lastMode = mode;
-
-            stopRequested = true;
+            lastVolume = newVolume;
+            lastMode = newMode;
             stopRadio();
-
-            stopRequested = false;
             startRadio();
-
             return;
         }
+        lastVolume = newVolume;
+    }
 
-        // FFMPEG supports live volume changes
-        if (mode == PlaybackMode.FFMPEG && volumeChanged) {
-            lastVolume = vol;
-            setVolume(vol);
+    private void startRadio() {
+        if (currentUrl == null || currentUrl.trim().isEmpty()) {return;}
+        stopRequested = false;
+        switch (playbackMode.get()) {
+            case FFPLAY -> startWithFfplay(currentUrl);
+            case FFMPEG_STREAM -> startWithFfmpegStream(currentUrl);
         }
+    }
 
-        if (mode == PlaybackMode.FFPLAY) {
-            if (ffplayProcess != null && !ffplayProcess.isAlive()) {
-                stopRadio();
-                startRadio();
-            }
-        } else {
-            if (ffmpegProcess != null && !ffmpegProcess.isAlive()) {
-                stopRequested = true;
-                stopRadio();
-
-                stopRequested = false;
-                startRadio();
-            }
+    private void stopRadio() {
+        stopRequested = true;
+        closeDataLine();
+        if (ffplayProcess != null) {
+            ffplayProcess.destroy();
+            ffplayProcess = null;
+        }
+        if (ffmpegProcess != null) {
+            ffmpegProcess.destroy();
+            ffmpegProcess = null;
+        }
+        if (radioThread != null) {
+            radioThread.cancel(true);
+            radioThread = null;
         }
     }
 
     private String getActiveUrl() {
         if (radioChannel.get() == Radios.Custom) {
-            String custom = customUrl.get().trim();
-            return custom.isEmpty() ? "" : custom;
+            return customUrl.get().trim();
         }
-
-        return radioChannel.get().URL;
+        return radioChannel.get().url;
     }
 
-    private void startRadio() {
-        currentUrl = getActiveUrl();
-
-        if (currentUrl.isEmpty()) return;
-
-        if (playbackMode.get() == PlaybackMode.FFPLAY) {
-            startFFPlay();
-        } else {
-            startFFmpeg();
-        }
-    }
-
-    private void startFFPlay() {
+    private void startWithFfplay(String url) {
         try {
-            ffplayProcess = new ProcessBuilder(
+            closeDataLine();
+            if (ffmpegProcess != null) {
+                ffmpegProcess.destroy();
+                ffmpegProcess = null;
+            }
+            if (radioThread != null) {
+                radioThread.cancel(true);
+                radioThread = null;
+            }
+            ProcessBuilder pb = new ProcessBuilder(
                 "ffplay",
                 "-nodisp",
                 "-autoexit",
-                "-loglevel", "quiet",
+                "-loglevel", "error",
                 "-volume", String.valueOf(volume.get()),
-                currentUrl
-            ).start();
+                url
+            );
+            pb.redirectErrorStream(true);
+            ffplayProcess = pb.start();
         } catch (Exception e) {
-            error("Failed to start ffplay. Make sure ffplay is installed and in your PATH.");
-            toggle();
+            error("Failed to start ffplay. Make sure ffplay is installed and added to PATH.");
+            e.printStackTrace();
         }
     }
 
-    private void startFFmpeg() {
-        if (radioThread != null && !radioThread.isDone()) return;
-
+    private void startWithFfmpegStream(String url) {
+        if (ffplayProcess != null) {
+            ffplayProcess.destroy();
+            ffplayProcess = null;
+        }
         radioThread = CompletableFuture.runAsync(() -> {
-            byte[] previousGoodFrame = null;
-            int silentFrames = 0;
-
-            final int MIN_GOOD_FRAMES = 5;
-            final float NOISE_THRESHOLD = 0.02f;
-
-            while (!stopRequested && isActive()) {
-                try {
-                    boolean localFile =
-                        !currentUrl.startsWith("http://") &&
-                        !currentUrl.startsWith("https://");
-
-                    ProcessBuilder pb;
-
-                    if (localFile) {
-                        pb = new ProcessBuilder(
-                            "ffmpeg",
-                            "-re",
-                            "-i", currentUrl,
-                            "-f", "s16le",
-                            "-acodec", "pcm_s16le",
-                            "-ac", "2",
-                            "-ar", "48000",
-                            "-"
-                        );
-                    } else {
-                        pb = new ProcessBuilder(
-                            "ffmpeg",
-                            "-reconnect", "1",
-                            "-reconnect_streamed", "1",
-                            "-reconnect_delay_max", "5",
-                            "-i", currentUrl,
-                            "-f", "s16le",
-                            "-acodec", "pcm_s16le",
-                            "-ac", "2",
-                            "-ar", "48000",
-                            "-"
-                        );
-                    }
-
-                    pb.redirectErrorStream(true);
-
-                    ffmpegProcess = pb.start();
-
-                    AudioFormat format = new AudioFormat(
-                        48000,
-                        16,
-                        2,
-                        true,
-                        false
-                    );
-
-                    DataLine.Info info = new DataLine.Info(
-                        SourceDataLine.class,
-                        format
-                    );
-
-                    SourceDataLine newLine = (SourceDataLine) AudioSystem.getLine(info);
-
-                    newLine.open(format, 500 * 1024);
-                    newLine.start();
-
-                    dataLine = newLine;
-
-                    setVolume(volume.get());
-
-                    InputStream audioStream = ffmpegProcess.getInputStream();
-
-                    byte[] buffer = new byte[500 * 1024];
-
-                    int frameSize = format.getFrameSize();
+            AudioFormat format = new AudioFormat(44100f, 16, 2, true, false);
+            try {
+                ProcessBuilder pb = new ProcessBuilder("ffmpeg", "-hide_banner", "-loglevel", "error", "-i", url, "-vn", "-f", "s16le", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", "pipe:1");
+                pb.redirectErrorStream(false);
+                ffmpegProcess = pb.start();
+                DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+                dataLine = (SourceDataLine) AudioSystem.getLine(info);
+                int bufferSize = 44100 * 4;
+                dataLine.open(format, bufferSize);
+                dataLine.start();
+                try (InputStream audioStream = new BufferedInputStream(ffmpegProcess.getInputStream())) {
+                    byte[] buffer = new byte[4096];
                     int bytesRead;
-
-                    while (!stopRequested && isActive() && (bytesRead = audioStream.read(buffer)) != -1) {
-                        if (bytesRead <= 0) continue;
-
-                        int frameCount = bytesRead / frameSize;
-
-                        if (frameCount == 0) continue;
-
-                        for (int i = 0; i < frameCount; i++) {
-                            int offset = i * frameSize;
-
-                            float frameVolume = calculateFrameVolume(
-                                buffer,
-                                offset,
-                                frameSize
-                            );
-
-                            boolean isNoise =
-                                frameVolume > 0 &&
-                                frameVolume < NOISE_THRESHOLD;
-
-                            boolean isSilent = frameVolume == 0;
-
-                            if (isNoise || isSilent) {
-                                silentFrames++;
-
-                                if (previousGoodFrame != null) {
-                                    System.arraycopy(
-                                        previousGoodFrame,
-                                        0,
-                                        buffer,
-                                        offset,
-                                        frameSize
-                                    );
-                                }
-                            } else {
-                                if (previousGoodFrame == null) {
-                                    previousGoodFrame = new byte[frameSize];
-                                }
-
-                                System.arraycopy(
-                                    buffer,
-                                    offset,
-                                    previousGoodFrame,
-                                    0,
-                                    frameSize
-                                );
-
-                                silentFrames = 0;
-                            }
-                        }
-
-                        if (silentFrames < MIN_GOOD_FRAMES) {
-                            SourceDataLine line = dataLine;
-
-                            if (line != null) {
-                                line.write(buffer, 0, frameCount * frameSize);
-                            }
-                        }
+                    while (!stopRequested && !Thread.currentThread().isInterrupted() && (bytesRead = audioStream.read(buffer)) != -1) {
+                        applyVolume(buffer, bytesRead);
+                        dataLine.write(buffer, 0, bytesRead);
                     }
-
-                    stopRadio();
-                } catch (Exception e) {
-                    if (!stopRequested) {
-                        error("FFmpeg playback failed: " + e.getMessage());
-                    }
-
-                    stopRadio();
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ignored) {
-                    }
+                }
+            } catch (Exception e) {
+                if (!stopRequested) {
+                    error("Failed to start radio using ffmpeg stream. Make sure ffmpeg is installed and added to PATH.");
+                    e.printStackTrace();
+                }
+            } finally {
+                closeDataLine();
+                if (ffmpegProcess != null) {
+                    ffmpegProcess.destroy();
+                    ffmpegProcess = null;
                 }
             }
         });
     }
 
-    private void setVolume(int volume) {
-        SourceDataLine line = dataLine;
-
-        if (line != null && line.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-            try {
-                FloatControl gainControl =
-                    (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-
-                if (volume <= 0) {
-                    gainControl.setValue(gainControl.getMinimum());
-                    return;
-                }
-
-                float dB = (float) (Math.log(volume / 100.0) * 20.0);
-
-                gainControl.setValue(
-                    Math.max(
-                        gainControl.getMinimum(),
-                        Math.min(gainControl.getMaximum(), dB)
-                    )
-                );
-            } catch (Exception ignored) {
-            }
+    private void applyVolume(byte[] buffer, int length) {
+        float gain = volume.get() / 100.0f;
+        for (int i = 0; i < length - 1; i += 2) {
+            int low = buffer[i] & 0xff;
+            int high = buffer[i + 1];
+            int sample = (high << 8) | low;
+            int adjusted = Math.round(sample * gain);
+            if (adjusted > Short.MAX_VALUE) adjusted = Short.MAX_VALUE;
+            if (adjusted < Short.MIN_VALUE) adjusted = Short.MIN_VALUE;
+            buffer[i] = (byte) (adjusted & 0xff);
+            buffer[i + 1] = (byte) ((adjusted >> 8) & 0xff);
         }
     }
 
-    private float calculateFrameVolume(byte[] audioData, int offset, int length) {
-        float sum = 0;
-        int sampleCount = 0;
-
-        for (int i = 0; i < length; i += 2) {
-            if (offset + i + 1 >= audioData.length) break;
-
-            short sample = (short) (
-                (audioData[offset + i + 1] << 8) |
-                (audioData[offset + i] & 0xff)
-            );
-
-            float sampleValue = sample / 32768.0f;
-
-            sum += sampleValue * sampleValue;
-
-            sampleCount++;
-        }
-
-        if (sampleCount == 0) return 0;
-
-        return (float) Math.sqrt(sum / sampleCount);
-    }
-
-    private synchronized void stopRadio() {
+    private void closeDataLine() {
         SourceDataLine line = dataLine;
-        dataLine = null;
-
         if (line != null) {
-            try {
-                line.stop();
-            } catch (Exception ignored) {
-            }
-
-            try {
-                line.flush();
-            } catch (Exception ignored) {
-            }
-
-            try {
-                line.close();
-            } catch (Exception ignored) {
-            }
-        }
-
-        Process ffmpeg = ffmpegProcess;
-        ffmpegProcess = null;
-
-        if (ffmpeg != null) {
-            try {
-                ffmpeg.destroy();
-            } catch (Exception ignored) {
-            }
-        }
-
-        Process ffplay = ffplayProcess;
-        ffplayProcess = null;
-
-        if (ffplay != null) {
-            try {
-                ffplay.destroy();
-            } catch (Exception ignored) {
-            }
+            try {line.drain();} catch (Exception ignored) {}
+            try {line.stop();} catch (Exception ignored) {}
+            try {line.close();} catch (Exception ignored) {}
+            dataLine = null;
         }
     }
 
     public enum PlaybackMode {
-        FFMPEG("Convert with ffmpeg and stream in game"),
-        FFPLAY("Directly play with ffplay");
+        FFPLAY("Play externally with ffplay"),
+        FFMPEG_STREAM("Convert with ffmpeg and stream in game");
 
         private final String title;
-
-        PlaybackMode(String title) {
-            this.title = title;
-        }
+        PlaybackMode(String title) {this.title = title;}
 
         @Override
-        public String toString() {
-            return title;
-        }
+        public String toString() {return title;}
     }
 
     public enum Radios {
@@ -441,11 +244,8 @@ public class Radio extends Module {
         HeartLondon("https://icecast.thisisdax.com/HeartLondonMP3"),
         SmoothLondon("https://icecast.thisisdax.com/SmoothLondonMP3"),
         Custom("");
-
-        public final String URL;
-
-        Radios(String url) {
-            this.URL = url;
-        }
+        private final String url;
+        Radios(String url) {this.url = url;}
     }
+
 }
