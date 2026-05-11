@@ -14,7 +14,7 @@
 <p align="center">
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare">View on GitHub</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/archive/refs/heads/main.zip">Download source as zip</a>]
-    [<a href="#prebuilt_jar">Download prebuilt jar</a>]
+    [<a href="#installation">Installation Guide</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/commits/main/">Commit History</a>]
 </p>
 
@@ -22,20 +22,24 @@
 
 ## Overview
 
-**RyanWare** is a large addon for **Meteor Client** that adds dozens of modules, commands, and utilities to Meteor Client.
+**RyanWare** is a large addon for **Meteor Client** that adds dozens of modules, commands, and utilities for you to use on Meteor Client.
 
-> ⚠️ This is **NOT** a standalone client — Meteor Client is required for this addon to load.
+> ⚠️ This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to load.
 
 > This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
 > Using this addon on any version that is not the latest should load, but it isn't supported.
 
+> Many modules are experimental, educational or server dependent.<br>
+> You are responsible for any usage, including server bans, use it responsibly.<br>
+> Using it's features on servers that give you any advanage could be considered cheating.
 
 ---
 
+<b id="installation"></b>
 ## Installation
 
 1. Install Meteor Client 1.21.11 (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>)
-2. Build the RyanWare `.jar` from source or <a id="prebuilt_jar" href="RyanWare.jar">download it from GitHub</a> directly.
+2. Build the RyanWare `.jar` from source or <a href="RyanWare.jar">download it from GitHub</a> directly.
 3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder
 4. Launch with Fabric
 
@@ -57,16 +61,6 @@ Output:
 ./build/libs/meteor-RyanWare-0.1.jar
 ./build/libs/RyanWare-XXXX-XX-XX-XX-XX-XX.jar
 ```
-
----
-
-## Notes
-
-* Built **on top of Meteor Client**
-* Some modules are **experimental or server-dependent**
-* Many features may be considered **cheating on servers**
-
-Use responsibly.
 
 ---
 
@@ -95,14 +89,6 @@ You must:
 * Open-source your project if using this code
 * Credit this project
 * Use the same license
-
----
-
-## Disclaimer
-
-This project is for **educational and experimental purposes**.
-
-You are responsible for any usage, including server bans.
 
 ---
 
