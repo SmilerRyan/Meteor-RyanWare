@@ -19,6 +19,20 @@ public class ElytraFakeRockets extends Module {
         .build()
     );
 
+    private final Setting<Boolean> playEffect = settings.getDefaultGroup().add(new BoolSetting.Builder()
+        .name("play-effect")
+        .description("Spawn flame particles on boost.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> allowWithoutElytra = settings.getDefaultGroup().add(new BoolSetting.Builder()
+        .name("allow-without-elytra")
+        .description("Allow boosting when falling without an elytra (double jump or flight).")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Integer> cooldownTicks = settings.getDefaultGroup().add(new IntSetting.Builder()
         .name("anti-spam-ticks")
         .description("Cooldown time in ticks before you can boost again. Set to 0 to disable cooldown.")
@@ -30,6 +44,7 @@ public class ElytraFakeRockets extends Module {
     );
 
     private int cooldown = 0;
+    private boolean wasJumpPressed = false;
 
     public ElytraFakeRockets() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Elytra-Fake-Rockets", "Simulates Elytra rocket boosting without actual rockets.");
@@ -37,11 +52,13 @@ public class ElytraFakeRockets extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (mc.player == null || !mc.player.isFallFlying()) return;
+        if (mc.player == null || !(mc.player.isFallFlying() || (allowWithoutElytra.get() && !mc.player.isOnGround()))) return;
 
         if (cooldown > 0) cooldown--;
 
-        if (mc.options.jumpKey.isPressed() && cooldown == 0) {
+        boolean jumpPressed = mc.options.jumpKey.isPressed();
+
+        if (jumpPressed && !wasJumpPressed && cooldown == 0) {
             Vec3d look = mc.player.getRotationVec(1.0f);
 
             // Limit vertical component to max 0.5 for smoother climb
@@ -60,7 +77,7 @@ public class ElytraFakeRockets extends Module {
                 double offsetX = -boostVec.x * i * 0.5;
                 double offsetY = -boostVec.y * i * 0.5;
                 double offsetZ = -boostVec.z * i * 0.5;
-                mc.world.addParticle(ParticleTypes.FLAME,
+                if (playEffect.get()) mc.world.addParticle(ParticleTypes.FLAME,
                     mc.player.getX() + offsetX,
                     mc.player.getY() + offsetY,
                     mc.player.getZ() + offsetZ,
@@ -71,6 +88,8 @@ public class ElytraFakeRockets extends Module {
                 cooldown = cooldownTicks.get();
             }
         }
+
+        wasJumpPressed = jumpPressed;
 
         // Apply slight drag every tick for more natural flight
         Vec3d velocity = mc.player.getVelocity().multiply(0.99);
