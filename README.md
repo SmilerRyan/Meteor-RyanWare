@@ -14,7 +14,8 @@
 <p align="center">
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare">View on GitHub</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/archive/refs/heads/main.zip">Download source as zip</a>]
-    [<a onclick="alert('Sorry, there are no official builds offered here.')">Download prebuilt jar</a>]
+    <!-- [<a onclick="alert('Sorry, there are no official builds offered here.')">Download prebuilt jar</a>] -->
+    [<a href="RyanWare.jar">Download prebuilt jar</a>]
     [<a href="https://github.com/SmilerRyan/Meteor-RyanWare/commits/main/">Commit History</a>]
 </p>
 

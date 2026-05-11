@@ -1,8 +1,13 @@
-name: Build
+name: Build + Deploy
 
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -12,15 +17,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Build Tools and Build
+      - name: Build JAR
         shell: cmd
         run: |
           set NO_PAUSE=1
           call "#install_build_tools.bat"
           call "#build.bat"
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Prepare dist folder
+        shell: cmd
+        run: |
+          mkdir dist
+
+          copy /Y index.html dist\index.html
+          copy /Y README.md dist\README.md
+          copy /Y build\libs\*.jar dist\RyanWare.jar
+
+          mkdir dist\src\main\resources\icons
+          xcopy /E /I /Y src\main\resources\icons dist\src\main\resources\icons
+
+      - name: Upload Pages Site
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: build
-          path: ./build/libs/*.jar
+          path: dist
+
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
