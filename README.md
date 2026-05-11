@@ -22,16 +22,16 @@
 
 ## Overview
 
-**RyanWare** is a large addon for **Meteor Client** that adds dozens of modules, commands, and utilities for you to use on Meteor Client.
+**RyanWare** is a large **addon** that adds dozens of modules, commands, and utilities for you to use on **Meteor Client**.
 
-> ⚠️ This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to load.
+⚠️ This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to load.
 
-> This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
-> Using this addon on any version that is not the latest should load, but it isn't supported.
+This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
+Using this addon on any version that is not the latest should load, but it isn't supported.
 
-> Many modules are experimental, educational or server dependent.<br>
-> You are responsible for any usage, including server bans, use it responsibly.<br>
-> Using it's features on servers that give you any advanage could be considered cheating.
+Many modules are experimental, educational or server dependent.<br>
+You are responsible for any usage, including server bans, use it responsibly.<br>
+Using it's features on servers that give you any advanage could be considered cheating.
 
 ---
 
@@ -64,25 +64,9 @@ Output:
 
 ---
 
-## Contributing
+## License and credits
 
-Contributions are welcome:
-
-* New modules
-* Bug fixes
-* Improvements
-
-Guidelines:
-
-* Modules → `modules/` or `modules_standard/`
-* Commands → `commands/`
-* Core edits → `mixins/`
-
----
-
-## License
-
-Licensed under **GPL v3** (same as Meteor Client)
+Licensed under **GPL v3** (The same as Meteor Client).
 
 You must:
 
@@ -90,10 +74,9 @@ You must:
 * Credit this project
 * Use the same license
 
----
+Credits:
 
-## Credits
-
-* Meteor Development Team
-* RyanWare contributors
-
+* Meteor Development Team (For making Meteor Client and APIs) [<a href="https://github.com/MeteorDevelopment">Source</a>]
+* AntiCope for their Meteor Crash Addon (used as addon starting base) [<a href="https://github.com/AntiCope/meteor-crash-addon">Meteor Crash Addon</a>]
+* ChatGPT and other various AIs (For development on the RyanWare source code)
+* All RyanWare contributors (For testing, suggesting, or providing code)
