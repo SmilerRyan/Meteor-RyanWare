@@ -77,6 +77,6 @@ You must:
 Credits:
 
 * Meteor Development Team (For making Meteor Client and APIs) [<a href="https://github.com/MeteorDevelopment">Source</a>]
-* AntiCope for their Meteor Crash Addon (used as addon starting base) [<a href="https://github.com/AntiCope/meteor-crash-addon">Meteor Crash Addon</a>]
+* AntiCope for their Meteor Crash Addon (used as addon starting base) [<a href="https://github.com/AntiCope/meteor-crash-addon/tree/0d64cc11330447d2821747f0b7f7566d6192b258">Source</a>]
 * ChatGPT and other various AIs (For development on the RyanWare source code)
 * All RyanWare contributors (For testing, suggesting, or providing code)
