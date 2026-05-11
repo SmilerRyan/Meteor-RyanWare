@@ -158,7 +158,7 @@ public class AutoGroom extends Module {
         double dz = target.getZ() - mc.player.getZ();
 
         double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-        if (horizontalDistance < stopDistance.get() && !cheating.get()) return;
+        if (horizontalDistance < stopDistance.get()) return;
 
         double moveSpeed = speed.get();
 
