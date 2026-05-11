@@ -210,12 +210,12 @@ public class RyanWare extends MeteorAddon {
 
     @Override
     public String getWebsite() {
-        return "https://github.com/SmilerRyan/ryanware";
+        return "https://github.com/SmilerRyan/meteor-ryanware";
     }
 
     @Override
     public GithubRepo getRepo() {
-        return new GithubRepo("SmilerRyan", "ryanware");
+        return new GithubRepo("SmilerRyan", "meteor-ryanware");
     }
 
     @Override
