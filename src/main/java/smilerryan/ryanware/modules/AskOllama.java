@@ -16,6 +16,14 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class AskOllama extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgPrompts = settings.createGroup("Prompts");
@@ -29,15 +37,15 @@ public class AskOllama extends Module {
 
     private final Setting<String> model = sgGeneral.add(new StringSetting.Builder()
         .name("model")
-        .description("Model to use (e.g., llama3).")
-        .defaultValue("llama3")
+        .description("Model to use.")
+        .defaultValue("llama3.2:latest")
         .build()
     );
 
     private final Setting<List<String>> triggerWords = sgGeneral.add(new StringListSetting.Builder()
         .name("trigger-words")
         .description("Words that trigger the AI call.")
-        .defaultValue(Arrays.asList("unscramble"))
+        .defaultValue(Arrays.asList("?", "->"))
         .build()
     );
 
@@ -97,7 +105,14 @@ public class AskOllama extends Module {
         .description("Maximum number of messages to include in prompt context.")
         .defaultValue(20)
         .min(1)
-        .sliderMax(50)
+        .sliderMax(100)
+        .build()
+    );
+
+    private final Setting<List<String>> ignoreOutKeywords = sgGeneral.add(new StringListSetting.Builder()
+        .name("ignore-out-keywords")
+        .description("If the response message contains any of these, it will not be sent.")
+        .defaultValue("/stfu", "/nothing", "/stop", "/ignore")
         .build()
     );
 
@@ -123,14 +138,22 @@ public class AskOllama extends Module {
         .build()
     );
 
+    // dropdown pick message recieve mode (onReceiveMessage, onChat, both)
+    private enum MessageReceiveMode { onReceiveMessage, onChat, Both }
+    private final Setting<MessageReceiveMode> messageReceiveMode = sgGeneral.add(new EnumSetting.Builder<MessageReceiveMode>()
+        .name("message-receive-mode")
+        .description("Which event to listen to for receiving messages.")
+        .defaultValue(MessageReceiveMode.onReceiveMessage)
+        .build()
+    );
+
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Deque<String> recentMessages = new ArrayDeque<>();
-    private static final int MAX_MESSAGES = 50;
+    private static final int MAX_MESSAGES = 100;
 
-    private static final Set<String> STOP_COMMANDS = new HashSet<>(Arrays.asList(
-        "/stfu", "/nothing", "/stop", "/ignore"
-    ));
+    // private final List<String> recentMessages = new ArrayList<>();
+    // private final AtomicLong lastQueryTime = new AtomicLong(0);
 
     public AskOllama() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
@@ -142,14 +165,8 @@ public class AskOllama extends Module {
         recentMessages.clear();
     }
 
-    @EventHandler
-    private void onReceiveMessage(ReceiveMessageEvent event) {
-    //private void onChat(ReceiveMessageEvent event) {
-        if (!isActive() || event.getMessage() == null) return;
-
-        String msg = event.getMessage().getString();
-
-        if (
+    private void messageReceived(String msg) {
+         if (
             msg.startsWith("[Ollama Other]") || 
             msg.startsWith("[Ollama Guide]") || 
             msg.startsWith("[Ollama Send Simulated]") || 
@@ -181,13 +198,14 @@ public class AskOllama extends Module {
 
                     String reply = queryOllama(fullPrompt);
                     if (reply != null) {
+                        for (String keyword : ignoreOutKeywords.get()) {
+                            if (reply.contains(keyword)) return;
+                        }
                         mc.execute(() -> {
                             String[] lines = reply.split("\n");
                             for (String line : lines) {
                                 String trimmedLower = line.trim().toLowerCase(Locale.ROOT);
                                 if (line.length() > 200) line = line.substring(0, 200) + "... (trimmed)";
-
-                                if (STOP_COMMANDS.contains(trimmedLower)) return;
 
                                 if (trimmedLower.startsWith("/say ")) {
                                     String message = line.substring(5).trim();
@@ -230,6 +248,18 @@ public class AskOllama extends Module {
                 break;
             }
         }
+    }
+
+    @EventHandler
+    private void onReceiveMessage(ReceiveMessageEvent event) {
+        if (!isActive() || event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onReceiveMessage || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
+    }
+
+    @EventHandler
+    private void onChat(ReceiveMessageEvent event) {
+        if (!isActive() || event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
     }
 
     private String queryOllama(String prompt) {
