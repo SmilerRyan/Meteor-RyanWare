@@ -5,13 +5,7 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
-
 import net.minecraft.client.MinecraftClient;
-
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 public class OllamaTranslator extends Module {
 
