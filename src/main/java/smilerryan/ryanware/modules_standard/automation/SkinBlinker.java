@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_standard;
+package smilerryan.ryanware.modules_standard.automation;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;

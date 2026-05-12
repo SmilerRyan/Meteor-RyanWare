@@ -16,6 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 import smilerryan.ryanware.modules_standard.*;
+import smilerryan.ryanware.modules_standard.automation.*;
+import smilerryan.ryanware.modules_standard.chat.*;
+import smilerryan.ryanware.modules_standard.chat.edits.*;
 import smilerryan.ryanware.modules_standard.chat.ollama.*;
 import smilerryan.ryanware.commands.*;
 
