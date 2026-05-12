@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_standard.ollama;
+package smilerryan.ryanware.modules_standard.chat.ollama;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;

@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules_standard.ollama;
+package smilerryan.ryanware.modules_standard.chat.ollama;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
