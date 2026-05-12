@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard.ollama;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -75,9 +75,9 @@ public class OllamaAnnoyer extends Module {
 
     public OllamaAnnoyer() {
         super(
-            RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "Ollama-Annoyer",
-            "Corrects bad English with AI."
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Ollama-Annoyer",
+            "Prompts Ollama AI to respond for every chat message."
         );
     }
 

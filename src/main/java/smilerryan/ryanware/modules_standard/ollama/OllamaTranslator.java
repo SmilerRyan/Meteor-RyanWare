@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard.ollama;
 
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -43,8 +43,8 @@ public class OllamaTranslator extends Module {
 
     public OllamaTranslator() {
         super(
-            RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "Ollama-Translator",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Ollama-Translator",
             "Sends outgoing chat messages through Ollama and posts the model output directly."
         );
     }

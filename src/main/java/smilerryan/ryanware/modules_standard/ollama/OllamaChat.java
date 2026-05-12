@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard.ollama;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -118,7 +118,7 @@ public class OllamaChat extends Module {
     private static final int MAX_MESSAGES = 100;
 
     public OllamaChat() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Ollama-Chat", "Uses Ollama to answer in-game questions based on recent chat.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Ollama-Chat", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override

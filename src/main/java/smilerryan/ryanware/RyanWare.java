@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
 import smilerryan.ryanware.modules_standard.*;
+import smilerryan.ryanware.modules_standard.ollama.*;
 import smilerryan.ryanware.commands.*;
 
 import java.util.Collections;
@@ -105,6 +106,9 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new OllamaAnnoyer());
+        Modules.get().add(new OllamaChat());
+        Modules.get().add(new OllamaTranslator());
         Modules.get().add(new PlayerTracers());
         Modules.get().add(new SkinBlinker());
         Modules.get().add(new WiderChat());
@@ -169,9 +173,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NewChunks());
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
-        Modules.get().add(new OllamaAnnoyer());
-        Modules.get().add(new OllamaChat());
-        Modules.get().add(new OllamaTranslator());
         Modules.get().add(new PacketDelayer());
         Modules.get().add(new PacketLimiter());
         Modules.get().add(new PlayerAlerter());
