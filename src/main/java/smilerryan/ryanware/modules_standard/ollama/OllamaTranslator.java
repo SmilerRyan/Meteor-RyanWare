@@ -18,6 +18,8 @@ public class OllamaTranslator extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgPrompt = settings.createGroup("Prompt");
 
+    private volatile boolean sendingTranslatedChat = false;
+
     private final Setting<String> baseUrl = sgGeneral.add(new StringSetting.Builder()
         .name("ollama-url")
         .description("Base URL of the Ollama server.")
@@ -39,6 +41,13 @@ public class OllamaTranslator extends Module {
         .build()
     );
 
+    private final Setting<Boolean> queueMessages = sgGeneral.add(new BoolSetting.Builder()
+        .name("queue-messages")
+        .description("If enabled, messages will be sent as soon as possible instead of blocking chat whilst waiting for a response.")
+        .defaultValue(true)
+        .build()
+    );
+
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
     public OllamaTranslator() {
@@ -51,9 +60,19 @@ public class OllamaTranslator extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        if (!isActive()) return;
-        if (event.message == null || event.message.isBlank()) return;
-        event.message = queryOllama( promptTemplate.get().replace("{input}", event.message) );
+        if (!isActive() || event.message == null || event.message.isBlank() || sendingTranslatedChat) return;
+        String fullPrompt = promptTemplate.get().replace("{input}", event.message);
+        if (queueMessages.get()) {
+            event.cancel();
+            new Thread(() -> {
+                String response = queryOllama(fullPrompt);
+                sendingTranslatedChat = true;
+                mc.getNetworkHandler().sendChatMessage(response);
+                sendingTranslatedChat = false;
+            }, "Ollama-Translator-Worker").start();
+        } else {
+            event.message = queryOllama(fullPrompt);
+        }
     }
 
     private String queryOllama(String prompt) {
