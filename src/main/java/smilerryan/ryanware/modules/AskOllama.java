@@ -49,13 +49,6 @@ public class AskOllama extends Module {
         .build()
     );
 
-    private final Setting<String> extraContext = sgGeneral.add(new StringSetting.Builder()
-        .name("extra-context")
-        .description("Extra context to include in the prompt.")
-        .defaultValue("")
-        .build()
-    );
-
     private final Setting<Boolean> allowRespondAsMe = sgGeneral.add(new BoolSetting.Builder()
         .name("allow-responding-as-me")
         .description("Allow Ollama to respond as you by sending chat messages or commands if response starts with [SEND].")
@@ -123,12 +116,10 @@ public class AskOllama extends Module {
             "Placeholders:\n" +
             "{context} = recent chat messages\n" +
             "{userPrompt} = extracted user input\n" +
-            "{extraContext} = extra context setting\n" +
             "{player} = your player name\n")
         .defaultValue(
             "{context}\n" +
             "{userPrompt}\n\n" +
-            "User context:\n{extraContext}\n\n" +
             "You can respond as {player} with '/say ...'.\n" +
             "You can guide {player} on how to respond with '/guide ...'.\n" +
             "You may also respond with '/stfu', '/nothing', '/stop' or '/ignore' to provide no response.\n" +
@@ -193,7 +184,6 @@ public class AskOllama extends Module {
                     String fullPrompt = promptTemplate.get()
                         .replace("{context}", contextStr)
                         .replace("{userPrompt}", userPrompt)
-                        .replace("{extraContext}", extraContext.get())
                         .replace("{player}", playerName);
 
                     String reply = queryOllama(fullPrompt);
