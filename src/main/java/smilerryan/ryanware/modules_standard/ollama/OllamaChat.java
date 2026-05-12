@@ -6,23 +6,9 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.io.OutputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class OllamaChat extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
