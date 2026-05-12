@@ -32,15 +32,6 @@ public class OllamaTranslator extends Module {
         .build()
     );
 
-    private final Setting<Integer> maxLineLength = sgGeneral.add(new IntSetting.Builder()
-        .name("max-line-length")
-        .description("Maximum characters per chat line.")
-        .defaultValue(240)
-        .min(50)
-        .sliderMax(256)
-        .build()
-    );
-
     private final Setting<String> promptTemplate = sgPrompt.add(new StringSetting.Builder()
         .name("prompt-template")
         .description("Prompt template, use {input} for your message.")
