@@ -42,7 +42,7 @@ public class OllamaAnnoyer extends Module {
     private final Setting<String> ignoreInKeyword = sgGeneral.add(new StringSetting.Builder()
         .name("ignore-in-keyword")
         .description("If the incoming message contains this keyword, it will be ignored and not sent to Ollama.")
-        .defaultValue("")
+        .defaultValue("Erm,")
         .build()
     );
 	
@@ -62,6 +62,15 @@ public class OllamaAnnoyer extends Module {
         .build()
     );
 
+    // dropdown pick message recieve mode (onReceiveMessage, onChat, both)
+    private enum MessageReceiveMode { onReceiveMessage, onChat, Both }
+    private final Setting<MessageReceiveMode> messageReceiveMode = sgGeneral.add(new EnumSetting.Builder<MessageReceiveMode>()
+        .name("message-receive-mode")
+        .description("Which event to listen to for receiving messages.")
+        .defaultValue(MessageReceiveMode.onReceiveMessage)
+        .build()
+    );
+
     private final AtomicLong lastQueryTime = new AtomicLong(0);
 
     public OllamaAnnoyer() {
@@ -73,11 +82,18 @@ public class OllamaAnnoyer extends Module {
     }
 
     @EventHandler
-    private void onReceiveMessage(ReceiveMessageEvent e) {
-        if (!isActive() || mc.player == null) return;
+    private void onReceiveMessage(ReceiveMessageEvent event) {
+        if (event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onReceiveMessage || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
+    }
 
-        String raw = e.getMessage().getString();
+    @EventHandler
+    private void onChat(ReceiveMessageEvent event) {
+        if (event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
+    }
 
+    private void messageReceived(String raw) {
         // Ignore messages containing the keyword
         if (ignoreInKeyword.get() != null && !ignoreInKeyword.get().isEmpty() && raw.contains(ignoreInKeyword.get())) {
             return;
