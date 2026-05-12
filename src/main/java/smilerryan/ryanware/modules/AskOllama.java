@@ -45,57 +45,43 @@ public class AskOllama extends Module {
     private final Setting<List<String>> triggerWords = sgGeneral.add(new StringListSetting.Builder()
         .name("trigger-words")
         .description("Words that trigger the AI call.")
-        .defaultValue(Arrays.asList("?", "->"))
+        .defaultValue(Arrays.asList("#"))
         .build()
     );
 
-    private final Setting<Boolean> allowRespondAsMe = sgGeneral.add(new BoolSetting.Builder()
-        .name("allow-responding-as-me")
-        .description("Allow Ollama to respond as you by sending chat messages or commands if response starts with [SEND].")
-        .defaultValue(false)
+    private final Setting<String> directSendPrefix = sgGeneral.add(new StringSetting.Builder()
+        .name("direct-send-prefix")
+        .description("the prefix that the AI must use to have its response sent directly to chat.")
+        .defaultValue("/send ")
         .build()
     );
 
-    private final Setting<Boolean> simulateRespondAsMe = sgGeneral.add(new BoolSetting.Builder()
-        .name("simulate-responding-as-me")
-        .description("If true, logs the respond-as-me messages instead of actually sending them (for testing).")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> allowOtherResponses = sgGeneral.add(new BoolSetting.Builder()
-        .name("allow-other-responses")
-        .description("Allow you to see invalid Ollama response lines that don't start with /send or /guide prefixes.")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> allowGuideResponses = sgGeneral.add(new BoolSetting.Builder()
-        .name("allow-guide-responses")
-        .description("Allow Ollama to provide '/guide' messages, and include '/guide' instructions in the AI prompt.")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> directSend = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Boolean> directSendNoPrefix = sgGeneral.add(new BoolSetting.Builder()
         .name("direct-send-without-prefix")
-        .description("If enabled, responses without commands are sent directly to chat as if typed by you.")
+        .description("If enabled, responses without commands are sent directly to chat as if typed by you without a prefix.")
         .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> viewAllResponses = sgGeneral.add(new BoolSetting.Builder()
+        .name("view-all-responses")
+        .description("Allow you to see invalid Ollama response lines that don't start with the direct send prefix.")
+        .defaultValue(true)
         .build()
     );
 
     private final Setting<Integer> waitDelayMs = sgGeneral.add(new IntSetting.Builder()
         .name("wait-delay-ms")
         .description("How long to wait (in ms) before collecting messages and sending to AI.")
-        .defaultValue(800)
+        .defaultValue(0)
         .min(0)
         .sliderMax(2000)
         .build()
     );
 
-    private final Setting<Integer> contextLimit = sgGeneral.add(new IntSetting.Builder()
-        .name("context-limit")
-        .description("Maximum number of messages to include in prompt context.")
+    private final Setting<Integer> messageLimit = sgGeneral.add(new IntSetting.Builder()
+        .name("message-limit")
+        .description("Maximum number of messages to include in the prompt.")
         .defaultValue(20)
         .min(1)
         .sliderMax(100)
@@ -105,27 +91,15 @@ public class AskOllama extends Module {
     private final Setting<List<String>> ignoreOutKeywords = sgGeneral.add(new StringListSetting.Builder()
         .name("ignore-out-keywords")
         .description("If the response message contains any of these, it will not be sent.")
-        .defaultValue("/stfu", "/nothing", "/stop", "/ignore")
+        .defaultValue()
         .build()
     );
 
     // New prompt template setting
     private final Setting<String> promptTemplate = sgPrompts.add(new StringSetting.Builder()
         .name("prompt-template")
-        .description("Template used for building the prompt.\n" +
-            "Placeholders:\n" +
-            "{context} = recent chat messages\n" +
-            "{userPrompt} = extracted user input\n" +
-            "{player} = your player name\n")
-        .defaultValue(
-            "{context}\n" +
-            "{userPrompt}\n\n" +
-            "You can respond as {player} with '/say ...'.\n" +
-            "You can guide {player} on how to respond with '/guide ...'.\n" +
-            "You may also respond with '/stfu', '/nothing', '/stop' or '/ignore' to provide no response.\n" +
-            "REMEMBER, ALL RESPONSES WITHOUT A COMMAND/PREFIX WILL BE IGNORED.\n" +
-            "Your response:\n"
-        )
+        .description("Template used for building the prompt. Use {send_prefix} for the send prefix, {messages} for previous chat messages and {prompt} for the current message.")
+        .defaultValue("You are an chat responder for Minecraft Chat. You must respond with '{send_prefix}' and your short response or your reply wil be ignored.\n\n{messages}\n{prompt}\n")
         .build()
     );
 
@@ -143,9 +117,6 @@ public class AskOllama extends Module {
     private final Deque<String> recentMessages = new ArrayDeque<>();
     private static final int MAX_MESSAGES = 100;
 
-    // private final List<String> recentMessages = new ArrayList<>();
-    // private final AtomicLong lastQueryTime = new AtomicLong(0);
-
     public AskOllama() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
     }
@@ -157,98 +128,99 @@ public class AskOllama extends Module {
     }
 
     private void messageReceived(String msg) {
-         if (
-            msg.startsWith("[Ollama Other]") || 
-            msg.startsWith("[Ollama Guide]") || 
-            msg.startsWith("[Ollama Send Simulated]") || 
-            msg.startsWith("[Ollama Send Blocked]")
-        ) return;
 
+        // Add recent chat
         recentMessages.addLast(msg);
-        if (recentMessages.size() > MAX_MESSAGES) recentMessages.removeFirst();
+        while (recentMessages.size() > MAX_MESSAGES) recentMessages.removeFirst();
 
+        // Trigger check
+        boolean triggered = false;
         for (String trigger : triggerWords.get()) {
-            int index = msg.toLowerCase().indexOf(trigger.toLowerCase());
-            if (index != -1) {
-                executor.submit(() -> {
-                    try { Thread.sleep(waitDelayMs.get()); } catch (InterruptedException ignored) {}
-
-                    List<String> context = new ArrayList<>(recentMessages);
-                    int limit = contextLimit.get();
-                    if (context.size() > limit) context = context.subList(context.size() - limit, context.size());
-
-                    String contextStr = String.join("\n", context);
-                    String userPrompt = msg.substring(index + trigger.length()).trim();
-                    String playerName = mc.player != null ? mc.player.getGameProfile().getName() : "Player";
-
-                    String fullPrompt = promptTemplate.get()
-                        .replace("{context}", contextStr)
-                        .replace("{userPrompt}", userPrompt)
-                        .replace("{player}", playerName);
-
-                    String reply = queryOllama(fullPrompt);
-                    if (reply != null) {
-                        for (String keyword : ignoreOutKeywords.get()) {
-                            if (reply.contains(keyword)) return;
-                        }
-                        mc.execute(() -> {
-                            String[] lines = reply.split("\n");
-                            for (String line : lines) {
-                                String trimmedLower = line.trim().toLowerCase(Locale.ROOT);
-                                if (line.length() > 200) line = line.substring(0, 200) + "... (trimmed)";
-
-                                if (trimmedLower.startsWith("/say ")) {
-                                    String message = line.substring(5).trim();
-                                    if (message.isEmpty()) continue;
-                                    if (!allowRespondAsMe.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Blocked] " + message));
-                                        continue;
-                                    }
-                                    if (simulateRespondAsMe.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send] " + message));
-                                    } else if (mc.player != null) {
-                                        if (message.startsWith("/")) mc.player.networkHandler.sendChatCommand(message.substring(1));
-                                        else mc.player.networkHandler.sendChatMessage(message);
-                                    }
-                                } else if (trimmedLower.startsWith("/guide ")) {
-                                    if (!allowGuideResponses.get()) continue;
-                                    String guide = line.substring(7).trim();
-                                    if (!guide.isEmpty()) mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Guide] " + guide));
-                                } else {
-                                    if (directSend.get()) {
-                                        String message = line.trim();
-                                        if (!allowRespondAsMe.get()) {
-                                            mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Blocked] " + message));
-                                            continue;
-                                        }
-                                        if (simulateRespondAsMe.get()) {
-                                            mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Send Simulated] " + message));
-                                        } else if (mc.player != null) {
-                                            if (message.startsWith("/")) mc.player.networkHandler.sendChatCommand(message.substring(1));
-                                            else mc.player.networkHandler.sendChatMessage(message);
-                                        }
-                                    } else if (allowOtherResponses.get()) {
-                                        mc.inGameHud.getChatHud().addMessage(Text.of("[Ollama Other] " + line));
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
+            if (msg.toLowerCase(Locale.ROOT).contains(trigger.toLowerCase(Locale.ROOT))) {
+                triggered = true;
                 break;
             }
         }
+        if (!triggered) return;
+
+        // New thread?
+        executor.execute(() -> {
+            
+            // Wait a moment to allow more messages to come in if needed
+            try {Thread.sleep(waitDelayMs.get());} catch (InterruptedException ignored) {}
+
+            // Get recent message
+            List<String> messages = new ArrayList<>(recentMessages);
+            int limit = messageLimit.get();
+            if (messages.size() > limit) {messages = messages.subList(messages.size() - limit, messages.size());}
+
+            // Build prompt
+            String fullPrompt = promptTemplate.get()
+            .replace("{messages}", String.join("\n", messages))
+            .replace("{prompt}", msg)
+            .replace("{send_prefix}", directSendPrefix.get());
+
+            // Query Ollama
+            String reply = queryOllama(fullPrompt);
+
+            // Skip If response contains any ignore keywords
+            if (reply == null) return;
+            for (String keyword : ignoreOutKeywords.get()) {
+                if (reply.contains(keyword)) return;
+            }
+            
+            // For each line
+            for (String line : reply.split("\n")) {
+
+                // Cancel if module was turned off
+                if (!isActive()) {return;}
+
+                // Trim and skip empty lines
+                String message = line.trim();
+                if (message.isEmpty()) continue;
+                if (message.length() > 200) {message = message.substring(0, 200) + "... (trimmed)";}
+
+                // Check for the send prefix and strip it if present
+                boolean forceSend = message.toLowerCase(Locale.ROOT).startsWith(directSendPrefix.get());
+                if (forceSend) {message = message.substring(directSendPrefix.get().length()).trim(); if (message.isEmpty()) continue;}
+                
+                // If the line was forced or direct
+                if (!forceSend || !directSendNoPrefix.get()) {
+
+                    // Show in chat if enabled
+                    if (viewAllResponses.get()) {
+                        info(message);
+                    }
+
+                    continue;
+
+                } else {
+
+                    // Send chat or command
+                    if (message.startsWith("/")) {
+                        mc.player.networkHandler.sendChatCommand(message.substring(1));
+                    } else {
+                        mc.player.networkHandler.sendChatMessage(message);
+                    }
+
+                }
+
+            }
+
+            
+        });
+
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
-        if (!isActive() || event.getMessage() == null || mc.player == null) return;
+        if (event.getMessage() == null || mc.player == null) return;
         if (messageReceiveMode.get() == MessageReceiveMode.onReceiveMessage || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
     }
 
     @EventHandler
     private void onChat(ReceiveMessageEvent event) {
-        if (!isActive() || event.getMessage() == null || mc.player == null) return;
+        if (event.getMessage() == null || mc.player == null) return;
         if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
     }
 
@@ -268,12 +240,13 @@ public class AskOllama extends Module {
             }
 
             if (conn.getResponseCode() != 200) {
-                error("Ollama query failed: HTTP " + conn.getResponseCode());
+                error("Failed: HTTP " + conn.getResponseCode());
                 return null;
             }
 
             StringBuilder response = new StringBuilder();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                if (!isActive()) {conn.disconnect(); return "";}
                 String line;
                 while ((line = br.readLine()) != null) {
                     int contentStartIndex = line.indexOf("\"content\":\"");
