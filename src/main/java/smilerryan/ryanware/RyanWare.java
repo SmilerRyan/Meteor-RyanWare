@@ -115,7 +115,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AntiBlockPlace());
         Modules.get().add(new AntiHack());
         Modules.get().add(new AntiTouch());
-        Modules.get().add(new AskOllama());
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
@@ -171,6 +170,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoBlockDamage());
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new OllamaAnnoyer());
+        Modules.get().add(new OllamaChat());
         Modules.get().add(new OllamaTranslator());
         Modules.get().add(new PacketDelayer());
         Modules.get().add(new PacketLimiter());

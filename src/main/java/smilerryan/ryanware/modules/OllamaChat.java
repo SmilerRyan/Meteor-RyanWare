@@ -24,7 +24,7 @@ import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class AskOllama extends Module {
+public class OllamaChat extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgPrompts = settings.createGroup("Prompts");
 
@@ -117,8 +117,8 @@ public class AskOllama extends Module {
     private final Deque<String> recentMessages = new ArrayDeque<>();
     private static final int MAX_MESSAGES = 100;
 
-    public AskOllama() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AskOllama", "Uses Ollama to answer in-game questions based on recent chat.");
+    public OllamaChat() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Ollama-Chat", "Uses Ollama to answer in-game questions based on recent chat.");
     }
 
     @Override
