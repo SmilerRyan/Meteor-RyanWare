@@ -106,7 +106,7 @@ public class OllamaAnnoyer extends Module {
 
         // Run Ollama query on a separate thread to avoid lag
         new Thread(() -> {
-            String response = queryOllama(model.get(), promptTemplate.get().replace("{input}", raw));
+            String response = Ollama.queryOllama(baseUrl.get(), model.get(), promptTemplate.get().replace("{input}", raw), this);
             if (response == null || response.isEmpty() || response.contains(ignoreOutKeyword.get())) return;
 
             if (response.startsWith("/")) {
@@ -115,81 +115,6 @@ public class OllamaAnnoyer extends Module {
                 mc.execute(() -> mc.player.networkHandler.sendChatMessage(response));
             }
         }, "OllamaAnnoyerThread").start();
-    }
-
-    private String queryOllama(String model, String prompt) {
-        try {
-            URL url = new URL(baseUrl.get() + "/api/chat");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            String json = String.format("{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":false}",
-                escapeJson(model), escapeJson(prompt), escapeJson(prompt));
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(json.getBytes(StandardCharsets.UTF_8));
-            }
-
-            if (conn.getResponseCode() != 200) {
-                error("Ollama query failed: HTTP " + conn.getResponseCode());
-                return null;
-            }
-
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    int contentStartIndex = line.indexOf("\"content\":\"");
-                    if (contentStartIndex != -1) {
-                        contentStartIndex += 11;
-                        StringBuilder contentBuilder = new StringBuilder();
-                        boolean isEscaped = false;
-                        for (int i = contentStartIndex; i < line.length(); i++) {
-                            char ch = line.charAt(i);
-                            if (isEscaped) {
-                                switch (ch) {
-                                    case '\"': contentBuilder.append('"'); break;
-                                    case '\\': contentBuilder.append('\\'); break;
-                                    case 'n': contentBuilder.append('\n'); break;
-                                    case 'r': contentBuilder.append('\r'); break;
-                                    case 't': contentBuilder.append('\t'); break;
-                                    default: contentBuilder.append(ch); break;
-                                }
-                                isEscaped = false;
-                            } else if (ch == '\\') {
-                                isEscaped = true;
-                            } else if (ch == '"') {
-                                break;
-                            } else {
-                                contentBuilder.append(ch);
-                            }
-                        }
-                        response.append(contentBuilder.toString());
-                    }
-                }
-            }
-            conn.disconnect();
-
-            return response.toString()
-                .replaceAll("(?i)<think>.*?</think>", "")
-                .replaceAll("(?i)\\\\u003c/?think\\\\u003e", "")
-                .replaceAll("(?i)<think>|</think>", "")
-                .trim();
-        } catch (Exception e) {
-            error("Ollama query failed: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) return "";
-        return s
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r");
     }
 
 }

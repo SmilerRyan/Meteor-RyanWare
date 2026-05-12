@@ -161,7 +161,7 @@ public class OllamaChat extends Module {
             .replace("{send_prefix}", directSendPrefix.get());
 
             // Query Ollama
-            String reply = queryOllama(fullPrompt);
+            String reply = Ollama.queryOllama(baseUrl.get(), model.get(), fullPrompt, this);
 
             // Skip If response contains any ignore keywords
             if (reply == null) return;
@@ -224,75 +224,4 @@ public class OllamaChat extends Module {
         if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
     }
 
-    private String queryOllama(String prompt) {
-        try {
-            URL url = new URL(baseUrl.get() + "/api/chat");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            String json = String.format("{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"%s\"},{\"role\":\"user\",\"content\":\"%s\"}],\"stream\":false}",
-                escapeJson(model.get()), escapeJson(prompt), escapeJson(prompt));
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(json.getBytes(StandardCharsets.UTF_8));
-            }
-
-            if (conn.getResponseCode() != 200) {
-                error("Failed: HTTP " + conn.getResponseCode());
-                return null;
-            }
-
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                if (!isActive()) {conn.disconnect(); return "";}
-                String line;
-                while ((line = br.readLine()) != null) {
-                    int contentStartIndex = line.indexOf("\"content\":\"");
-                    if (contentStartIndex != -1) {
-                        contentStartIndex += 11;
-                        StringBuilder contentBuilder = new StringBuilder();
-                        boolean isEscaped = false;
-                        for (int i = contentStartIndex; i < line.length(); i++) {
-                            char ch = line.charAt(i);
-                            if (isEscaped) {
-                                switch (ch) {
-                                    case '\"': contentBuilder.append('"'); break;
-                                    case '\\': contentBuilder.append('\\'); break;
-                                    case 'n': contentBuilder.append('\n'); break;
-                                    case 'r': contentBuilder.append('\r'); break;
-                                    case 't': contentBuilder.append('\t'); break;
-                                    default: contentBuilder.append(ch); break;
-                                }
-                                isEscaped = false;
-                            } else if (ch == '\\') {
-                                isEscaped = true;
-                            } else if (ch == '"') {
-                                break;
-                            } else {
-                                contentBuilder.append(ch);
-                            }
-                        }
-                        response.append(contentBuilder.toString());
-                    }
-                }
-            }
-            conn.disconnect();
-
-            return response.toString()
-                .replaceAll("(?i)<think>.*?</think>", "")
-                .replaceAll("(?i)\\\\u003c/?think\\\\u003e", "")
-                .replaceAll("(?i)<think>|</think>", "")
-                .trim();
-        } catch (Exception e) {
-            error("Ollama query failed: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
-    }
 }
