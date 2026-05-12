@@ -14,7 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class AskOllamaAnnoyer extends Module {
+public class OllamaAnnoyer extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
@@ -64,10 +64,10 @@ public class AskOllamaAnnoyer extends Module {
 
     private final AtomicLong lastQueryTime = new AtomicLong(0);
 
-    public AskOllamaAnnoyer() {
+    public OllamaAnnoyer() {
         super(
             RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "AskOllamaAnnoyer",
+            RyanWare.modulePrefix_extras + "Ollama-Annoyer",
             "Corrects bad English with AI."
         );
     }

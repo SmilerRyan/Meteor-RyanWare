@@ -13,7 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class AskOllamaTranslator extends Module {
+public class OllamaTranslator extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgPrompt = settings.createGroup("Prompt");
@@ -50,10 +50,10 @@ public class AskOllamaTranslator extends Module {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
 
-    public AskOllamaTranslator() {
+    public OllamaTranslator() {
         super(
             RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "AskOllamaTranslator",
+            RyanWare.modulePrefix_extras + "Ollama-Translator",
             "Sends outgoing chat messages through Ollama and posts the model output directly."
         );
     }
