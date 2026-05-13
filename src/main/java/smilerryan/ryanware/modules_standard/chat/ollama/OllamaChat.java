@@ -166,25 +166,20 @@ public class OllamaChat extends Module {
                 if (forceSend) {message = message.substring(directSendPrefix.get().length()).trim(); if (message.isEmpty()) continue;}
                 
                 // If the line was forced or direct
-                if (!forceSend || !directSendNoPrefix.get()) {
-
-                    // Show in chat if enabled
-                    if (viewAllResponses.get()) {
-                        info(message);
-                    }
-
-                    continue;
-
-                } else {
-
+                if ( forceSend || directSendNoPrefix.get() ) {
                     // Send chat or command
                     if (message.startsWith("/")) {
                         mc.player.networkHandler.sendChatCommand(message.substring(1));
                     } else {
                         mc.player.networkHandler.sendChatMessage(message);
                     }
-
+                } else {
+                    // Show in chat if enabled
+                    if (viewAllResponses.get()) {
+                        info(message);
+                    }
                 }
+                continue;
 
             }
 
