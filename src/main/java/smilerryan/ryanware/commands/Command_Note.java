@@ -8,7 +8,7 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
-import smilerryan.ryanware.modules_standard.NotesSettings;
+import smilerryan.ryanware.modules_standard.Settings;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -29,9 +29,9 @@ public class Command_Note extends Command {
     }
 
     private String getCurrentPath() {
-        NotesSettings settings = Modules.get().get(NotesSettings.class);
-        if (settings == null) return "notes.txt";
-        String path = settings.path.get();
+        Settings settings = Modules.get().get(Settings.class);
+        if (settings == null) return "";
+        String path = settings.s_Note_Command_Path.get();
         if (path.startsWith("~")) {
             path = System.getProperty("user.home") + path.substring(1);
         }
@@ -40,16 +40,17 @@ public class Command_Note extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
+
         builder.then(literal("path")
             .then(argument("filepath", greedyString())
                 .executes(context -> {
                     String path = getString(context, "filepath");
-                    NotesSettings settings = Modules.get().get(NotesSettings.class);
+                    Settings settings = Modules.get().get(Settings.class);
                     if (settings != null) {
-                        settings.path.set(path);
+                        settings.s_Note_Command_Path.set(path);
                         info("Note path set to: " + getCurrentPath());
                     } else {
-                        error("NotesSettings module not found!");
+                        error("Settings module not found!");
                     }
                     return SINGLE_SUCCESS;
                 })));
@@ -59,11 +60,9 @@ public class Command_Note extends Command {
                 try {
                     File file = new File(getCurrentPath());
                     if (!file.exists()) {
-                        error("Notes file does not exist yet.");
                         return SINGLE_SUCCESS;
                     }
                     Util.getOperatingSystem().open(file);
-                    info("Opened notes file.");
                 } catch (Exception e) {
                     error("Failed to open file: " + e.getMessage());
                 }
@@ -74,6 +73,11 @@ public class Command_Note extends Command {
             .executes(context -> {
                 String content = getString(context, "content");
                 String path = getCurrentPath();
+
+                if (path.isEmpty()) {
+                    error("Notes path not set!");
+                    return SINGLE_SUCCESS;
+                }
 
                 try {
                     // Create parent directories if they don't exist
@@ -94,7 +98,7 @@ public class Command_Note extends Command {
                         writer.write(formattedNote);
                     }
 
-                    info("Note added successfully to: " + path);
+                    info("Note added successfully");
                 } catch (IOException e) {
                     error("Failed to write note: " + e.getMessage());
                 }
