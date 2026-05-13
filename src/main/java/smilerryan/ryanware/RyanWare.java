@@ -21,6 +21,7 @@ import smilerryan.ryanware.modules_standard.chat.*;
 import smilerryan.ryanware.modules_standard.chat.edits.*;
 import smilerryan.ryanware.modules_standard.chat.ollama.*;
 import smilerryan.ryanware.commands.*;
+import smilerryan.ryanware.commands.chat.*;
 
 import java.util.Collections;
 import java.util.List;

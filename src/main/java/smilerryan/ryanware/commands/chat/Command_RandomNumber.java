@@ -1,4 +1,4 @@
-package smilerryan.ryanware.commands;
+package smilerryan.ryanware.commands.chat;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
