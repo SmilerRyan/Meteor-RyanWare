@@ -3,8 +3,10 @@ package smilerryan.ryanware.modules_standard.chat.ollama;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
+import smilerryan.ryanware.modules_standard.Settings;
 import net.minecraft.client.MinecraftClient;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -13,13 +15,6 @@ import java.util.concurrent.Executors;
 public class OllamaChat extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgPrompts = settings.createGroup("Prompts");
-
-    private final Setting<String> baseUrl = sgGeneral.add(new StringSetting.Builder()
-        .name("ollama-url")
-        .description("Base URL of the Ollama server.")
-        .defaultValue("http://localhost:11434")
-        .build()
-    );
 
     private final Setting<String> model = sgGeneral.add(new StringSetting.Builder()
         .name("model")
@@ -147,7 +142,7 @@ public class OllamaChat extends Module {
             .replace("{send_prefix}", directSendPrefix.get());
 
             // Query Ollama
-            String reply = Ollama.queryOllama(baseUrl.get(), model.get(), fullPrompt, this);
+            String reply = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), fullPrompt, this);
 
             // Skip If response contains any ignore keywords
             if (reply == null) return;

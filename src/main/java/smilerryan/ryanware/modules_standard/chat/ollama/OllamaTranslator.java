@@ -3,8 +3,10 @@ package smilerryan.ryanware.modules_standard.chat.ollama;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
+import smilerryan.ryanware.modules_standard.Settings;
 import net.minecraft.client.MinecraftClient;
 
 public class OllamaTranslator extends Module {
@@ -13,13 +15,6 @@ public class OllamaTranslator extends Module {
     private final SettingGroup sgPrompt = settings.createGroup("Prompt");
 
     private volatile boolean sendingTranslatedChat = false;
-
-    private final Setting<String> baseUrl = sgGeneral.add(new StringSetting.Builder()
-        .name("ollama-url")
-        .description("Base URL of the Ollama server.")
-        .defaultValue("http://localhost:11434")
-        .build()
-    );
 
     private final Setting<String> model = sgGeneral.add(new StringSetting.Builder()
         .name("model")
@@ -59,13 +54,13 @@ public class OllamaTranslator extends Module {
         if (queueMessages.get()) {
             event.cancel();
             new Thread(() -> {
-                String response = Ollama.queryOllama(baseUrl.get(), model.get(), fullPrompt, this);
+                String response = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), fullPrompt, this);
                 sendingTranslatedChat = true;
                 mc.getNetworkHandler().sendChatMessage(response);
                 sendingTranslatedChat = false;
             }, "Ollama-Translator-Worker").start();
         } else {
-            event.message = Ollama.queryOllama(baseUrl.get(), model.get(), fullPrompt, this);
+            event.message = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), fullPrompt, this);
         }
     }
 

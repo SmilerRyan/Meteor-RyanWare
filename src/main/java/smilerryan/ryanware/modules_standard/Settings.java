@@ -27,4 +27,14 @@ public class Settings extends Module {
         .build()
     );
 
+    // Ollama
+    private final SettingGroup sg_Ollama = settings.createGroup("Ollama");
+
+    public final Setting<String> s_Ollama_Url = sg_Ollama.add(new StringSetting.Builder()
+        .name("ollama-url")
+        .description("Base URL of the Ollama server.")
+        .defaultValue("http://localhost:11434")
+        .build()
+    );
+
 }

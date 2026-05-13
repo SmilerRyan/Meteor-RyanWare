@@ -3,20 +3,15 @@ package smilerryan.ryanware.modules_standard.chat.ollama;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
+import smilerryan.ryanware.modules_standard.Settings;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class OllamaAnnoyer extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
-
-    private final Setting<String> baseUrl = sgGeneral.add(new StringSetting.Builder()
-        .name("ollama-url")
-        .description("Base URL of the Ollama server.")
-        .defaultValue("http://localhost:11434")
-        .build()
-    );
 
     private final Setting<String> model = sgGeneral.add(new StringSetting.Builder()
         .name("model")
@@ -99,7 +94,7 @@ public class OllamaAnnoyer extends Module {
 
         // Run Ollama query on a separate thread to avoid lag
         new Thread(() -> {
-            String response = Ollama.queryOllama(baseUrl.get(), model.get(), promptTemplate.get().replace("{input}", raw), this);
+            String response = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), promptTemplate.get().replace("{input}", raw), this);
             if (response == null || response.isEmpty() || response.contains(ignoreOutKeyword.get())) return;
 
             if (response.startsWith("/")) {
