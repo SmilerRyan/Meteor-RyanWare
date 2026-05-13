@@ -110,6 +110,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ForceOpenTab());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new NotesSettings());
         Modules.get().add(new OllamaAnnoyer());
         Modules.get().add(new OllamaChat());
         Modules.get().add(new OllamaTranslator());

@@ -4,8 +4,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import meteordevelopment.meteorclient.commands.Command;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
+import smilerryan.ryanware.modules_standard.NotesSettings;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,82 +20,86 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
 public class Command_Note extends Command {
-    private static final String DEFAULT_PATH = System.getProperty("user.home") + File.separator + "notes.txt";
-    private static final String DEFAULT_FORMAT = "[yyyy/MM/dd HH:mm:ss] %s%n";
-    
-    private String currentPath = DEFAULT_PATH;
-    private String currentFormat = DEFAULT_FORMAT;
 
     public Command_Note() {
-        super("note", "Manage notes with customizable paths and formats.");
+        super("note", "Manage notes with customizable paths.");
+    }
+
+    private String getCurrentPath() {
+        NotesSettings settings = Modules.get().get(NotesSettings.class);
+        if (settings == null) return "notes.txt";
+        String path = settings.path.get();
+        if (path.startsWith("~")) {
+            path = System.getProperty("user.home") + path.substring(1);
+        }
+        return path;
     }
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(literal("path")
-            .then(argument("filepath", string())
+            .then(argument("filepath", greedyString())
                 .executes(context -> {
                     String path = getString(context, "filepath");
-                    // Expand ~ to user home directory
-                    if (path.startsWith("~")) {
-                        path = System.getProperty("user.home") + path.substring(1);
-                    }
-                    currentPath = path;
-                    info("Note path set to: " + path);
-                    return SINGLE_SUCCESS;
-                })));
-
-        builder.then(literal("format")
-            .then(argument("format", string())
-                .executes(context -> {
-                    String format = getString(context, "format");
-                    // Validate format by trying to use it
-                    try {
-                        LocalDateTime.now().format(DateTimeFormatter.ofPattern(format.replace("%s", "test")));
-                        currentFormat = format;
-                        info("Note format set to: " + format);
-                    } catch (Exception e) {
-                        error("Invalid format. Use Java DateTimeFormatter patterns with %s for the note content.");
+                    NotesSettings settings = Modules.get().get(NotesSettings.class);
+                    if (settings != null) {
+                        settings.path.set(path);
+                        info("Note path set to: " + getCurrentPath());
+                    } else {
+                        error("NotesSettings module not found!");
                     }
                     return SINGLE_SUCCESS;
                 })));
 
-        builder.then(literal("add")
-            .then(argument("content", greedyString())
-                .executes(context -> {
-                    String content = getString(context, "content");
-                    String path = currentPath;
-                    String format = currentFormat;
-
-                    try {
-                        // Create parent directories if they don't exist
-                        Path filePath = Paths.get(path);
-                        Path parentDir = filePath.getParent();
-                        
-                        // Only create directories if parent exists (not null)
-                        if (parentDir != null) {
-                            Files.createDirectories(parentDir);
-                        }
-
-                        // Format the note with current timestamp
-                        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-                        String formattedNote = String.format(format, content);
-
-                        // Write to file
-                        try (FileWriter writer = new FileWriter(path, true)) {
-                            writer.write(formattedNote);
-                        }
-
-                        info("Note added successfully to: " + path);
-                    } catch (IOException e) {
-                        error("Failed to write note: " + e.getMessage());
+        builder.then(literal("open")
+            .executes(context -> {
+                try {
+                    File file = new File(getCurrentPath());
+                    if (!file.exists()) {
+                        error("Notes file does not exist yet.");
+                        return SINGLE_SUCCESS;
                     }
-                    return SINGLE_SUCCESS;
-                })));
+                    Util.getOperatingSystem().open(file);
+                    info("Opened notes file.");
+                } catch (Exception e) {
+                    error("Failed to open file: " + e.getMessage());
+                }
+                return SINGLE_SUCCESS;
+            }));
+
+        builder.then(argument("content", greedyString())
+            .executes(context -> {
+                String content = getString(context, "content");
+                String path = getCurrentPath();
+
+                try {
+                    // Create parent directories if they don't exist
+                    Path filePath = Paths.get(path);
+                    Path parentDir = filePath.getParent();
+                    
+                    // Only create directories if parent exists (not null)
+                    if (parentDir != null) {
+                        Files.createDirectories(parentDir);
+                    }
+
+                    // Format the note with current timestamp
+                    String dateFormatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+                    String formattedNote = String.format("[%s] %s%n", dateFormatted, content);
+
+                    // Write to file
+                    try (FileWriter writer = new FileWriter(path, true)) {
+                        writer.write(formattedNote);
+                    }
+
+                    info("Note added successfully to: " + path);
+                } catch (IOException e) {
+                    error("Failed to write note: " + e.getMessage());
+                }
+                return SINGLE_SUCCESS;
+            }));
     }
 
     private String getString(CommandContext<CommandSource> context, String name) {
