@@ -198,9 +198,7 @@ public class SkinBlinker extends Module {
         for (PlayerModelPart part : PlayerModelPart.values()) {
             tickCounters.put(part, 0);
         }
-        globalCounter = 0;
-        
-        info("Skin Blinker activated! Your skin layers will now blink.");
+        globalCounter = 0;        
     }
 
     @EventHandler
