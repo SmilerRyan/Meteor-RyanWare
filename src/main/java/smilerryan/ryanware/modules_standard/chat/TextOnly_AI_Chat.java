@@ -36,15 +36,6 @@ public class TextOnly_AI_Chat extends Module {
         .build()
     );
 
-    // dropdown pick message recieve mode (onReceiveMessage, onChat, both)
-    private enum MessageReceiveMode { onReceiveMessage, onChat, Both }
-    private final Setting<MessageReceiveMode> messageReceiveMode = sgGeneral.add(new EnumSetting.Builder<MessageReceiveMode>()
-        .name("message-receive-mode")
-        .description("Which event to listen to for receiving messages.")
-        .defaultValue(MessageReceiveMode.onReceiveMessage)
-        .build()
-    );
-
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -55,16 +46,8 @@ public class TextOnly_AI_Chat extends Module {
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
         if (event.getMessage() == null || mc.player == null) return;
-        if (messageReceiveMode.get() == MessageReceiveMode.onReceiveMessage || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
-    }
 
-    @EventHandler
-    private void onChat(ReceiveMessageEvent event) {
-        if (event.getMessage() == null || mc.player == null) return;
-        if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
-    }
-
-    private void messageReceived(String msg) {
+        String msg = event.getMessage().getString();
 
         // Trigger check
         boolean triggered = false;
@@ -78,16 +61,8 @@ public class TextOnly_AI_Chat extends Module {
 
         executor.execute(() -> {
             try {
-                String requestUrl = url.get() + java.net.URLEncoder.encode(
-                    msg,
-                    java.nio.charset.StandardCharsets.UTF_8
-                );
-
-                String response = prefix.get() + new String(
-                    new java.net.URL(requestUrl).openStream().readAllBytes(),
-                    java.nio.charset.StandardCharsets.UTF_8
-                ).trim();
-
+                String requestUrl = url.get() + java.net.URLEncoder.encode(msg, java.nio.charset.StandardCharsets.UTF_8);
+                String response = prefix.get() + new String(new java.net.URL(requestUrl).openStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
                 mc.execute(() -> {
                     if (mc.getNetworkHandler() != null && !response.isEmpty()) {
                         if (response.startsWith("/")) {
@@ -97,7 +72,6 @@ public class TextOnly_AI_Chat extends Module {
                         }
                     }
                 });
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
