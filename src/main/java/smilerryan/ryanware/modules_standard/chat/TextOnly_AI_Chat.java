@@ -22,17 +22,17 @@ public class TextOnly_AI_Chat extends Module {
         .build()
     );
 
-    private final Setting<String> prefix = sgGeneral.add(new StringSetting.Builder()
-        .name("prefix")
-        .description("Prefix to apply to AI generated messages.")
-        .defaultValue("http://localhost/?s=1&q=")
-        .build()
-    );
-
     private final Setting<List<String>> triggerWords = sgGeneral.add(new StringListSetting.Builder()
         .name("trigger-words")
         .description("Words that trigger the AI call.")
         .defaultValue(Arrays.asList("#"))
+        .build()
+    );
+
+    private final Setting<String> prefix = sgGeneral.add(new StringSetting.Builder()
+        .name("prefix")
+        .description("Prefix to apply to AI generated messages.")
+        .defaultValue("AI: ")
         .build()
     );
 
