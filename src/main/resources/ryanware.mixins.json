@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "DebugHudMixin",
-    "GameOptionsAccessor"
+    "GameOptionsAccessor",
+    "TitleScreenCreditsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

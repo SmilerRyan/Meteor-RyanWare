@@ -32,6 +32,7 @@ public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
 
     private static final String MOD_ID = resolveModId();
+    public static boolean hideTitleCredits = false;
 
     public static String addonName = "RyanWare";
 
@@ -102,6 +103,10 @@ public class RyanWare extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing {} Addon.", addonName);
+
+        if (MOD_ID.equals("meteor-client")) {
+            hideTitleCredits = true;
+        }
 
         // Standard
         Modules.get().add(new AntiFancyChat());

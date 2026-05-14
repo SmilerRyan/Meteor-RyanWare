@@ -4,7 +4,7 @@
   "id": "meteor-client",
   "version": "1.21.11-82",
   "description": "Just another Addon for the Meteor Client.",
-  "authors": ["SmilerRyan", "ChatGPT", "MineGame159", "squidoodly", "seasnail"],
+  "authors": ["SmilerRyan", "ChatGPT"],
   "contact": {
     "homepage": "https://meteorclient.com",
     "issues": "https://github.com/MeteorDevelopment/meteor-client/issues",
