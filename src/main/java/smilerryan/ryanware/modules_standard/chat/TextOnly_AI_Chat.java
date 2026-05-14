@@ -22,6 +22,13 @@ public class TextOnly_AI_Chat extends Module {
         .build()
     );
 
+    private final Setting<String> prefix = sgGeneral.add(new StringSetting.Builder()
+        .name("prefix")
+        .description("Prefix to apply to AI generated messages.")
+        .defaultValue("http://localhost/?s=1&q=")
+        .build()
+    );
+
     private final Setting<List<String>> triggerWords = sgGeneral.add(new StringListSetting.Builder()
         .name("trigger-words")
         .description("Words that trigger the AI call.")
@@ -76,14 +83,18 @@ public class TextOnly_AI_Chat extends Module {
                     java.nio.charset.StandardCharsets.UTF_8
                 );
 
-                String response = new String(
+                String response = prefix.get() + new String(
                     new java.net.URL(requestUrl).openStream().readAllBytes(),
                     java.nio.charset.StandardCharsets.UTF_8
                 ).trim();
 
                 mc.execute(() -> {
                     if (mc.getNetworkHandler() != null && !response.isEmpty()) {
-                        mc.getNetworkHandler().sendChatMessage(response);
+                        if (response.startsWith("/")) {
+                            mc.getNetworkHandler().sendChatCommand(response.substring(1));
+                        } else {
+                            mc.getNetworkHandler().sendChatMessage(response);
+                        }
                     }
                 });
 

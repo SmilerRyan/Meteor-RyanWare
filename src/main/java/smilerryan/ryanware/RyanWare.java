@@ -96,7 +96,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoOBSReplays());
         Modules.get().add(new AutoRunFileOnChat());
         Modules.get().add(new AutoWalkForwards());
-        Modules.get().add(new AIchat());
         Modules.get().add(new BungeeSpoofer());
         Modules.get().add(new ChatIgnorer());
         Modules.get().add(new ChatPlinger());
