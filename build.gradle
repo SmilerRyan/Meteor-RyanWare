@@ -44,3 +44,21 @@ jar {
     from(sourceSets.main.allJava)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+tasks.register("deployAndRun", Exec) {
+    group = "meteor"
+    description = "Builds the mod, copies it to the Elyprism Launcher instance, and launches the game."
+    dependsOn(tasks.named("build"))
+
+    doFirst {
+        def jarFile = file("build/libs/${archivesBaseName}-${version}.jar")
+        def modsDir = file("C:/Apps/Games/Minecraft/App/UserData/instances/z 1.21.11 RyanWare/minecraft/mods")
+        project.copy {
+            from(jarFile)
+            into(modsDir)
+        }
+    }
+
+    workingDir = file("C:/Apps/Games/Minecraft/App")
+    commandLine = ["cmd", "/c", "elyprismlauncher.exe", "--launch", "z 1.21.11 RyanWare"]
+}
