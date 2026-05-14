@@ -199,6 +199,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TotemBypass());
         Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
+        Modules.get().add(new TextOnly_AI_Chat());
 
         // Register commands
         Commands.add(new Command_addText());

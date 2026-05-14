@@ -1,0 +1,97 @@
+package smilerryan.ryanware.modules_standard.chat.ollama;
+
+import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
+import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.orbit.EventHandler;
+import smilerryan.ryanware.RyanWare;
+import smilerryan.ryanware.modules_standard.Settings;
+import net.minecraft.client.MinecraftClient;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class TextOnly_AI_Chat extends Module {
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+
+    private final Setting<String> url = sgGeneral.add(new StringSetting.Builder()
+        .name("url")
+        .description("URL To TextOnly Service")
+        .defaultValue("http://localhost/?s=1&q=")
+        .build()
+    );
+
+    private final Setting<List<String>> triggerWords = sgGeneral.add(new StringListSetting.Builder()
+        .name("trigger-words")
+        .description("Words that trigger the AI call.")
+        .defaultValue(Arrays.asList("#"))
+        .build()
+    );
+
+    // dropdown pick message recieve mode (onReceiveMessage, onChat, both)
+    private enum MessageReceiveMode { onReceiveMessage, onChat, Both }
+    private final Setting<MessageReceiveMode> messageReceiveMode = sgGeneral.add(new EnumSetting.Builder<MessageReceiveMode>()
+        .name("message-receive-mode")
+        .description("Which event to listen to for receiving messages.")
+        .defaultValue(MessageReceiveMode.onReceiveMessage)
+        .build()
+    );
+
+    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public TextOnly_AI_Chat() {
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "TextOnly-AI-Chat", "Uses a Text Only API to answer chat.");
+    }
+
+    @EventHandler
+    private void onReceiveMessage(ReceiveMessageEvent event) {
+        if (event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onReceiveMessage || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
+    }
+
+    @EventHandler
+    private void onChat(ReceiveMessageEvent event) {
+        if (event.getMessage() == null || mc.player == null) return;
+        if (messageReceiveMode.get() == MessageReceiveMode.onChat || messageReceiveMode.get() == MessageReceiveMode.Both) messageReceived(event.getMessage().getString());
+    }
+
+    private void messageReceived(String msg) {
+
+        // Trigger check
+        boolean triggered = false;
+        for (String trigger : triggerWords.get()) {
+            if (msg.toLowerCase(Locale.ROOT).contains(trigger.toLowerCase(Locale.ROOT))) {
+                triggered = true;
+                break;
+            }
+        }
+        if (!triggered) return;
+
+        executor.execute(() -> {
+            try {
+                String requestUrl = url.get() + java.net.URLEncoder.encode(
+                    msg,
+                    java.nio.charset.StandardCharsets.UTF_8
+                );
+
+                String response = new String(
+                    new java.net.URL(requestUrl).openStream().readAllBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8
+                ).trim();
+
+                mc.execute(() -> {
+                    if (mc.getNetworkHandler() != null && !response.isEmpty()) {
+                        mc.getNetworkHandler().sendChatMessage(response);
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+    }
+
+}
