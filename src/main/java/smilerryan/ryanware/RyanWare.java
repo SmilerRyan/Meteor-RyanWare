@@ -6,6 +6,7 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.commands.Commands;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
@@ -30,6 +31,8 @@ import java.util.Locale;
 public class RyanWare extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("RyanWare");
 
+    private static final String MOD_ID = resolveModId();
+
     public static String addonName = "RyanWare";
 
     public static String catName_extras = "";
@@ -44,9 +47,19 @@ public class RyanWare extends MeteorAddon {
     public static Category CATEGORY_EXTRAS;
     public static Category CATEGORY_STANDARD;
 
+    private static String resolveModId() {
+        String classResource = RyanWare.class.getName().replace('.', '/') + ".class";
+        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+            if (mod.findPath(classResource).isPresent()) {
+                return mod.getMetadata().getId();
+            }
+        }
+        throw new RuntimeException("Could not determine mod ID for " + RyanWare.class.getSimpleName());
+    }
+
     static {
         try {
-            FabricLoader.getInstance().getModContainer("ryanware").ifPresent(container -> {
+            FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
                 try {
                     LoaderModMetadata meta = (LoaderModMetadata) container.getMetadata();
                     if (meta.getCustomValue("ryanware:addon-name") != null) {
@@ -230,7 +243,7 @@ public class RyanWare extends MeteorAddon {
     public String getCommit() {
         return FabricLoader
             .getInstance()
-            .getModContainer("ryanware")
+            .getModContainer(MOD_ID)
             .get().getMetadata()
             .getCustomValue("github:sha")
             .getAsString().trim();
