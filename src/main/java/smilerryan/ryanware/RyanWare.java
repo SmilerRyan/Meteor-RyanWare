@@ -109,6 +109,7 @@ public class RyanWare extends MeteorAddon {
         }
 
         // Standard
+        Modules.get().add(new lessCpuWhenIdle());
         Modules.get().add(new AntiFancyChat());
         Modules.get().add(new AutoRespawn());
         Modules.get().add(new AutoOBSReplays());
@@ -126,7 +127,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new f3_number_hider());
         Modules.get().add(new Flight());
         Modules.get().add(new ForceOpenTab());
-        Modules.get().add(new LessCPUWhenUnfocused());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new OllamaAnnoyer());
@@ -135,7 +135,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PlayerTracers());
         Modules.get().add(new Settings());
         Modules.get().add(new SkinBlinker());
-        Modules.get().add(new LagSimulator());
         Modules.get().add(new WiderChat());
 
         // Extras
