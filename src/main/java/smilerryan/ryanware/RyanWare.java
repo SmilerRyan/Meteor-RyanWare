@@ -126,6 +126,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new f3_number_hider());
         Modules.get().add(new Flight());
         Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new LessCPUWhenUnfocused());
         Modules.get().add(new MorePing());
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new OllamaAnnoyer());
