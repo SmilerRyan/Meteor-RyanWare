@@ -162,7 +162,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new BeehiveCoordLogger());
         Modules.get().add(new BellAura());
         Modules.get().add(new BritishChat());
-        Modules.get().add(new Chat2Discord());
         Modules.get().add(new ChatEncryption());
         Modules.get().add(new ChatLogger());
         Modules.get().add(new ChatReplacer());

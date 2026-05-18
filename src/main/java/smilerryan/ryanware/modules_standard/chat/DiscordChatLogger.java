@@ -55,6 +55,7 @@ public class DiscordChatLogger extends Module {
 
     private final StringBuilder buffer = new StringBuilder(4096);
     private volatile long lastAppendTime = 0;
+    private String lastServerAddress = null;
 
     /* ================= MODULE ================= */
 
@@ -71,12 +72,14 @@ public class DiscordChatLogger extends Module {
         active.set(true);
 
         scheduler.scheduleAtFixedRate(this::tryFlush, 200, 200, TimeUnit.MILLISECONDS);
+        handleConnectionChange(true);
     }
 
     @Override
     public void onDeactivate() {
         active.set(false);
 
+        handleConnectionChange(false);
         flush();
 
         if (scheduler != null) scheduler.shutdownNow();
@@ -87,6 +90,7 @@ public class DiscordChatLogger extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent e) {
+        handleConnectionChange(true);
         append("**sent chat** " + e.message);
     }
 
@@ -94,19 +98,25 @@ public class DiscordChatLogger extends Module {
     private void onSendPacket(PacketEvent.Send e) {
         Packet<?> p = e.packet;
 
-        if (p instanceof CommandExecutionC2SPacket cmd)
+        if (p instanceof CommandExecutionC2SPacket cmd) {
+            handleConnectionChange(true);
             append("**sent command** /" + cmd.command());
+        }
 
-        if (p instanceof ChatCommandSignedC2SPacket signed)
+        if (p instanceof ChatCommandSignedC2SPacket signed) {
+            handleConnectionChange(true);
             append("**sent command** /" + signed.command());
+        }
     }
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent e) {
         Text t = e.getMessage();
 
-        if (t != null)
+        if (t != null) {
+            handleConnectionChange(true);
             append(stripColors(t.getString()));
+        }
     }
 
     /* ================= CORE ================= */
@@ -120,6 +130,20 @@ public class DiscordChatLogger extends Module {
         }
 
         lastAppendTime = System.currentTimeMillis();
+    }
+
+    private void handleConnectionChange(boolean joinCheck) {
+        try {
+            ServerInfo current = mc.getCurrentServerEntry();
+
+            if (joinCheck && current != null && lastServerAddress == null) {
+                lastServerAddress = current.address;
+                append("**joined server** " + lastServerAddress);
+            } else if (!joinCheck && lastServerAddress != null) {
+                append("**disconnected from** " + lastServerAddress);
+                lastServerAddress = null;
+            }
+        } catch (Throwable ignored) {}
     }
 
     private void tryFlush() {
@@ -261,6 +285,8 @@ public class DiscordChatLogger extends Module {
             switch (c) {
                 case '"' -> sb.append("\\\"");
                 case '\\' -> sb.append("\\\\");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
                 case '\n' -> sb.append("\\n");
                 case '\r' -> sb.append("\\r");
                 case '\t' -> sb.append("\\t");
