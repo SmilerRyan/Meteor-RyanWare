@@ -109,6 +109,7 @@ public class RyanWare extends MeteorAddon {
         }
 
         // Standard
+        Modules.get().add(new AntiClimb());
         Modules.get().add(new lessCpuWhenIdle());
         Modules.get().add(new AntiFancyChat());
         Modules.get().add(new AutoRespawn());
