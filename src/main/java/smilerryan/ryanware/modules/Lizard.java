@@ -188,7 +188,7 @@ public class Lizard extends Module {
 
     private void playLizardSound() {
         try {
-            var rawStream = Lizard.class.getResourceAsStream("/lizard.wav");
+            var rawStream = Lizard.class.getResourceAsStream("/sound/lizard.wav");
             if (rawStream != null) {
                 var buffered = new java.io.BufferedInputStream(rawStream);
                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(buffered);
