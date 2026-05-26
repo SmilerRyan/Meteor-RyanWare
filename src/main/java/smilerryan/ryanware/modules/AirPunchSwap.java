@@ -90,7 +90,7 @@ public class AirPunchSwap extends Module {
         mc.player.getInventory().selectedSlot = targetSlot;
 
         // sync through interaction manager
-        mc.interactionManager.syncSelectedSlot();
+        // mc.interactionManager.syncSelectedSlot();
 
         // force packet manually too
         mc.getNetworkHandler().sendPacket(
@@ -109,7 +109,7 @@ public class AirPunchSwap extends Module {
         // ensures slot is synced exactly during attack timing
         if (mc.player == null || !swapped) return;
 
-        mc.interactionManager.syncSelectedSlot();
+        // mc.interactionManager.syncSelectedSlot();
     }
 
     private void restoreSlot() {
@@ -118,7 +118,7 @@ public class AirPunchSwap extends Module {
         if (originalSlot >= 0 && originalSlot <= 8) {
             mc.player.getInventory().selectedSlot = originalSlot;
 
-            mc.interactionManager.syncSelectedSlot();
+            // mc.interactionManager.syncSelectedSlot();
 
             mc.getNetworkHandler().sendPacket(
                 new UpdateSelectedSlotC2SPacket(originalSlot)
