@@ -2,12 +2,15 @@ package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
+import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
-import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.StringSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 
-import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
@@ -15,238 +18,130 @@ import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 
 import smilerryan.ryanware.RyanWare;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ChatLogger extends Module {
-    private final Setting<String> filenameTemplate =
-            settings.getDefaultGroup().add(
-                    new StringSetting.Builder()
-                            .name("file-name")
-                            .description("Filename template. Tokens: %server% %player% %date% %time%")
-                            .defaultValue("logs/chat-%server%.txt")
-                            .build()
-            );
 
-    private ExecutorService writerExecutor;
-    private ScheduledExecutorService scheduler;
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
-    private final AtomicBoolean active = new AtomicBoolean(false);
-    private final StringBuilder buffer = new StringBuilder(8192);
+    private final Setting<String> pathFormat = sgGeneral.add(new StringSetting.Builder()
+        .name("path-format")
+        .description("Full log path format.")
+        .defaultValue("chatlogs/%date%_%time%_%player%_%server%.log")
+        .build()
+    );
 
-    private BufferedWriter writer;
-    private volatile long lastAppendTime = 0;
-
-    private String lastServer = null;
-    private String currentFile = null;
-
-    // session timestamp (frozen for filename)
-    private LocalDateTime sessionStartTime;
-
-    private static final DateTimeFormatter LINE_TS =
-            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-
-    private static final DateTimeFormatter DATE =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private static final DateTimeFormatter TIME =
-            DateTimeFormatter.ofPattern("HH-mm-ss");
+    private File logFile;
+    private boolean sessionInitialized = false;
 
     public ChatLogger() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "ChatLogger",
-                "High performance chat logger with session-based filenames.");
+        super(
+            RyanWare.CATEGORY_EXTRAS,
+            RyanWare.modulePrefix_extras + "ChatLogger",
+            "Logs incoming and outgoing chat with session support."
+        );
     }
 
     @Override
     public void onActivate() {
-        writerExecutor = Executors.newSingleThreadExecutor();
-        scheduler = Executors.newSingleThreadScheduledExecutor();
-        active.set(true);
-
-        scheduler.scheduleAtFixedRate(this::tryFlush, 200, 200, TimeUnit.MILLISECONDS);
+        logFile = null;
+        sessionInitialized = false;
+        ensureSession();
     }
-
-    @Override
-    public void onDeactivate() {
-        active.set(false);
-        flush();
-        closeWriter();
-
-        if (scheduler != null) scheduler.shutdownNow();
-        if (writerExecutor != null) writerExecutor.shutdown();
-    }
-
-    /* ================= EVENTS ================= */
 
     @EventHandler
-    private void onSendMessage(SendMessageEvent e) {
-        append("[SendChat] " + e.message);
+    private void onGameJoin(GameJoinedEvent event) {
+        logFile = null;
+        sessionInitialized = false;
+        ensureSession();
+    }
+
+    @EventHandler
+    private void onReceiveMessage(ReceiveMessageEvent event) {
+        Text t = event.getMessage();
+        if (t == null) return;
+
+        log("[I] " + t.getString());
+    }
+
+    @EventHandler
+    private void onSendMessage(SendMessageEvent event) {
+        if (event.message == null) return;
+
+        log("[O] " + event.message);
     }
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send e) {
         Packet<?> p = e.packet;
 
-        if (p instanceof CommandExecutionC2SPacket cmd)
-            append("[SendCommand] /" + cmd.command());
-
-        if (p instanceof ChatCommandSignedC2SPacket signed)
-            append("[SendCommand] /" + signed.command());
-    }
-
-    @EventHandler
-    private void onReceiveMessage(ReceiveMessageEvent e) {
-        Text t = e.getMessage();
-        if (t != null)
-            append("[Chat] " + stripColors(t.getString()));
-    }
-
-    /* ================= CORE ================= */
-
-    private void append(String msg) {
-        if (!active.get() || mc.player == null) return;
-
-        checkFileRotation();
-
-        String ts = LINE_TS.format(LocalDateTime.now());
-
-        synchronized (buffer) {
-            buffer.append('[')
-                    .append(ts)
-                    .append("] ")
-                    .append(msg)
-                    .append('\n');
+        if (p instanceof CommandExecutionC2SPacket cmd) {
+            log("[O] /" + cmd.command());
         }
 
-        lastAppendTime = System.currentTimeMillis();
-    }
-
-    private void tryFlush() {
-        if (!active.get()) return;
-
-        if (System.currentTimeMillis() - lastAppendTime >= 100)
-            flush();
-    }
-
-    private void flush() {
-        String out;
-
-        synchronized (buffer) {
-            if (buffer.length() == 0 || writer == null) return;
-            out = buffer.toString();
-            buffer.setLength(0);
-        }
-
-        writerExecutor.execute(() -> {
-            try {
-                writer.write(out);
-                writer.flush();
-            } catch (IOException ignored) {}
-        });
-    }
-
-    /* ================= FILE MANAGEMENT ================= */
-
-    private void checkFileRotation() {
-        ServerInfo info = mc.getCurrentServerEntry();
-        String server = (info != null && info.address != null)
-                ? sanitize(info.address)
-                : "singleplayer";
-
-        // rotate only when server changes
-        if (!server.equals(lastServer)) {
-            sessionStartTime = LocalDateTime.now();
-
-            String resolved = resolveTemplate(server, sessionStartTime);
-
-            rotateFile(resolved);
-
-            String player = mc.player.getName().getString();
-            appendImmediate("[Join] Player " + player + " on " + server);
-
-            currentFile = resolved;
-            lastServer = server;
+        if (p instanceof ChatCommandSignedC2SPacket signed) {
+            log("[O] /" + signed.command());
         }
     }
 
-    private String resolveTemplate(String server, LocalDateTime time) {
-        return filenameTemplate.get()
-                .replace("%server%", server)
-                .replace("%player%", mc.player.getName().getString())
-                .replace("%date%", DATE.format(time))
-                .replace("%time%", TIME.format(time));
+    private void ensureSession() {
+        if (logFile != null) return;
+
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        String player = "unknown";
+        if (mc.player != null && mc.player.getGameProfile() != null) {
+            player = mc.player.getName().getString();
+        }
+
+        String server = "singleplayer";
+        if (mc.getCurrentServerEntry() != null) {
+            server = mc.getCurrentServerEntry().address;
+        }
+
+        String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        String time = new SimpleDateFormat("HH-mm-ss").format(new Date());
+
+        String path = pathFormat.get()
+            .replace("%server%", sanitize(server))
+            .replace("%player%", sanitize(player))
+            .replace("%date%", sanitize(date))
+            .replace("%time%", sanitize(time));
+
+        if (new File(path).isAbsolute()) {
+            logFile = new File(path);
+        } else {
+            logFile = new File(mc.runDirectory, path);
+        }
     }
 
-    private void rotateFile(String file) {
-        flush();
-        closeWriter();
-
+    private void log(String text) {
         try {
-            Path path = Paths.get(file);
-            Path parent = path.getParent();
-            if (parent != null) Files.createDirectories(parent);
+            ensureSession();
+            if (logFile == null) return;
 
-            boolean exists = Files.exists(path);
+            if (!sessionInitialized) {
+                File parent = logFile.getParentFile();
+                if (parent != null && !parent.exists()) parent.mkdirs();
+                sessionInitialized = true;
+            }
 
-            writer = new BufferedWriter(
-                    new OutputStreamWriter(
-                            Files.newOutputStream(path,
-                                    StandardOpenOption.CREATE,
-                                    StandardOpenOption.APPEND),
-                            StandardCharsets.UTF_8),
-                    64 * 1024
-            );
+            String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date());
 
-            if (exists) writer.write("\n");
+            FileWriter writer = new FileWriter(logFile, true);
+            writer.write("[" + timestamp + "] " + text + "\n");
+            writer.close();
 
-        } catch (Exception e) {
-            error("Failed opening log file.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
-    private void closeWriter() {
-        try {
-            if (writer != null) writer.close();
-        } catch (IOException ignored) {}
-        writer = null;
-    }
-
-    private void appendImmediate(String line) {
-        String ts = LINE_TS.format(LocalDateTime.now());
-
-        synchronized (buffer) {
-            buffer.append('[')
-                    .append(ts)
-                    .append("] ")
-                    .append(line)
-                    .append('\n');
-        }
-    }
-
-    /* ================= UTIL ================= */
 
     private String sanitize(String s) {
-        return s.replaceAll("[^a-zA-Z0-9._-]", "_");
-    }
-
-    private String stripColors(String s) {
-        if (s == null) return "";
-        StringBuilder out = new StringBuilder(s.length());
-
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '§' && i + 1 < s.length()) {
-                i++;
-                continue;
-            }
-            out.append(c);
-        }
-
-        return out.toString();
+        return s.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 }
