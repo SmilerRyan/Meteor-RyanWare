@@ -44,7 +44,7 @@ public class HideItemFrameItems extends Module {
     private final Setting<String> customName = sgGeneral.add(new StringSetting.Builder()
         .name("custom-name")
         .description("Use %item% for original item name, %name% for original display name or & for color codes.")
-        .defaultValue("&cHidden &7- &c%item%")
+        .defaultValue("&cHidden &7- &c%name%")
         .build());
 
     private final Setting<ListMode> itemMode = sgItem.add(new EnumSetting.Builder<ListMode>()
@@ -84,7 +84,6 @@ public class HideItemFrameItems extends Module {
                 ItemStack stack = replacementItem.get().getDefaultStack().copy();
                 
                 String processedName = customName.get()
-                    //.replace("%item%", heldItem.getName().getString())
                     .replace("%name%", name)
                     .replace("&", "§");
 
