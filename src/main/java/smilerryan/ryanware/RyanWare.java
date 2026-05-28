@@ -139,6 +139,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new WiderChat());
 
         // Extras
+        Modules.get().add(new HideItemFrameItems());
         Modules.get().add(new _example());
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
