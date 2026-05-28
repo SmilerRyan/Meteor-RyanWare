@@ -1,7 +1,8 @@
 <p align="center">
-  <img src="src/main/resources/icons/plus.png" width="100" alt="RyanWare Icon"/>
-  <img src="src/main/resources/icons/dichi.png" width="100" alt="Dichi Icon"/>
-  <img src="src/main/resources/icons/knowledge_book.png" width="100" alt="Knowledge Book Icon"/>
+  <img src="src/main/resources/icons/plus.png" width="85" alt="RyanWare Icon"/>
+  <img src="src/main/resources/icons/dichi.png" width="85" alt="Dichi Icon"/>
+  <img src="src/main/resources/icons/knowledge_book.png" width="85" alt="Knowledge Book Icon"/>
+  <img src="src/main/resources/icons/johny_pork.jpg" width="85" alt="Johny Pork Icon"/>
 </p>
 
 <h1 align="center">RyanWare ChatGPT Client</h1>
