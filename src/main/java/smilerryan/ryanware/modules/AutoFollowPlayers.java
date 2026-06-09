@@ -1,16 +1,11 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.settings.StringListSetting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
-import meteordevelopment.meteorclient.settings.DoubleSetting;
-import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.entity.Entity;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import smilerryan.ryanware.RyanWare;
@@ -60,7 +55,15 @@ public class AutoFollowPlayers extends Module {
         .build()
     );
 
-    private boolean wasAutoWalking = false;
+    private final Setting<Double> speed = sgGeneral.add(new DoubleSetting.Builder()
+        .name("speed")
+        .defaultValue(0.3)
+        .min(0.01)
+        .sliderMax(2.0)
+        .build()
+    );
+
+    private boolean walking = false;
 
     public AutoFollowPlayers() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoFollowPlayers", "Locks view on and follows players.");
@@ -70,19 +73,19 @@ public class AutoFollowPlayers extends Module {
     private void onTick(TickEvent.Pre event) {
         if (mc.world == null || mc.player == null) return;
 
-        PlayerEntity closest = findClosestPlayer();
-        if (closest == null) {
-            stopWalking();
+        PlayerEntity target = findClosestPlayer();
+        if (target == null) {
+            stopKeys();
             return;
         }
 
-        // Always snap look instantly
-        lookAt(closest.getPos());
+        lookAt(target.getEyePos());
 
-        double dist = mc.player.squaredDistanceTo(closest);
+        double dist = mc.player.squaredDistanceTo(target);
+
         if (dist <= minDistance.get() * minDistance.get()) {
-            stopWalking();
-            if (!legitMode.get()) mc.player.setVelocity(Vec3d.ZERO);
+            stopKeys();
+            mc.player.setVelocity(0, mc.player.getVelocity().y, 0);
             return;
         }
 
@@ -90,92 +93,75 @@ public class AutoFollowPlayers extends Module {
             // Normal walk mode
             mc.options.forwardKey.setPressed(true);
             mc.options.sprintKey.setPressed(true);
-            wasAutoWalking = true;
+            walking = true;
 
             if (mc.player.horizontalCollision) mc.player.jump();
-        }
-        else {
-            // Flying mode: move directly toward target
-            Vec3d targetPos = closest.getPos();
-            Vec3d playerPos = mc.player.getPos();
+        } else {
+            // SAFE POSITION ACCESS (NO getPos())
+            double dx = target.getX() - mc.player.getX();
+            double dy = target.getY() - mc.player.getY();
+            double dz = target.getZ() - mc.player.getZ();
 
-            Vec3d diff = targetPos.subtract(playerPos);
+            double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (len == 0) return;
 
-            // Speed control
-            double speed = 0.3; // tweak as needed
-            Vec3d velocity = diff.normalize().multiply(speed);
+            Vec3d vel = new Vec3d(dx / len, dy / len, dz / len)
+                .multiply(speed.get());
 
-            mc.player.setVelocity(velocity);
-            mc.player.velocityDirty = true;
+            mc.player.setVelocity(vel);
 
             // Stop pressing keys so they don’t interfere
             mc.options.forwardKey.setPressed(false);
             mc.options.sprintKey.setPressed(false);
             mc.options.jumpKey.setPressed(false);
             mc.options.sneakKey.setPressed(false);
-            wasAutoWalking = false;
-        }
-    }
 
-    @Override
-    public void onDeactivate() {
-        stopWalking();
-        if (!legitMode.get() && mc.player != null) {
-            mc.player.setVelocity(Vec3d.ZERO);
-            mc.player.velocityDirty = true;
-        }
-    }
-
-    private void stopWalking() {
-        if (wasAutoWalking) {
-            mc.options.forwardKey.setPressed(false);
-            mc.options.sprintKey.setPressed(false);
-            mc.options.jumpKey.setPressed(false);
-            mc.options.sneakKey.setPressed(false);
-            wasAutoWalking = false;
+            walking = false;
         }
     }
 
     private PlayerEntity findClosestPlayer() {
         PlayerEntity closest = null;
-        double closestDist = Double.MAX_VALUE;
+        double best = Double.MAX_VALUE;
 
-        for (Entity e : mc.world.getEntities()) {
-            if (!(e instanceof PlayerEntity player)) continue;
-            if (player == mc.player) continue;
-            if (!ignoreWalls.get() && !mc.player.canSee(player)) continue;
-            if (!passesFilter(player)) continue;
+        for (PlayerEntity p : mc.world.getPlayers()) {
+            if (p == mc.player) continue;
+            if (p.isSpectator()) continue;
 
-            double dist = mc.player.squaredDistanceTo(player);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = player;
+            if (!ignoreWalls.get() && !mc.player.canSee(p)) continue;
+            if (!passesFilter(p)) continue;
+
+            double d = mc.player.squaredDistanceTo(p);
+            if (d < best) {
+                best = d;
+                closest = p;
             }
         }
         return closest;
     }
 
     private boolean passesFilter(PlayerEntity player) {
-        String name = player.getGameProfile().getName();
+        String name = player.getName().getString();
 
-        switch (followMode.get()) {
-            case Everyone:
-                return true;
-            case Friends:
-                return Friends.get().isFriend(player);
-            case Specific:
-                return playerList.get().stream().anyMatch(s -> name.equalsIgnoreCase(s));
-            case EveryoneExceptSpecific:
-                return playerList.get().stream().noneMatch(s -> name.equalsIgnoreCase(s));
-        }
-        return true;
+        return switch (followMode.get()) {
+            case Everyone -> true;
+
+            case Friends -> Friends.get().isFriend(player);
+
+            case Specific -> playerList.get().stream()
+                .anyMatch(s -> s.equalsIgnoreCase(name));
+
+            case EveryoneExceptSpecific -> playerList.get().stream()
+                .noneMatch(s -> s.equalsIgnoreCase(name));
+        };
     }
 
     private void lookAt(Vec3d target) {
-        Vec3d eyes = mc.player.getEyePos();
-        double dx = target.x - eyes.x;
-        double dy = target.y - eyes.y;
-        double dz = target.z - eyes.z;
+        Vec3d eye = mc.player.getEyePos();
+
+        double dx = target.x - eye.x;
+        double dy = target.y - eye.y;
+        double dz = target.z - eye.z;
 
         double dist = Math.sqrt(dx * dx + dz * dz);
         float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0F);
@@ -183,5 +169,22 @@ public class AutoFollowPlayers extends Module {
 
         mc.player.setYaw(yaw);
         mc.player.setPitch(pitch);
+    }
+
+    private void stopKeys() {
+        if (!walking) return;
+
+        mc.options.forwardKey.setPressed(false);
+        mc.options.sprintKey.setPressed(false);
+        mc.options.jumpKey.setPressed(false);
+        mc.options.sneakKey.setPressed(false);
+
+        walking = false;
+    }
+
+    @Override
+    public void onDeactivate() {
+        stopKeys();
+        if (mc.player != null) mc.player.setVelocity(Vec3d.ZERO);
     }
 }
