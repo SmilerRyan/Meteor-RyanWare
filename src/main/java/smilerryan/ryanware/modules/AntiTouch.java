@@ -21,7 +21,7 @@ public class AntiTouch extends Module {
 
     public enum Mode {
         Everyone, Friends, NonFriends,
-        FriendsExceptList, NonFriendsExceptList, OnlyList
+        FriendsExceptList, NonFriendsExceptList, EveryoneExceptList, OnlyList
     }
 
     private final SettingGroup sg = settings.getDefaultGroup();
@@ -360,6 +360,7 @@ public class AntiTouch extends Module {
             case NonFriends -> !friend;
             case FriendsExceptList -> friend && !inList;
             case NonFriendsExceptList -> !friend && !inList;
+            case EveryoneExceptList -> !inList;
             case OnlyList -> inList;
         };
     }
