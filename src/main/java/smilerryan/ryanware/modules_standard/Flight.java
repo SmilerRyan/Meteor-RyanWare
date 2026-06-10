@@ -15,8 +15,8 @@ public class Flight extends Module {
         .description("How fast to fly.")
         .defaultValue(3.0)
         .min(0.1)
-        .max(5.0)
-        .sliderMax(3.0)
+        .max(100.0)
+        .sliderMax(100.0)
         .build()
     );
 
