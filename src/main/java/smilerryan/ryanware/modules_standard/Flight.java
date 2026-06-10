@@ -10,13 +10,21 @@ import smilerryan.ryanware.RyanWare;
 public class Flight extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
+    private final Setting<Boolean> speedEnabled = sgGeneral.add(new BoolSetting.Builder()
+        .name("speed-enabled")
+        .description("Allows you to go a custom fly speed.")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Double> speed = sgGeneral.add(new DoubleSetting.Builder()
         .name("speed")
         .description("How fast to fly.")
         .defaultValue(3.0)
         .min(0.1)
         .max(100.0)
-        .sliderMax(100.0)
+        .sliderMax(10.0)
+        .visible(speedEnabled::get)
         .build()
     );
 
@@ -117,7 +125,7 @@ public class Flight extends Module {
         }
 
         // Apply flight speed when flying
-        if (isFlying) {
+        if (isFlying && speedEnabled.get()) {
             mc.player.getAbilities().setFlySpeed((float) (speed.get() * 0.05f));
         }
 
