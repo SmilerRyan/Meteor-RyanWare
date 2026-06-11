@@ -49,6 +49,46 @@ public class Flight extends Module {
         .build()
     );
 
+    private final Setting<Boolean> antiSlowdown = sgGeneral.add(new BoolSetting.Builder()
+        .name("anti-slowdown")
+        .description("Periodically forces zero movement to bypass slowdown effects.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Integer> slowdownInterval = sgGeneral.add(new IntSetting.Builder()
+        .name("anti-slowdown-interval")
+        .description("Ticks between anti-slowdown bursts.")
+        .defaultValue(20)
+        .min(1)
+        .max(200)
+        .sliderMax(100)
+        .visible(antiSlowdown::get)
+        .build()
+    );
+
+    private final Setting<Integer> slowdownDuration = sgGeneral.add(new IntSetting.Builder()
+        .name("anti-slowdown-duration")
+        .description("How many ticks movement is forced to zero.")
+        .defaultValue(2)
+        .min(1)
+        .max(20)
+        .sliderMax(10)
+        .visible(antiSlowdown::get)
+        .build()
+    );
+
+    private final Setting<Double> slowdownSpeed = sgGeneral.add(new DoubleSetting.Builder()
+        .name("anti-slowdown-speed")
+        .description("How fast to fly during the anti-slowdown time")
+        .defaultValue(1.0)
+        .min(0.0)
+        .max(100.0)
+        .sliderMax(10.0)
+        .visible(antiSlowdown::get)
+        .build()
+    );
+
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private boolean wasJumping = false;
     private boolean isFlying = false;
@@ -56,6 +96,10 @@ public class Flight extends Module {
     // Vanilla-like double tap timer (~7 ticks window)
     private int jumpTimer = 0;
     private static final int DOUBLE_TAP_WINDOW = 7;
+
+    // Anti-slowdown state
+    private int slowdownTick = 0;
+    private int slowdownActive = 0;
 
     public Flight() {
         super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Flight", "Toggle flying with double jump, like creative mode.");
@@ -66,6 +110,9 @@ public class Flight extends Module {
         wasJumping = false;
         isFlying = false;
         jumpTimer = 0;
+
+        slowdownTick = 0;
+        slowdownActive = 0;
 
         if (mc.player != null) {
             mc.player.getAbilities().allowFlying = false;
@@ -137,7 +184,23 @@ public class Flight extends Module {
                 mc.player.getVelocity().z
             );
         }
-        
+
+        // Anti-slowdown
+        if (antiSlowdown.get() && isFlying) {
+            if (slowdownActive > 0) {
+                // mc.player.setVelocity(0, mc.player.getVelocity().y, 0);
+                mc.player.getAbilities().setFlySpeed((float) (slowdownSpeed.get() * 0.05f));
+                slowdownActive--;
+            } else {
+                slowdownTick++;
+
+                if (slowdownTick >= slowdownInterval.get()) {
+                    slowdownTick = 0;
+                    slowdownActive = slowdownDuration.get();
+                }
+            }
+        }
+
         wasJumping = isJumping;
     }
 }
