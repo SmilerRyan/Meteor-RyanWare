@@ -4,8 +4,11 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.settings.StringSetting;
+import meteordevelopment.meteorclient.settings.StringListSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import smilerryan.ryanware.RyanWare;
+
+import java.util.List;
 
 public class Settings extends Module {
 
@@ -39,14 +42,28 @@ public class Settings extends Module {
     );
 
     // Chat
-    private final SettingGroup sg_Chat = settings.createGroup("Chat Obfuscation");
+    private final SettingGroup sg_ChatMasking = settings.createGroup("Chat Masking");
 
-    public final Setting<Boolean> s_ObfuscateChatEnabled = sg_Chat.add(
+    public final Setting<Boolean> s_MaskChatEnabled = sg_ChatMasking.add(
         new BoolSetting.Builder()
             .name("Enabled")
-            .description("Visually obfuscates login/register/changepassword commands from your chat input area.")
+            .description("Visually masks your chat input after the prefixes.")
             .defaultValue(true)
             .build()
     );
 
+    public final Setting<List<String>> s_MaskChatPrefixes = sg_ChatMasking.add(
+        new StringListSetting.Builder()
+            .name("Prefixes")
+            .description("Prefixes to obfuscate.")
+            .defaultValue(List.of(
+                "/l ",
+                "/login ",
+                "/reg ",
+                "/register ",
+                "/changepass ",
+                "/changepassword "
+            ))
+            .build()
+    );
 }
