@@ -53,13 +53,17 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private String ryanware$mask(String text, List<String> commands) {
         if (text == null || commands == null) return null;
-        String lower = text.toLowerCase();
         for (String command : commands) {
             if (command == null) continue;
-            String cmdLower = command.toLowerCase();
-            if (lower.startsWith(cmdLower)) {
-                String password = text.substring(command.length());
-                return command + "*".repeat(password.length());
+            if (text.startsWith(command)) {
+                int offset = command.length();
+                char[] chars = text.toCharArray();
+                for (int i = offset; i < chars.length; i++) {
+                    if (chars[i] != ' ') {
+                        chars[i] = '*';
+                    }
+                }
+                return new String(chars);
             }
         }
         return null;
