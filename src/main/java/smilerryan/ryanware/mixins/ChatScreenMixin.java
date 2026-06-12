@@ -29,43 +29,104 @@ public abstract class ChatScreenMixin extends Screen {
         super(title);
     }
 
+    // STAR REPLACE MODE ONLY
     @Inject(method = "render", at = @At("HEAD"))
-    private void ryanware$maskChatHead(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void ryanware$maskHead(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (chatField == null) return;
+
         Settings settings = Modules.get().get(Settings.class);
         if (settings == null || !settings.s_MaskChatEnabled.get()) return;
+
+        if (settings.s_MaskChatMode.get() != Settings.ChatMaskMode.STAR_REPLACEMENT) return;
+
         String text = chatField.getText();
-        String masked = ryanware$mask(text, settings.s_MaskChatPrefixes.get());
+        String masked = mask(text, settings.s_MaskChatPrefixes.get());
+
         if (masked != null && !masked.equals(text)) {
             ryanware$originalText = text;
             chatField.setText(masked);
         }
     }
 
+    // RESTORE TEXT
     @Inject(method = "render", at = @At("RETURN"))
-    private void ryanware$maskChatReturn(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void ryanware$maskReturn(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (ryanware$originalText != null) {
             chatField.setText(ryanware$originalText);
             ryanware$originalText = null;
         }
     }
 
+    // BOX OVERLAY
+    @Inject(method = "render", at = @At("TAIL"))
+    private void ryanware$boxOverlay(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (chatField == null) return;
+
+        Settings settings = Modules.get().get(Settings.class);
+        if (settings == null || !settings.s_MaskChatEnabled.get()) return;
+
+        Settings.ChatMaskMode mode = settings.s_MaskChatMode.get();
+        if (mode == Settings.ChatMaskMode.STAR_REPLACEMENT) return;
+
+        String text = chatField.getText();
+
+        List<String> prefixes = settings.s_MaskChatPrefixes.get();
+        if (prefixes == null) return;
+
+        String matchedPrefix = null;
+        int prefixWidth = 0;
+
+        for (String prefix : prefixes) {
+            if (prefix != null && text.startsWith(prefix)) {
+                matchedPrefix = prefix;
+                prefixWidth = client.textRenderer.getWidth(prefix);
+                break;
+            }
+        }
+
+        if (matchedPrefix == null) return;
+
+        int x = chatField.getX();
+        int y = chatField.getY();
+
+        int textWidth = client.textRenderer.getWidth(text);
+        int fontHeight = client.textRenderer.fontHeight;
+
+        int textY = y + (chatField.getHeight() - fontHeight) / 2;
+        int startX = x + prefixWidth;
+
+        int color = settings.s_BoxOverlayColor.get().getPacked();
+
+        context.fill(
+            startX,
+            textY - 1,
+            x + textWidth,
+            textY + fontHeight + 1,
+            color
+        );
+    }
+
     @Unique
-    private String ryanware$mask(String text, List<String> commands) {
+    private String mask(String text, List<String> commands) {
         if (text == null || commands == null) return null;
+
         for (String command : commands) {
             if (command == null) continue;
+
             if (text.startsWith(command)) {
                 int offset = command.length();
                 char[] chars = text.toCharArray();
+
                 for (int i = offset; i < chars.length; i++) {
                     if (chars[i] != ' ') {
                         chars[i] = '*';
                     }
                 }
+
                 return new String(chars);
             }
         }
+
         return null;
     }
 }

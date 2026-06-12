@@ -1,11 +1,8 @@
 package smilerryan.ryanware.modules_standard;
 
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.settings.StringSetting;
-import meteordevelopment.meteorclient.settings.StringListSetting;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import smilerryan.ryanware.RyanWare;
 
 import java.util.List;
@@ -41,8 +38,13 @@ public class Settings extends Module {
         .build()
     );
 
-    // Chat
+    // Chat Masking
     private final SettingGroup sg_ChatMasking = settings.createGroup("Chat Masking");
+
+    public enum ChatMaskMode {
+        STAR_REPLACEMENT,
+        BOX_OVERLAY
+    }
 
     public final Setting<Boolean> s_MaskChatEnabled = sg_ChatMasking.add(
         new BoolSetting.Builder()
@@ -52,9 +54,26 @@ public class Settings extends Module {
             .build()
     );
 
+    public final Setting<ChatMaskMode> s_MaskChatMode = sg_ChatMasking.add(
+        new EnumSetting.Builder<ChatMaskMode>()
+            .name("mode")
+            .description("Chat masking mode.")
+            .defaultValue(ChatMaskMode.BOX_OVERLAY)
+            .build()
+    );
+
+    public final Setting<SettingColor> s_BoxOverlayColor = sg_ChatMasking.add(
+        new ColorSetting.Builder()
+            .name("box-overlay-color")
+            .description("Color used for Box Overlay mode.")
+            .defaultValue(new SettingColor(255, 255, 255, 255))
+            .visible(() -> s_MaskChatMode.get() == ChatMaskMode.BOX_OVERLAY)
+            .build()
+    );
+
     public final Setting<List<String>> s_MaskChatPrefixes = sg_ChatMasking.add(
         new StringListSetting.Builder()
-            .name("Prefixes")
+            .name("prefixes")
             .description("Prefixes to obfuscate.")
             .defaultValue(List.of(
                 "/l ",
@@ -66,4 +85,5 @@ public class Settings extends Module {
             ))
             .build()
     );
+
 }
