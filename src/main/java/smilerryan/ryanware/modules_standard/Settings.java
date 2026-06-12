@@ -1,5 +1,6 @@
 package smilerryan.ryanware.modules_standard;
 
+import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.settings.StringSetting;
@@ -35,6 +36,17 @@ public class Settings extends Module {
         .description("Base URL of the Ollama server.")
         .defaultValue("http://localhost:11434")
         .build()
+    );
+
+    // Chat
+    private final SettingGroup sg_Chat = settings.createGroup("Chat Obfuscation");
+
+    public final Setting<Boolean> s_ObfuscateChatEnabled = sg_Chat.add(
+        new BoolSetting.Builder()
+            .name("Enabled")
+            .description("Visually obfuscates login/register/changepassword commands from your chat input area.")
+            .defaultValue(true)
+            .build()
     );
 
 }

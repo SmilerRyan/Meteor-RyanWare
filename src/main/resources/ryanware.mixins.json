@@ -5,7 +5,8 @@
   "client": [
     "DebugHudMixin",
     "GameOptionsAccessor",
-    "TitleScreenCreditsMixin"
+    "TitleScreenCreditsMixin",
+    "ChatScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
