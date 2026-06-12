@@ -20,7 +20,7 @@ public class Flight extends Module {
     private final Setting<Double> speed = sgGeneral.add(new DoubleSetting.Builder()
         .name("speed")
         .description("How fast to fly.")
-        .defaultValue(3.0)
+        .defaultValue(8.0)
         .min(0.1)
         .max(100.0)
         .sliderMax(10.0)
@@ -45,7 +45,7 @@ public class Flight extends Module {
     private final Setting<Boolean> bypassAntiKick = sgGeneral.add(new BoolSetting.Builder()
         .name("bypass-anti-kick")
         .description("Bypasses vanilla anti-kick while flying.")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
 

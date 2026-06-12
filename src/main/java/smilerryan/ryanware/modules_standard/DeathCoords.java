@@ -49,7 +49,7 @@ public class DeathCoords extends Module {
     private final Setting<Boolean> enableProtectedCoords = sgProtected.add(new BoolSetting.Builder()
         .name("enable-protected-coords")
         .description("Block messages/leaks and show protected-death-message if you die in protected coords.")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
 

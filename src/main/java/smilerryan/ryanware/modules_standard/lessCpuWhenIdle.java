@@ -19,7 +19,7 @@ public class lessCpuWhenIdle extends Module {
         new BoolSetting.Builder()
             .name("run-when-focused")
             .description("Call GLFW.glfwWaitEvents() when the window is focused.")
-            .defaultValue(true)
+            .defaultValue(false)
             .build()
     );
 

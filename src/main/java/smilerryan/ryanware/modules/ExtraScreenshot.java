@@ -43,7 +43,7 @@ public class ExtraScreenshot extends Module {
     private final Setting<Boolean> playSound = sgGeneral.add(new BoolSetting.Builder()
         .name("Play Sound")
         .description("Play screenshot sound when taking a screenshot")
-        .defaultValue(false)
+        .defaultValue(true)
         .build()
     );
 

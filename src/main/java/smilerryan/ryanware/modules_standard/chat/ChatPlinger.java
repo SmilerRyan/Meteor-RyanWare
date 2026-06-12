@@ -16,7 +16,7 @@ public class ChatPlinger extends Module {
         new StringListSetting.Builder()
             .name("keywords")
             .description("Keywords to trigger the sound. Empty = all messages.")
-            .defaultValue( List.of("->", "Ryan", "Balls") )
+            .defaultValue( List.of() )
             .build()
     );
 
