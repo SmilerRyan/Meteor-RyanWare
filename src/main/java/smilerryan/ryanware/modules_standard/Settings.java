@@ -42,7 +42,7 @@ public class Settings extends Module {
     private final SettingGroup sg_ChatMasking = settings.createGroup("Chat Masking");
 
     public enum ChatMaskMode {
-        STAR_REPLACEMENT,
+        TEXT_REPLACEMENT,
         BOX_OVERLAY
     }
 
@@ -59,6 +59,15 @@ public class Settings extends Module {
             .name("mode")
             .description("Chat masking mode.")
             .defaultValue(ChatMaskMode.BOX_OVERLAY)
+            .build()
+    );
+
+    public final Setting<String> s_MaskChatSymbol = sg_ChatMasking.add(
+        new StringSetting.Builder()
+            .name("mask-symbol")
+            .description("The symbol used to replace text.")
+            .defaultValue("*")
+            .visible(() -> s_MaskChatMode.get() == ChatMaskMode.TEXT_REPLACEMENT)
             .build()
     );
 

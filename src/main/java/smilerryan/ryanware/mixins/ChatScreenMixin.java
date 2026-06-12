@@ -37,22 +37,28 @@ public abstract class ChatScreenMixin extends Screen {
         Settings settings = Modules.get().get(Settings.class);
         if (settings == null || !settings.s_MaskChatEnabled.get()) return;
 
-        if (settings.s_MaskChatMode.get() != Settings.ChatMaskMode.STAR_REPLACEMENT) return;
+        if (settings.s_MaskChatMode.get() != Settings.ChatMaskMode.TEXT_REPLACEMENT) return;
 
         String text = chatField.getText();
-        String masked = mask(text, settings.s_MaskChatPrefixes.get());
+        List<String> prefixes = settings.s_MaskChatPrefixes.get();
+        if (prefixes == null) return;
 
-        if (masked != null && !masked.equals(text)) {
-            ryanware$originalText = text;
-            chatField.setText(masked);
-        }
+        String symbolStr = settings.s_MaskChatSymbol.get();
+        char symbol = (symbolStr == null || symbolStr.isEmpty()) ? '*' : symbolStr.charAt(0);
+
+        String masked = mask(text, prefixes, symbol);
+        if (masked == null || masked.equals(text)) return;
+
+        ryanware$originalText = text;
+
+        ((TextFieldWidgetAccessor) chatField).setRawText(masked);
     }
 
     // RESTORE TEXT
     @Inject(method = "render", at = @At("RETURN"))
     private void ryanware$maskReturn(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (ryanware$originalText != null) {
-            chatField.setText(ryanware$originalText);
+        if (ryanware$originalText != null && chatField != null) {
+            ((TextFieldWidgetAccessor) chatField).setRawText(ryanware$originalText);
             ryanware$originalText = null;
         }
     }
@@ -66,7 +72,7 @@ public abstract class ChatScreenMixin extends Screen {
         if (settings == null || !settings.s_MaskChatEnabled.get()) return;
 
         Settings.ChatMaskMode mode = settings.s_MaskChatMode.get();
-        if (mode == Settings.ChatMaskMode.STAR_REPLACEMENT) return;
+        if (mode == Settings.ChatMaskMode.TEXT_REPLACEMENT) return;
 
         String text = chatField.getText();
 
@@ -107,7 +113,7 @@ public abstract class ChatScreenMixin extends Screen {
     }
 
     @Unique
-    private String mask(String text, List<String> commands) {
+    private String mask(String text, List<String> commands, char symbol) {
         if (text == null || commands == null) return null;
 
         for (String command : commands) {
@@ -119,7 +125,7 @@ public abstract class ChatScreenMixin extends Screen {
 
                 for (int i = offset; i < chars.length; i++) {
                     if (chars[i] != ' ') {
-                        chars[i] = '*';
+                        chars[i] = symbol;
                     }
                 }
 

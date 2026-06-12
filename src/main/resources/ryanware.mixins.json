@@ -6,7 +6,8 @@
     "DebugHudMixin",
     "GameOptionsAccessor",
     "TitleScreenCreditsMixin",
-    "ChatScreenMixin"
+    "ChatScreenMixin",
+    "TextFieldWidgetAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
