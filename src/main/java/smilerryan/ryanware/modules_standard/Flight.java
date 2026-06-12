@@ -52,7 +52,7 @@ public class Flight extends Module {
     private final Setting<Boolean> antiSlowdown = sgGeneral.add(new BoolSetting.Builder()
         .name("anti-slowdown")
         .description("Periodically forces zero movement to bypass slowdown effects.")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
 
