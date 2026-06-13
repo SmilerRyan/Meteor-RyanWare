@@ -114,4 +114,15 @@ public class Settings extends Module {
             .build()
     );
 
+    // Waypoint Heads
+    private final SettingGroup sg_WaypointHeads = settings.createGroup("Waypoint Heads");
+
+    public final Setting<Boolean> s_WaypointHeads = sg_WaypointHeads.add(
+        new BoolSetting.Builder()
+            .name("enabled")
+            .description("Shows player heads on waypoint icons for player-sourced waypoints.")
+            .defaultValue(false)
+            .build()
+    );
+
 }

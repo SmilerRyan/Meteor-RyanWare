@@ -8,7 +8,8 @@
     "GameOptionsAccessor",
     "TitleScreenCreditsMixin",
     "ChatScreenMixin",
-    "TextFieldWidgetAccessor"
+    "TextFieldWidgetAccessor",
+    "MixinLocatorBarRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
