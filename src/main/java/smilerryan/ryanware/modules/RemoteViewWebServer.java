@@ -13,7 +13,6 @@ import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.text.Text;
 import net.minecraft.client.texture.NativeImage;
 
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RemoteViewWebServer extends Module {
     public static RemoteViewWebServer INSTANCE;
@@ -57,23 +57,26 @@ public class RemoteViewWebServer extends Module {
         .build()
     );
 
-    private final Setting<Integer> streamDelay = sgGeneral.add(new IntSetting.Builder()
-        .name("stream-delay")
-        .description("Delay between stream frames in ms.")
-        .defaultValue(250)
-        .min(10)
-        .max(1000)
-        .sliderRange(10, 1000)
-        .onChanged(val -> updateScreenshotTimer())
+    private final Setting<Double> imageScale = sgGeneral.add(new DoubleSetting.Builder()
+        .name("image-scale")
+        .description("Scales the resolution of the image to improve stream performance (e.g., 0.5 is half resolution).")
+        .defaultValue(1.0)
+        .min(0.1)
+        .max(1.0)
+        .sliderRange(0.1, 1.0)
         .build()
     );
 
     private ServerSocket serverSocket;
     private ExecutorService executor;
     private ScheduledExecutorService screenshotScheduler;
+    private ExecutorService imageEncoderExecutor; // Dedicated thread for encoding
     private final List<String> chatMessages = Collections.synchronizedList(new ArrayList<>());
-    private byte[] lastScreenshotBytes = new byte[0];
-    private long lastScreenshotTime = 0;
+    
+    private volatile byte[] lastScreenshotBytes = new byte[0];
+    private volatile int lastScreenshotHash = 0;
+    
+    private final AtomicBoolean isEncoding = new AtomicBoolean(false); // Prevents thread queueing
 
     // Track connected clients by IP and last activity time
     private final Map<String, Long> activeClients = new ConcurrentHashMap<>();
@@ -88,6 +91,7 @@ public class RemoteViewWebServer extends Module {
     public void onActivate() {
         chatMessages.clear();
         executor = Executors.newCachedThreadPool();
+        imageEncoderExecutor = Executors.newSingleThreadExecutor(); 
         updateScreenshotTimer();
         executor.execute(this::startServer);
 
@@ -115,7 +119,9 @@ public class RemoteViewWebServer extends Module {
         } catch (IOException ignored) {}
         if (executor != null) executor.shutdownNow();
         if (screenshotScheduler != null) screenshotScheduler.shutdownNow();
+        if (imageEncoderExecutor != null) imageEncoderExecutor.shutdownNow();
         activeClients.clear();
+        isEncoding.set(false);
     }
 
     private void updateScreenshotTimer() {
@@ -124,7 +130,7 @@ public class RemoteViewWebServer extends Module {
         }
         if (isActive()) {
             screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
-            screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, streamDelay.get(), TimeUnit.MILLISECONDS);
+            screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, 1, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -304,7 +310,7 @@ public class RemoteViewWebServer extends Module {
     private void handleScreenshotRequest(OutputStream out) throws IOException {
         if (lastScreenshotBytes.length > 0) {
             String header = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: image/png\r\n" +
+                    "Content-Type: image/jpeg\r\n" + // Changed to JPEG
                     "Content-Length: " + lastScreenshotBytes.length + "\r\n" +
                     "\r\n";
             out.write(header.getBytes());
@@ -324,18 +330,23 @@ public class RemoteViewWebServer extends Module {
                     "Pragma: no-cache\r\n\r\n";
             out.write(header.getBytes());
             out.flush();
-            long lastSentTime = 0;
+
+            int lastSentHash = 0;
+
             while (!serverSocket.isClosed()) {
-                if (lastScreenshotTime > lastSentTime && lastScreenshotBytes.length > 0) {
+                if (lastScreenshotBytes.length > 0 && lastScreenshotHash != lastSentHash) {
                     byte[] imageBytes = lastScreenshotBytes;
-                    out.write(("--BoundaryString\r\n").getBytes());
-                    out.write(("Content-Type: image/png\r\n").getBytes());
+
+                    out.write("--BoundaryString\r\n".getBytes());
+                    out.write("Content-Type: image/jpeg\r\n".getBytes());
                     out.write(("Content-Length: " + imageBytes.length + "\r\n\r\n").getBytes());
                     out.write(imageBytes);
-                    out.write(("\r\n").getBytes());
+                    out.write("\r\n".getBytes());
                     out.flush();
-                    lastSentTime = lastScreenshotTime;
+
+                    lastSentHash = lastScreenshotHash;
                 }
+
                 Thread.sleep(1);
             }
         } catch (Exception e) {}
@@ -343,16 +354,20 @@ public class RemoteViewWebServer extends Module {
 
     private void takeScreenshotAsync() {
         if (screenshotMode.get() == 2) {
-            try {
-                BufferedImage blank = new BufferedImage(854, 480, BufferedImage.TYPE_INT_ARGB);
-                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    ImageIO.write(blank, "png", baos);
-                    lastScreenshotBytes = baos.toByteArray();
-                    lastScreenshotTime = System.currentTimeMillis();
+            if (!isEncoding.compareAndSet(false, true)) return;
+            imageEncoderExecutor.execute(() -> {
+                try {
+                    BufferedImage blank = new BufferedImage(854, 480, BufferedImage.TYPE_INT_RGB);
+                    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                        ImageIO.write(blank, "jpeg", baos); // Changed to JPEG
+                        lastScreenshotBytes = baos.toByteArray();
+                    }
+                } catch (Exception e) {
+                    error("Failed to generate blank screenshot: " + e.getMessage());
+                } finally {
+                    isEncoding.set(false);
                 }
-            } catch (Exception e) {
-                error("Failed to generate blank screenshot: " + e.getMessage());
-            }
+            });
             return;
         }
 
@@ -360,27 +375,41 @@ public class RemoteViewWebServer extends Module {
             return;
         }
 
+        // Drop the frame if the previous frame is still being compressed
+        if (!isEncoding.compareAndSet(false, true)) {
+            return;
+        }
+
         MeteorClient.mc.execute(() -> {
             ScreenshotRecorder.takeScreenshot(MeteorClient.mc.getFramebuffer(), nativeImage -> {
                 if (nativeImage == null) {
+                    isEncoding.set(false);
                     return;
                 }
 
-                new Thread(() -> {
+                imageEncoderExecutor.execute(() -> {
                     try {
                         BufferedImage bufferedImage = nativeImageToBufferedImage(nativeImage);
                         nativeImage.close();
-                        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                            ImageIO.write(bufferedImage, "png", baos);
-                            lastScreenshotBytes = baos.toByteArray();
-                            lastScreenshotTime = System.currentTimeMillis();
-                        } catch (IOException e) {
-                            error("Failed to encode screenshot: " + e.getMessage());
+
+                        // Optimize BAOS creation size to prevent internal array copying
+                        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 100)) { 
+                            ImageIO.write(bufferedImage, "jpeg", baos); // Compresses drastically faster than PNG
+
+                            byte[] newBytes = baos.toByteArray();
+                            int newHash = Arrays.hashCode(newBytes);
+
+                            if (newHash != lastScreenshotHash) {
+                                lastScreenshotBytes = newBytes;
+                                lastScreenshotHash = newHash;
+                            }
                         }
                     } catch (Exception e) {
                         error("Exception during image processing: " + e.getMessage());
+                    } finally {
+                        isEncoding.set(false);
                     }
-                }, "ScreenshotProcessor").start();
+                });
             });
         });
     }
@@ -394,25 +423,44 @@ public class RemoteViewWebServer extends Module {
     }
 
     private BufferedImage nativeImageToBufferedImage(NativeImage nativeImage) {
-        int width = nativeImage.getWidth();
-        int height = nativeImage.getHeight();
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int originalWidth = nativeImage.getWidth();
+        int originalHeight = nativeImage.getHeight();
+        double scale = imageScale.get();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int argb = nativeImage.getColorArgb(x, y);
+        // Fast path for unscaled images
+        if (scale >= 1.0) {
+            BufferedImage bufferedImage = new BufferedImage(originalWidth, originalHeight, BufferedImage.TYPE_INT_RGB);
+            int[] pixels = new int[originalWidth * originalHeight];
 
-                int alpha = (argb >> 24) & 0xFF;
-                int red   = (argb >> 16) & 0xFF;
-                int green = (argb >> 8)  & 0xFF;
-                int blue  = (argb)       & 0xFF;
+            for (int y = 0; y < originalHeight; y++) {
+                for (int x = 0; x < originalWidth; x++) {
+                    pixels[y * originalWidth + x] = nativeImage.getColorArgb(x, y);
+                }
+            }
+            bufferedImage.setRGB(0, 0, originalWidth, originalHeight, pixels, 0, originalWidth);
+            return bufferedImage;
+        }
 
-                int fixedArgb = (alpha << 24) | (red << 16) | (green << 8) | blue;
+        // Fast nearest-neighbor scaling path
+        int newWidth = Math.max(1, (int) (originalWidth * scale));
+        int newHeight = Math.max(1, (int) (originalHeight * scale));
 
-                bufferedImage.setRGB(x, y, fixedArgb);
+        BufferedImage bufferedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        int[] pixels = new int[newWidth * newHeight];
+
+        for (int y = 0; y < newHeight; y++) {
+            // Calculate the corresponding Y coordinate on the original image
+            int srcY = Math.min((int) (y / scale), originalHeight - 1);
+            
+            for (int x = 0; x < newWidth; x++) {
+                // Calculate the corresponding X coordinate on the original image
+                int srcX = Math.min((int) (x / scale), originalWidth - 1);
+                
+                pixels[y * newWidth + x] = nativeImage.getColorArgb(srcX, srcY);
             }
         }
 
+        bufferedImage.setRGB(0, 0, newWidth, newHeight, pixels, 0, newWidth);
         return bufferedImage;
     }
 
