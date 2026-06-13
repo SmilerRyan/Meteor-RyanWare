@@ -15,10 +15,7 @@ import net.minecraft.client.texture.NativeImage;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.network.ServerInfo.ServerType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -60,13 +57,23 @@ public class RemoteViewWebServer extends Module {
         .build()
     );
 
+    private final Setting<Integer> streamDelay = sgGeneral.add(new IntSetting.Builder()
+        .name("stream-delay")
+        .description("Delay between stream frames in ms.")
+        .defaultValue(250)
+        .min(10)
+        .max(1000)
+        .sliderRange(10, 1000)
+        .onChanged(val -> updateScreenshotTimer())
+        .build()
+    );
+
     private ServerSocket serverSocket;
     private ExecutorService executor;
     private ScheduledExecutorService screenshotScheduler;
     private final List<String> chatMessages = Collections.synchronizedList(new ArrayList<>());
     private byte[] lastScreenshotBytes = new byte[0];
     private long lastScreenshotTime = 0;
-    private int screenshotDelay = 250;
 
     // Track connected clients by IP and last activity time
     private final Map<String, Long> activeClients = new ConcurrentHashMap<>();
@@ -81,8 +88,7 @@ public class RemoteViewWebServer extends Module {
     public void onActivate() {
         chatMessages.clear();
         executor = Executors.newCachedThreadPool();
-        screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
-        screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, screenshotDelay, TimeUnit.MILLISECONDS);
+        updateScreenshotTimer();
         executor.execute(this::startServer);
 
         if (autoOpen.get()) {
@@ -110,6 +116,16 @@ public class RemoteViewWebServer extends Module {
         if (executor != null) executor.shutdownNow();
         if (screenshotScheduler != null) screenshotScheduler.shutdownNow();
         activeClients.clear();
+    }
+
+    private void updateScreenshotTimer() {
+        if (screenshotScheduler != null && !screenshotScheduler.isShutdown()) {
+            screenshotScheduler.shutdownNow();
+        }
+        if (isActive()) {
+            screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
+            screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, streamDelay.get(), TimeUnit.MILLISECONDS);
+        }
     }
 
     @EventHandler
@@ -174,21 +190,14 @@ public class RemoteViewWebServer extends Module {
                 handleChatPost(in, out);
             } else if (requestLine.startsWith("GET /screenshot")) {
                 handleScreenshotRequest(out);
+            } else if (requestLine.startsWith("GET /stream")) {
+                handleStreamRequest(out);
             } else if (requestLine.startsWith("GET /chat")) {
                 handleChatRequest(out);
             } else if (requestLine.startsWith("GET /disconnect")) {
                 handleDisconnect(out);
             } else if (requestLine.startsWith("GET /quitgame")) {
                 handleQuitGame(out);
-            } else if (requestLine.startsWith("GET /setspeed")) {
-                String speed = requestLine.split("speed=")[1].split(" ")[0];
-                screenshotDelay = Integer.parseInt(URLDecoder.decode(speed, "UTF-8"));
-                if (screenshotScheduler != null) {
-                    screenshotScheduler.shutdownNow();
-                }
-                screenshotScheduler = Executors.newSingleThreadScheduledExecutor();
-                screenshotScheduler.scheduleAtFixedRate(this::takeScreenshotAsync, 0, screenshotDelay, TimeUnit.MILLISECONDS);
-                sendRedirectResponse(out);
             } else if (requestLine.startsWith("GET /?connect=")) {
                 handleConnect(requestLine, out);
             } else send404Response(out, requestLine);
@@ -237,9 +246,6 @@ public class RemoteViewWebServer extends Module {
             out.write(("HTTP/1.1 500 Internal Server Error\r\n\r\nFailed to connect to server").getBytes());
         }
     }
-
-
-
 
     private void handleDisconnect(OutputStream out) throws IOException {
         if (MeteorClient.mc.world != null) {
@@ -309,6 +315,32 @@ public class RemoteViewWebServer extends Module {
         }
     }
 
+    private void handleStreamRequest(OutputStream out) {
+        try {
+            String header = "HTTP/1.1 200 OK\r\n" +
+                    "Content-Type: multipart/x-mixed-replace; boundary=--BoundaryString\r\n" +
+                    "Cache-Control: no-cache\r\n" +
+                    "Connection: close\r\n" +
+                    "Pragma: no-cache\r\n\r\n";
+            out.write(header.getBytes());
+            out.flush();
+            long lastSentTime = 0;
+            while (!serverSocket.isClosed()) {
+                if (lastScreenshotTime > lastSentTime && lastScreenshotBytes.length > 0) {
+                    byte[] imageBytes = lastScreenshotBytes;
+                    out.write(("--BoundaryString\r\n").getBytes());
+                    out.write(("Content-Type: image/png\r\n").getBytes());
+                    out.write(("Content-Length: " + imageBytes.length + "\r\n\r\n").getBytes());
+                    out.write(imageBytes);
+                    out.write(("\r\n").getBytes());
+                    out.flush();
+                    lastSentTime = lastScreenshotTime;
+                }
+                Thread.sleep(1);
+            }
+        } catch (Exception e) {}
+    }
+
     private void takeScreenshotAsync() {
         if (screenshotMode.get() == 2) {
             try {
@@ -338,7 +370,6 @@ public class RemoteViewWebServer extends Module {
                     try {
                         BufferedImage bufferedImage = nativeImageToBufferedImage(nativeImage);
                         nativeImage.close();
-
                         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                             ImageIO.write(bufferedImage, "png", baos);
                             lastScreenshotBytes = baos.toByteArray();
@@ -440,9 +471,13 @@ public class RemoteViewWebServer extends Module {
         html.append(".refresh-btn{background:#5cb85c;margin-bottom:10px;}");
         html.append(".fullscreen-btn{background:#666;margin-bottom:10px;cursor:pointer;}");
         html.append("</style><script>");
-        html.append("function refreshScreenshot(){document.getElementById('screenshot').src='/screenshot?'+new Date().getTime();}");
+        html.append("let isStream = true;");
+        html.append("function toggleView() {");
+        html.append("  isStream = !isStream;");
+        html.append("  const img = document.getElementById('screenshot');");
+        html.append("  img.src = '/' + (isStream?'stream':'screenshot') + '?' + new Date().getTime();");
+        html.append("}");
         html.append("function refreshChat(){fetch('/chat').then(r=>r.text()).then(h=>document.getElementById('chat-messages').innerHTML=h);}");
-        html.append("setInterval(refreshScreenshot,").append(screenshotDelay).append(");");
         html.append("setInterval(refreshChat,1000);");
         html.append("function sendChatMessage(){let msg=document.getElementById('chat-input').value.trim();if(msg==='')return;");
         html.append("fetch('/chat',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'message='+encodeURIComponent(msg)});");
@@ -461,7 +496,7 @@ public class RemoteViewWebServer extends Module {
 
         html.append("<div class='viewer'>");
         html.append("<button class='fullscreen-btn' onclick='toggleFullscreen()'>Toggle Fullscreen</button>");
-        html.append("<img id='screenshot' src='/screenshot' alt='Screenshot'/>");
+        html.append("<img id='screenshot' src='/stream' alt='Screenshot' onclick='toggleView()'/>");
 
         html.append("<form onsubmit='event.preventDefault(); sendChatMessage();'>");
         html.append("<input id='chat-input' type='text' placeholder='Send chat message' autocomplete='off'/>");
@@ -484,10 +519,6 @@ public class RemoteViewWebServer extends Module {
         html.append("</div>");
 
         html.append("<h2>Servers</h2>");
-        html.append("<form method='GET' action='/setspeed'>");
-        html.append("Screenshot Delay (ms): <input name='speed' type='number' value='").append(screenshotDelay).append("' min='50' max='5000'/>");
-        html.append("<button type='submit' class='refresh-btn'>Set</button>");
-        html.append("</form>");
 
         for (int i = 0; i < servers.size(); i++) {
             String serverName = escapeHtml(servers.get(i).name);
