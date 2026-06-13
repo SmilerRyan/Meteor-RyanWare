@@ -136,7 +136,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PlayerTracers());
         Modules.get().add(new Settings());
         Modules.get().add(new SkinBlinker());
-        Modules.get().add(new WiderChat());
 
         // Extras
         Modules.get().add(new HideItemFrameItems());

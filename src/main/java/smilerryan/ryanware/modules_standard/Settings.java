@@ -38,6 +38,17 @@ public class Settings extends Module {
         .build()
     );
 
+    // Chat
+    private final SettingGroup sg_Chat = settings.createGroup("Chat");
+
+    public final Setting<Boolean> s_Chat_MaxWidth = sg_Chat.add(
+        new BoolSetting.Builder()
+            .name("Chat-Max-Width")
+            .description("Forces the chat to be at maximum width all the time.")
+            .defaultValue(true)
+            .build()
+    );
+
     // Chat Masking
     private final SettingGroup sg_ChatMasking = settings.createGroup("Chat Masking");
 
