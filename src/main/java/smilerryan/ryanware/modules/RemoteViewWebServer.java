@@ -376,7 +376,7 @@ public class RemoteViewWebServer extends Module {
                 int green = (argb >> 8)  & 0xFF;
                 int blue  = (argb)       & 0xFF;
 
-                int fixedArgb = (alpha << 24) | (blue << 16) | (green << 8) | red;
+                int fixedArgb = (alpha << 24) | (red << 16) | (green << 8) | blue;
 
                 bufferedImage.setRGB(x, y, fixedArgb);
             }
