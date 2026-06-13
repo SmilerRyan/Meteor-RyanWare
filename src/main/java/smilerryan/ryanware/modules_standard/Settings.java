@@ -41,6 +41,14 @@ public class Settings extends Module {
     // Chat
     private final SettingGroup sg_Chat = settings.createGroup("Chat");
 
+    public final Setting<Boolean> s_Chat_AlwaysVisible = sg_Chat.add(
+        new BoolSetting.Builder()
+            .name("Chat-Always-Visible")
+            .description("Forces the chat to always show, instead of fading away automatically.")
+            .defaultValue(false)
+            .build()
+    );
+
     public final Setting<Boolean> s_Chat_MaxWidth = sg_Chat.add(
         new BoolSetting.Builder()
             .name("Chat-Max-Width")
