@@ -201,7 +201,7 @@ public class PlayerAlerter extends Module {
 
             // gather current tab and process joins
             for (PlayerListEntry e : mc.getNetworkHandler().getPlayerList()) {
-                String name = e.getProfile().getName();
+                String name = e.getProfile().name();
                 tab.add(name);
 
                 if (tabIgnoreFriends.get() && isFriend(name)) continue;

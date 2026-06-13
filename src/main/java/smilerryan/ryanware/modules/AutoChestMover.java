@@ -194,7 +194,7 @@ public class AutoChestMover extends Module {
     }
 
     private boolean moveToPosition(BlockPos target) {
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         Vec3d targetPos = Vec3d.ofCenter(target);
         double distance = playerPos.distanceTo(targetPos);
 
@@ -255,7 +255,7 @@ public class AutoChestMover extends Module {
 
         if (!isChestBlock(chestPos)) return;
 
-        double distance = mc.player.getPos().distanceTo(Vec3d.ofCenter(chestPos));
+        double distance = mc.player.getEntityPos().distanceTo(Vec3d.ofCenter(chestPos));
         if (distance > 4.5) {
             // Move closer to chest
             moveToPosition(chestPos);
@@ -315,7 +315,7 @@ public class AutoChestMover extends Module {
         }
 
         for (BlockPos chestPos : destChests) {
-            double distance = mc.player.getPos().distanceTo(Vec3d.ofCenter(chestPos));
+            double distance = mc.player.getEntityPos().distanceTo(Vec3d.ofCenter(chestPos));
             if (distance > 4.5) {
                 moveToPosition(chestPos);
                 continue;
@@ -392,9 +392,9 @@ public class AutoChestMover extends Module {
              Box.of(Vec3d.ofCenter(sourcePos), sourceRadius.get() * 2, sourceRadius.get() * 2, sourceRadius.get() * 2),
              entity -> true)) {
             
-            double distance = mc.player.getPos().distanceTo(item.getPos());
+            double distance = mc.player.getEntityPos().distanceTo(item.getEntityPos());
             if (distance < 4.0 && !isInventoryFull()) {
-                Vec3d itemPos = item.getPos();
+                Vec3d itemPos = item.getEntityPos();
                 double dx = itemPos.x - mc.player.getX();
                 double dz = itemPos.z - mc.player.getZ();
                 double speed = 0.08;

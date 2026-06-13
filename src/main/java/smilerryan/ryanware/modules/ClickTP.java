@@ -144,7 +144,7 @@ public class ClickTP extends Module {
     private void stepTeleport() {
         if (targetPos == null) return;
 
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         double distance = Math.sqrt(
             Math.pow(targetPos.x - playerPos.x, 2) +
             Math.pow(targetPos.y - playerPos.y, 2) +

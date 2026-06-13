@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.Text;
 
 import smilerryan.ryanware.RyanWare;
 
@@ -59,7 +60,7 @@ public class AutoTotem extends Module {
         if (disconnectDelay >= 0) {
             disconnectDelay--;
             if (disconnectDelay <= 0) {
-                mc.disconnect();
+                mc.disconnect(Text.literal("Disconnected"));
                 disconnectDelay = -1;
             }
             return;
@@ -104,7 +105,7 @@ public class AutoTotem extends Module {
             if (totemSlots.size() >= 2) {
                 int secondSlot = totemSlots.get(1);
                 if (!isTotem(mainhand) || mainhand.getCount() < mc.player.getInventory().getStack(secondSlot).getCount()) {
-                    moveTotemToSlot(secondSlot, mc.player.getInventory().selectedSlot + 36);
+                    moveTotemToSlot(secondSlot, mc.player.getInventory().getSelectedSlot() + 36);
                 }
             }
         }

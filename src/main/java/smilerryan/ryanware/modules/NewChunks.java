@@ -127,7 +127,7 @@ public class NewChunks extends Module {
     private boolean detectNewChunkFromPacket(ChunkDataS2CPacket packet) {
         ChunkPos pos = new ChunkPos(packet.getChunkX(), packet.getChunkZ());
         if (mc.world != null) {
-            ChunkPos spawnChunk = new ChunkPos(mc.world.getSpawnPos());
+            ChunkPos spawnChunk = new ChunkPos(mc.world.getSpawnPoint().getPos());
             double distanceFromSpawn = Math.sqrt(
                 Math.pow(pos.x - spawnChunk.x, 2) +
                 Math.pow(pos.z - spawnChunk.z, 2)

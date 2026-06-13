@@ -80,14 +80,14 @@ public class AirPunchSwap extends Module {
         // already swapped
         if (swapped) return;
 
-        originalSlot = mc.player.getInventory().selectedSlot;
+        originalSlot = mc.player.getInventory().getSelectedSlot();
 
         int targetSlot = swapSlot.get() - 1;
 
         if (targetSlot == originalSlot) return;
 
         // client slot
-        mc.player.getInventory().selectedSlot = targetSlot;
+        mc.player.getInventory().setSelectedSlot(targetSlot);
 
         // sync through interaction manager
         // mc.interactionManager.syncSelectedSlot();
@@ -116,7 +116,7 @@ public class AirPunchSwap extends Module {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
 
         if (originalSlot >= 0 && originalSlot <= 8) {
-            mc.player.getInventory().selectedSlot = originalSlot;
+            mc.player.getInventory().setSelectedSlot(originalSlot);
 
             // mc.interactionManager.syncSelectedSlot();
 

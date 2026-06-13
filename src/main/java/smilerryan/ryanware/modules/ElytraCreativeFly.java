@@ -35,7 +35,7 @@ public class ElytraCreativeFly extends Module {
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.world == null) return;
 
-        boolean fallFlying = mc.player.isFallFlying();
+        boolean fallFlying = mc.player.isGliding();
         boolean onGround = mc.player.isOnGround();
 
         if (fallFlying && !lastFallFlying && !flying) {

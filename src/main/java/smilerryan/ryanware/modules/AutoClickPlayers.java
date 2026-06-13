@@ -120,7 +120,7 @@ public class AutoClickPlayers extends Module {
     }
 
     private boolean passesFilter(PlayerEntity player) {
-        String name = player.getGameProfile().getName();
+        String name = player.getGameProfile().name();
 
         return switch (attackMode.get()) {
             case Everyone -> true;

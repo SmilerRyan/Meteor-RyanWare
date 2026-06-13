@@ -4,7 +4,6 @@ import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.Color;
-import net.minecraft.client.util.math.MatrixStack;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 import net.minecraft.client.network.PlayerListEntry;
@@ -43,7 +42,7 @@ public class TabSortedByPing extends Module {
         // Calculate dimensions for the background
         double maxWidth = 0;
         for (PlayerListEntry entry : sortedPlayers) {
-            String name = entry.getProfile().getName();
+            String name = entry.getProfile().name();
             int ping = entry.getLatency();
             String line = String.format("%dms - %s", ping, name);
             
@@ -57,8 +56,6 @@ public class TabSortedByPing extends Module {
         double backgroundWidth = maxWidth + (padding * 2);
         double backgroundHeight = (sortedPlayers.size() * spacing) + (padding * 2);
         
-        // Use correct renderer method
-        net.minecraft.client.util.math.MatrixStack matrices = event.drawContext.getMatrices();
         event.drawContext.fill(
             (int)(x - padding), 
             (int)(y - padding), 
@@ -67,29 +64,20 @@ public class TabSortedByPing extends Module {
             new Color(0, 0, 0, 160).getPacked()
         );
         
-        // Draw each player entry with scaled text
+        // Draw each player entry
         for (PlayerListEntry entry : sortedPlayers) {
-            String name = entry.getProfile().getName();
+            String name = entry.getProfile().name();
             int ping = entry.getLatency();
             String line = String.format("%s - %dms", name, ping);
-            
-            // Draw text with scale
-            matrices.push();
-            matrices.scale((float)SCALE, (float)SCALE, 1.0f);
-            
-            float scaledX = (float)(x / SCALE);
-            float scaledY = (float)(y / SCALE);
             
             event.drawContext.drawText(
                 mc.textRenderer,
                 line,
-                (int)scaledX,
-                (int)scaledY,
+                (int)x,
+                (int)y,
                 TEXT_COLOR.getPacked(),
                 true
             );
-            
-            matrices.pop();
             
             y += spacing;
         }

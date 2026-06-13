@@ -18,6 +18,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.entity.Entity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.world.Heightmap;
 
 import java.util.*;
 
@@ -148,7 +149,7 @@ public class ChunkBlockESP extends Module {
         double x2 = x1 + 16;
         double z2 = z1 + 16;
         double y1 = mc.world.getBottomY();
-        double y2 = mc.world.getTopY();
+        double y2 = mc.world.getTopY(Heightmap.Type.MOTION_BLOCKING, (int) x1, (int) z1);
 
         // Box overlay
         Box box = new Box(x1, y1, z1, x2, y2, z2);

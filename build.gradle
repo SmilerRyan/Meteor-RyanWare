@@ -1,10 +1,9 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-archivesBaseName = project.archives_base_name
+base.archivesName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
@@ -51,7 +50,7 @@ tasks.register("deployAndRun", Exec) {
     dependsOn(tasks.named("build"))
 
     doFirst {
-        def jarFile = file("build/libs/${archivesBaseName}-${version}.jar")
+        def jarFile = file("build/libs/${project.archives_base_name}-${version}.jar")
         def modsDir = file("C:/Apps/Games/Minecraft/App/UserData/instances/z 1.21.11 RyanWare/minecraft/mods")
         project.copy {
             from(jarFile)

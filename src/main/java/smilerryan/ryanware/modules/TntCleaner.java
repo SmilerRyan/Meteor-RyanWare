@@ -27,9 +27,9 @@ public class TntCleaner extends Module {
         if (targets.isEmpty()) {
             BlockPos found = findClosestTnt(mc.player.getBlockPos(), 6);
             if (found != null) {
-                if (returnPos == null) returnPos = mc.player.getPos(); // Save once
+                if (returnPos == null) returnPos = mc.player.getEntityPos(); // Save once
                 targets.add(found);
-                lastPlayerPos = mc.player.getPos();
+                lastPlayerPos = mc.player.getEntityPos();
             }
         }
 
@@ -39,10 +39,10 @@ public class TntCleaner extends Module {
                 lookAt(pos);
 
                 // Teleport closer if stuck
-                if (mc.player.getPos().squaredDistanceTo(lastPlayerPos) < 0.001) {
+                if (mc.player.getEntityPos().squaredDistanceTo(lastPlayerPos) < 0.001) {
                     teleportCloser(pos);
                 }
-                lastPlayerPos = mc.player.getPos();
+                lastPlayerPos = mc.player.getEntityPos();
 
                 if (isBlockReachable(pos)) {
                     mc.interactionManager.updateBlockBreakingProgress(pos, Direction.UP);
@@ -63,13 +63,13 @@ public class TntCleaner extends Module {
 
         // Return to original position with teleport fallback
         if (returnPos != null) {
-            if (mc.player.getPos().squaredDistanceTo(lastPlayerPos) < 0.001) {
+            if (mc.player.getEntityPos().squaredDistanceTo(lastPlayerPos) < 0.001) {
                 teleportCloser(returnPos);
             }
-            lastPlayerPos = mc.player.getPos();
+            lastPlayerPos = mc.player.getEntityPos();
 
             moveToVec(returnPos);
-            if (mc.player.getPos().squaredDistanceTo(returnPos) < 0.25) {
+            if (mc.player.getEntityPos().squaredDistanceTo(returnPos) < 0.25) {
                 returnPos = null; // Auto-reset once close enough
             }
         }
@@ -140,7 +140,7 @@ private void teleportCloser(Vec3d pos) {
     }
 
     private void moveToVec(Vec3d target) {
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         double dx = target.x - playerPos.x;
         double dz = target.z - playerPos.z;
         double dy = target.y - playerPos.y;

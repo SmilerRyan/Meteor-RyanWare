@@ -133,20 +133,20 @@ public class Aura extends Module {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY) {
                 EntityHitResult hit = (EntityHitResult) mc.crosshairTarget;
                 targetOverride = hit.getEntity();
-                targetPos = targetOverride.getPos();
+                targetPos = targetOverride.getEntityPos();
             }
         }
 
         if (targetOverride != null) {
             if (targetPos == null) {
-                targetPos = targetOverride.getPos();
+                targetPos = targetOverride.getEntityPos();
             }
             stepTeleport();
         } else {
             List<Entity> targets = getTargets();
             if (!targets.isEmpty()) {
                 targetOverride = targets.get(0);
-                targetPos = targetOverride.getPos();
+                targetPos = targetOverride.getEntityPos();
                 stepTeleport();
             }
         }
@@ -155,7 +155,7 @@ public class Aura extends Module {
     private void stepTeleport() {
         if (targetPos == null || targetOverride == null) return;
 
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         double distance = Math.sqrt(
             Math.pow(targetPos.x - playerPos.x, 2) +
             Math.pow(targetPos.y - playerPos.y, 2) +
@@ -200,7 +200,7 @@ public class Aura extends Module {
 
     private List<Entity> getTargets() {
         List<Entity> targets = new ArrayList<>();
-        Vec3d pos = mc.player.getPos();
+        Vec3d pos = mc.player.getEntityPos();
         Box box = new Box(
             pos.x - range.get(), pos.y - range.get(), pos.z - range.get(),
             pos.x + range.get(), pos.y + range.get(), pos.z + range.get()

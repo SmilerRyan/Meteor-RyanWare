@@ -19,7 +19,7 @@ public class NoBlockDamage extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.world == null) return;
-        if (!mc.player.isFallFlying()) return;
+        if (!mc.player.isGliding()) return;
         if (mc.player.getAbilities().creativeMode) return;
 
         Vec3d velocity = mc.player.getVelocity();

@@ -35,10 +35,10 @@ public class PlayerTracers extends Module {
         float t = event.tickDelta;
 
         // Interpolated eye position
-        double px = lerp(mc.player.prevX, mc.player.getX(), t);
-        double py = lerp(mc.player.prevY, mc.player.getY(), t)
+        double px = lerp(mc.player.lastX, mc.player.getX(), t);
+        double py = lerp(mc.player.lastY, mc.player.getY(), t)
                 + mc.player.getEyeHeight(mc.player.getPose());
-        double pz = lerp(mc.player.prevZ, mc.player.getZ(), t);
+        double pz = lerp(mc.player.lastZ, mc.player.getZ(), t);
 
         // Small forward offset keeps start point inside frustum
         Vec3d forward = mc.player.getRotationVec(t).multiply(0.25);
@@ -55,10 +55,10 @@ public class PlayerTracers extends Module {
                     || name.startsWith("[NPC]")
                     || name.startsWith("[BOT]")) continue;
 
-            double tx = lerp(player.prevX, player.getX(), t);
-            double ty = lerp(player.prevY, player.getY(), t)
+            double tx = lerp(player.lastX, player.getX(), t);
+            double ty = lerp(player.lastY, player.getY(), t)
                     + player.getEyeHeight(player.getPose());
-            double tz = lerp(player.prevZ, player.getZ(), t);
+            double tz = lerp(player.lastZ, player.getZ(), t);
 
             event.renderer.line(sx, sy, sz, tx, ty, tz, tracerColor.get());
         }

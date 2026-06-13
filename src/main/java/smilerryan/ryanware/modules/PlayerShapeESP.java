@@ -126,9 +126,9 @@ public class PlayerShapeESP extends Module {
     }
 
     private Vec3d getEntityPosition(Entity entity, float tickDelta) {
-        double x = entity.prevX + (entity.getX() - entity.prevX) * tickDelta;
-        double y = entity.prevY + (entity.getY() - entity.prevY) * tickDelta;
-        double z = entity.prevZ + (entity.getZ() - entity.prevZ) * tickDelta;
+        double x = entity.lastX + (entity.getX() - entity.lastX) * tickDelta;
+        double y = entity.lastY + (entity.getY() - entity.lastY) * tickDelta;
+        double z = entity.lastZ + (entity.getZ() - entity.lastZ) * tickDelta;
         return new Vec3d(x, y, z);
     }
 

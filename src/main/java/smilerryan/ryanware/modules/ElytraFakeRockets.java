@@ -52,7 +52,7 @@ public class ElytraFakeRockets extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (mc.player == null || !(mc.player.isFallFlying() || (allowWithoutElytra.get() && !mc.player.isOnGround()))) return;
+        if (mc.player == null || !(mc.player.isGliding() || (allowWithoutElytra.get() && !mc.player.isOnGround()))) return;
 
         if (cooldown > 0) cooldown--;
 
@@ -77,11 +77,11 @@ public class ElytraFakeRockets extends Module {
                 double offsetX = -boostVec.x * i * 0.5;
                 double offsetY = -boostVec.y * i * 0.5;
                 double offsetZ = -boostVec.z * i * 0.5;
-                if (playEffect.get()) mc.world.addParticle(ParticleTypes.FLAME,
+                if (playEffect.get()) mc.world.addParticleClient(ParticleTypes.FLAME,
                     mc.player.getX() + offsetX,
                     mc.player.getY() + offsetY,
                     mc.player.getZ() + offsetZ,
-                    0, 0, 0);
+                    0.0, 0.0, 0.0);
             }
 
             if (cooldownTicks.get() > 0) {

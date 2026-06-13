@@ -177,10 +177,10 @@ public class LookDownDropper extends Module {
     private void playDing(SoundEvent sound, float dingPitch) {
         if (mc.player != null && mc.world != null) {
             mc.world.playSound(
+                null,
                 mc.player.getX(), mc.player.getY(), mc.player.getZ(),
                 sound, SoundCategory.PLAYERS,
-                0.5f, dingPitch,
-                false);
+                0.5f, dingPitch);
         }
     }
 }

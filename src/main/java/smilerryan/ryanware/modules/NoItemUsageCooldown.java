@@ -50,7 +50,7 @@ public class NoItemUsageCooldown extends Module {
             cooldowns.clear();
         } catch (Exception ignored) {}
     
-        mc.player.resetLastAttackedTicks();
+        mc.player.resetTicksSinceLastAttack();
     
         if (mc.player.isUsingItem()) {
             mc.player.clearActiveItem();

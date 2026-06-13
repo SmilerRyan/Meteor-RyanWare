@@ -156,7 +156,7 @@ public class Excavator extends Module {
             BlockState state = mc.world.getBlockState(pos);
 
             // Calculate target position (1 block away from the target block)
-            Vec3d playerPos = mc.player.getPos();
+            Vec3d playerPos = mc.player.getEntityPos();
             Vec3d blockCenter = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             
             // Calculate direction vector from block to player

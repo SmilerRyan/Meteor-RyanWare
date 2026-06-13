@@ -114,7 +114,7 @@ public class BellAura extends Module {
     }
 
     private Direction getDirectionFromPlayer(BlockPos pos) {
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         Vec3d blockPos = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
         
         double dx = playerPos.x - blockPos.x;

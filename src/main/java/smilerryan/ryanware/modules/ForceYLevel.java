@@ -84,7 +84,7 @@ public class ForceYLevel extends Module {
 
         // Clamp player if below floor
         if (player.getY() < floorY) {
-            Vec3d pos = player.getPos();
+            Vec3d pos = player.getEntityPos();
             Vec3d vel = player.getVelocity();
 
             // Snap to floor

@@ -6,7 +6,6 @@ import smilerryan.ryanware.RyanWare;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.option.ServerList;
@@ -237,12 +236,8 @@ public class RemoteViewWebServer extends Module {
     private void handleDisconnect(OutputStream out) throws IOException {
         if (MeteorClient.mc.world != null) {
             MeteorClient.mc.execute(() -> {
-                MeteorClient.mc.world.disconnect();
-                MeteorClient.mc.disconnect(new DisconnectedScreen(
-                    new MultiplayerScreen(new TitleScreen()),
-                    Text.of("Disconnected"),
-                    Text.of("Disconnected by remote command")
-                ));
+                MeteorClient.mc.world.disconnect(Text.literal("Disconnected"));
+                MeteorClient.mc.disconnect(Text.literal("Disconnected"));
             });
         }
         sendRedirectResponse(out);
@@ -326,9 +321,7 @@ public class RemoteViewWebServer extends Module {
         }
 
         MeteorClient.mc.execute(() -> {
-            try {
-                NativeImage nativeImage = ScreenshotRecorder.takeScreenshot(MeteorClient.mc.getFramebuffer());
-
+            ScreenshotRecorder.takeScreenshot(MeteorClient.mc.getFramebuffer(), nativeImage -> {
                 if (nativeImage == null) {
                     return;
                 }
@@ -349,10 +342,7 @@ public class RemoteViewWebServer extends Module {
                         error("Exception during image processing: " + e.getMessage());
                     }
                 }, "ScreenshotProcessor").start();
-
-            } catch (Exception e) {
-                error("Exception during screenshot capture: " + e.getMessage());
-            }
+            });
         });
     }
 
@@ -371,7 +361,7 @@ public class RemoteViewWebServer extends Module {
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int argb = nativeImage.getColor(x, y);
+                int argb = nativeImage.getColorArgb(x, y);
 
                 int alpha = (argb >> 24) & 0xFF;
                 int red   = (argb >> 16) & 0xFF;

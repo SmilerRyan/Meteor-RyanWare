@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import smilerryan.ryanware.RyanWare;
 
+import com.google.common.collect.HashMultimap;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -106,8 +107,8 @@ public class PlayerHider extends Module {
         for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
             if (entry == null || entry.getProfile() == null) continue;
             GameProfile profile = entry.getProfile();
-            UUID id = profile.getId();
-            String currentName = profile.getName();
+            UUID id = profile.id();
+            String currentName = profile.name();
             String originalName = originalProfileNames.containsKey(id) ? originalProfileNames.get(id) : currentName;
             String key = originalName == null ? "" : originalName.toLowerCase(Locale.ROOT);
             Entry replacementEntry = replacementMap.get(key);
@@ -130,8 +131,8 @@ public class PlayerHider extends Module {
             if (player == null) continue;
             GameProfile profile = player.getGameProfile();
             if (profile == null) continue;
-            UUID id = profile.getId();
-            String currentName = profile.getName();
+            UUID id = profile.id();
+            String currentName = profile.name();
             String originalName = originalProfileNames.containsKey(id) ? originalProfileNames.get(id) : currentName;
             String key = originalName == null ? "" : originalName.toLowerCase(Locale.ROOT);
             Entry replacementEntry = replacementMap.get(key);
@@ -147,14 +148,14 @@ public class PlayerHider extends Module {
         if (profile == null) return;
         try {
             if (gameProfileNameField != null) {
-                String cur = profile.getName();
+                String cur = profile.name();
                 if (!Objects.equals(cur, newName)) gameProfileNameField.set(profile, newName);
                 return;
             }
         } catch (Throwable ignored) {}
 
         try {
-            GameProfile newProfile = new GameProfile(profile.getId(), newName);
+            GameProfile newProfile = new GameProfile(profile.id(), newName);
             if (mc != null && mc.getNetworkHandler() != null) {
                 for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
                     if (entry != null && entry.getProfile() == profile) replaceGameProfileField(entry, newProfile);
@@ -190,14 +191,14 @@ public class PlayerHider extends Module {
             String original = originalProfileNames.remove(id);
             if (original != null) {
                 if (gameProfileNameField != null) gameProfileNameField.set(profile, original);
-                else replaceGameProfileField(profile, new GameProfile(profile.getId(), original));
+                else replaceGameProfileField(profile, new GameProfile(profile.id(), original));
             }
         } catch (Throwable ignored) {}
         try {
             if (originalEntryDisplayNames.containsKey(id) && mc != null && mc.getNetworkHandler() != null) {
                 for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
                     if (entry == null || entry.getProfile() == null) continue;
-                    if (id.equals(entry.getProfile().getId())) {
+                    if (id.equals(entry.getProfile().id())) {
                         Text orig = originalEntryDisplayNames.remove(id);
                         try { entry.setDisplayName(orig); } catch (Throwable ignored) {}
                     }
@@ -206,8 +207,8 @@ public class PlayerHider extends Module {
         } catch (Throwable ignored) {}
         if (originalSkins.containsKey(id)) {
             try {
-                profile.getProperties().clear();
-                profile.getProperties().putAll(originalSkins.get(id));
+                profile.properties().clear();
+                profile.properties().putAll(originalSkins.get(id));
             } catch (Throwable ignored) {}
             originalSkins.remove(id);
         }
@@ -216,18 +217,18 @@ public class PlayerHider extends Module {
     private void hidePlayerSkin(GameProfile profile, String skin) {
         if (profile == null) return;
         try {
-            UUID id = profile.getId();
+            UUID id = profile.id();
             if (!originalSkins.containsKey(id)) {
-                com.mojang.authlib.properties.PropertyMap copy = new com.mojang.authlib.properties.PropertyMap();
-                copy.putAll(profile.getProperties());
+                com.mojang.authlib.properties.PropertyMap copy = new com.mojang.authlib.properties.PropertyMap(com.google.common.collect.HashMultimap.create());
+                copy.putAll(profile.properties());
                 originalSkins.put(id, copy);
             }
             if (skin.equals("0")) return; // keep original
-            else if (skin.equals("1")) profile.getProperties().removeAll("textures"); // default skin
+            else if (skin.equals("1")) profile.properties().removeAll("textures"); // default skin
             else {
                 // treat as URL
-                profile.getProperties().removeAll("textures");
-                profile.getProperties().put("textures", new com.mojang.authlib.properties.Property("textures", skin));
+                profile.properties().removeAll("textures");
+                profile.properties().put("textures", new com.mojang.authlib.properties.Property("textures", skin));
             }
         } catch (Throwable ignored) {}
     }
@@ -238,7 +239,7 @@ public class PlayerHider extends Module {
             if (mc.getNetworkHandler() != null) {
                 for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
                     if (entry == null || entry.getProfile() == null) continue;
-                    UUID id = entry.getProfile().getId();
+                    UUID id = entry.getProfile().id();
                     if (originalProfileNames.containsKey(id)) {
                         try {
                             String original = originalProfileNames.get(id);
@@ -246,13 +247,13 @@ public class PlayerHider extends Module {
                             else if (original != null) replaceGameProfileField(entry, new GameProfile(id, original));
                         } catch (Throwable ignored) {}
                     }
-                    if (originalEntryDisplayNames.containsKey(entry.getProfile().getId())) {
-                        try { entry.setDisplayName(originalEntryDisplayNames.get(entry.getProfile().getId())); } catch (Throwable ignored) {}
+                    if (originalEntryDisplayNames.containsKey(entry.getProfile().id())) {
+                        try { entry.setDisplayName(originalEntryDisplayNames.get(entry.getProfile().id())); } catch (Throwable ignored) {}
                     }
                     if (originalSkins.containsKey(id)) {
                         try {
-                            entry.getProfile().getProperties().clear();
-                            entry.getProfile().getProperties().putAll(originalSkins.get(id));
+                            entry.getProfile().properties().clear();
+                            entry.getProfile().properties().putAll(originalSkins.get(id));
                         } catch (Throwable ignored) {}
                     }
                 }
@@ -263,7 +264,7 @@ public class PlayerHider extends Module {
                     if (player == null) continue;
                     GameProfile profile = player.getGameProfile();
                     if (profile == null) continue;
-                    UUID id = profile.getId();
+                    UUID id = profile.id();
                     if (originalProfileNames.containsKey(id)) {
                         try {
                             String original = originalProfileNames.get(id);
@@ -273,8 +274,8 @@ public class PlayerHider extends Module {
                     }
                     if (originalSkins.containsKey(id)) {
                         try {
-                            profile.getProperties().clear();
-                            profile.getProperties().putAll(originalSkins.get(id));
+                            profile.properties().clear();
+                            profile.properties().putAll(originalSkins.get(id));
                         } catch (Throwable ignored) {}
                     }
                 }

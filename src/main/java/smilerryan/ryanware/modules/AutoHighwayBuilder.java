@@ -168,8 +168,8 @@ public class AutoHighwayBuilder extends Module {
         ItemStack stack = mc.player.getInventory().getStack(slot);
         if (stack.isEmpty()) return false;
 
-        int previousSlot = mc.player.getInventory().selectedSlot;
-        mc.player.getInventory().selectedSlot = slot;
+        int previousSlot = mc.player.getInventory().getSelectedSlot();
+        mc.player.getInventory().setSelectedSlot(slot);
 
         boolean placed = false;
         for (Direction dir : Direction.values()) {
@@ -189,7 +189,7 @@ public class AutoHighwayBuilder extends Module {
             }
         }
 
-        mc.player.getInventory().selectedSlot = previousSlot;
+        mc.player.getInventory().setSelectedSlot(previousSlot);
         return placed;
     }
 

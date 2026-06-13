@@ -158,8 +158,8 @@ public class CrystalAura2 extends Module {
     private boolean isSafeToBreakCrystal(EndCrystalEntity crystal) {
         if (!antiSuicide.get()) return true;
         
-        Vec3d crystalPos = crystal.getPos();
-        double distance = mc.player.getPos().distanceTo(crystalPos);
+        Vec3d crystalPos = crystal.getEntityPos();
+        double distance = mc.player.getEntityPos().distanceTo(crystalPos);
         
         // Don't break crystals too close to us
         if (distance < safetyDistance.get()) {
@@ -178,7 +178,7 @@ public class CrystalAura2 extends Module {
         if (!antiSuicide.get()) return true;
         
         Vec3d crystalPos = new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-        double distance = mc.player.getPos().distanceTo(crystalPos);
+        double distance = mc.player.getEntityPos().distanceTo(crystalPos);
         
         // Don't place crystals too close to us
         if (distance < safetyDistance.get()) {
@@ -194,7 +194,7 @@ public class CrystalAura2 extends Module {
     }
 
     private double calculateCrystalDamage(Vec3d crystalPos) {
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         double distance = playerPos.distanceTo(crystalPos);
         
         if (distance > 12.0) return 0.0;
@@ -234,7 +234,7 @@ public class CrystalAura2 extends Module {
                         if (distance <= placeRange.get() * placeRange.get()) {
                             // Calculate damage to target vs damage to self
                             Vec3d crystalVec = new Vec3d(crystalPos.getX() + 0.5, crystalPos.getY(), crystalPos.getZ() + 0.5);
-                            double targetDamage = calculateCrystalDamageToEntity(crystalVec, target.getPos());
+                            double targetDamage = calculateCrystalDamageToEntity(crystalVec, target.getEntityPos());
                             double selfDamage = calculateCrystalDamage(crystalVec);
                             
                             // Score based on damage ratio and distance

@@ -39,7 +39,7 @@ public class FocusCommands extends Module {
                 String trimmed = cmd.trim();
                 if (!trimmed.isEmpty()) {
                     if (trimmed.startsWith("/")) {
-                        mc.getNetworkHandler().sendCommand(trimmed.substring(1));
+                        mc.getNetworkHandler().sendChatCommand(trimmed.substring(1));
                     } else {
                         mc.getNetworkHandler().sendChatMessage(trimmed);
                     }

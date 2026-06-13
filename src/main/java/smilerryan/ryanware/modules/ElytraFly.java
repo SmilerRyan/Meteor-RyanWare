@@ -63,7 +63,7 @@ public class ElytraFly extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        if (!mc.player.isFallFlying()) return;
+        if (!mc.player.isGliding()) return;
 
         double baseSpeed = speed.get();
         double currentSpeed = baseSpeed;
@@ -133,6 +133,6 @@ public class ElytraFly extends Module {
 
         Vec3d velocity = moveVec.multiply(currentSpeed);
         mc.player.setVelocity(velocity.x, velocity.y, velocity.z);
-        mc.player.velocityModified = true;
+        mc.player.velocityDirty = true;
     }
 }

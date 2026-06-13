@@ -176,7 +176,7 @@ public class AutoMineNearby extends Module {
     }
 
     private void moveToBlock(BlockPos pos) {
-        Vec3d playerPos = mc.player.getPos();
+        Vec3d playerPos = mc.player.getEntityPos();
         Vec3d target = Vec3d.ofCenter(pos);
         double dx = target.x - playerPos.x;
         double dz = target.z - playerPos.z;

@@ -3,7 +3,6 @@ package smilerryan.ryanware.modules;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.Block;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +45,7 @@ public class AntiBlockBreak extends Module {
         if (!isActive() || mc.player == null || mc.world == null) return;
 
         // Only check if left-click is pressed
-        if (!InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT)) return;
+        if (GLFW.glfwGetMouseButton(mc.getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT) != 1) return;
 
         // Make sure player is targeting a block
         HitResult target = mc.crosshairTarget;

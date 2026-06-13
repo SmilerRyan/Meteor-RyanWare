@@ -96,7 +96,7 @@ public class AutoFollowItems extends Module {
         }
 
         // Look at item
-        lookAt(closest.getPos());
+        lookAt(closest.getEntityPos());
 
         // Stop auto-walk if item is within pickup range
         if (mc.player.squaredDistanceTo(closest) <= 1.0) {

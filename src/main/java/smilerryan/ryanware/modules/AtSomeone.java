@@ -56,13 +56,13 @@ public class AtSomeone extends Module {
         switch (mode.get()) {
             case AlwaysOne -> {
                 PlayerListEntry randomPlayer = players.get(random.nextInt(players.size()));
-                reply.append(randomPlayer.getProfile().getName());
+                reply.append(randomPlayer.getProfile().name());
             }
 
             case RandomDuplicates -> {
                 for (int i = 0; i < count; i++) {
                     PlayerListEntry randomPlayer = players.get(random.nextInt(players.size()));
-                    reply.append(randomPlayer.getProfile().getName());
+                    reply.append(randomPlayer.getProfile().name());
                     if (i < count - 1) reply.append(" ");
                 }
             }
@@ -74,7 +74,7 @@ public class AtSomeone extends Module {
                         reply.append("no-one");
                     } else {
                         PlayerListEntry chosen = pool.remove(random.nextInt(pool.size()));
-                        reply.append(chosen.getProfile().getName());
+                        reply.append(chosen.getProfile().name());
                     }
                     if (i < count - 1) reply.append(" ");
                 }

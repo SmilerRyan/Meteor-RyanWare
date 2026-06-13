@@ -81,12 +81,14 @@ public class RyanWare extends MeteorAddon {
                     if (meta.getCustomValue("ryanware:icon-extras") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon-extras").getAsString().toLowerCase(Locale.ROOT);
                         Identifier id = Identifier.of("minecraft", iconName);
-                        iconItem_extras = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                        iconItem_extras = Registries.ITEM.get(id);
+                        if (iconItem_extras == null) iconItem_extras = Items.SPONGE;
                     }
                     if (meta.getCustomValue("ryanware:icon-standard") != null) {
                         String iconName = meta.getCustomValue("ryanware:icon-standard").getAsString().toLowerCase(Locale.ROOT);
                         Identifier id = Identifier.of("minecraft", iconName);
-                        iconItem_standard = Registries.ITEM.getOrEmpty(id).orElse(Items.SPONGE);
+                        iconItem_standard = Registries.ITEM.get(id);
+                        if (iconItem_standard == null) iconItem_standard = Items.SPONGE;
                     }
                 } catch (Exception e) {
                     LOG.error("Failed to read mod metadata or override values.", e);
