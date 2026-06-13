@@ -38,8 +38,8 @@ public class RemoteViewWebServer extends Module {
     private final Setting<Integer> port = sgGeneral.add(new IntSetting.Builder()
         .name("port")
         .description("Port number for the web server.")
-        .defaultValue(8080)
-        .min(1024)
+        .defaultValue(80)
+        .min(1)
         .max(65535)
         .build()
     );
@@ -86,10 +86,18 @@ public class RemoteViewWebServer extends Module {
         executor.execute(this::startServer);
 
         if (autoOpen.get()) {
+            String url = "http://localhost:" + port.get() + "/";
             try {
-                java.awt.Desktop.getDesktop().browse(new URI("http://localhost:" + port.get() + "/"));
+                String os = System.getProperty("os.name").toLowerCase();
+                if (os.contains("win")) {
+                    new ProcessBuilder("cmd", "/c", "start", url).start();
+                } else if (os.contains("mac")) {
+                    new ProcessBuilder("open", url).start();
+                } else {
+                    new ProcessBuilder("xdg-open", url).start();
+                }
             } catch (Exception e) {
-                error("Failed to auto-open browser: " + e.getMessage());
+                error("Failed to start browser process: " + e);
             }
         }
     }
