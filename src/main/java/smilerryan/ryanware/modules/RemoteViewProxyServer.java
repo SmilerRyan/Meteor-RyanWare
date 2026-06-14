@@ -17,44 +17,102 @@ import net.minecraft.util.*;
 import smilerryan.ryanware.RyanWare;
 
 public class RemoteViewProxyServer extends Module {
-
-    private ExecutorService executor;
-    private final List<ViewerHandler> viewers = Collections.synchronizedList(new ArrayList<>());
-    private List<String> lastTabSnapshot = new ArrayList<>();
-    private ServerSocket serverSocket;
     public static RemoteViewProxyServer INSTANCE;
 
-    private final SettingGroup sg_Logging = settings.createGroup("Logging");
-    private final Setting<Boolean> s_l_Connections = sg_Logging.add(new BoolSetting.Builder().name("log-connections").defaultValue(true).build());
-    private final Setting<Boolean> s_l_Disconnections = sg_Logging.add(new BoolSetting.Builder().name("log-disconnections").defaultValue(true).build());
-    private final Setting<Boolean> s_l_Incoming_Chat = sg_Logging.add(new BoolSetting.Builder().name("log-incoming-chat").defaultValue(true).build());
-    private final Setting<Boolean> s_l_Incoming_Commands = sg_Logging.add(new BoolSetting.Builder().name("log-incoming-commands").defaultValue(true).build());
+    private ServerSocket serverSocket;
+    private ExecutorService executor;
 
-    private final SettingGroup sg_Features = settings.createGroup("Features");
-    private final Setting<Boolean> s_f_Send_Chat_To_Viewers = sg_Features.add(new BoolSetting.Builder().name("send-chat-to-viewers").defaultValue(true).build());
-    private final Setting<Boolean> s_f_Send_Position_To_Viewers = sg_Features.add(new BoolSetting.Builder().name("send-position-to-viewers").defaultValue(true).build());
-    private final Setting<Boolean> s_f_Send_Viewer_Chat = sg_Features.add(new BoolSetting.Builder().name("send-viewer-chat").defaultValue(true).build());
-    private final Setting<Boolean> s_f_Send_Viewer_Commands = sg_Features.add(new BoolSetting.Builder().name("send-viewer-commands").defaultValue(true).build());
-    
-    private final SettingGroup sg_Features_todo = settings.createGroup("Features to Do");
-    private final Setting<Boolean> s_ftd_Forward_Player_List = sg_Features_todo.add(new BoolSetting.Builder().name("forward-player-list").defaultValue(true).build());
-    private final Setting<Boolean> s_ftd_Forward_Tab_Completion = sg_Features_todo.add(new BoolSetting.Builder().name("forward-tab-completion").defaultValue(true).build());
-    // custom motd text (player name + server ip variables)
-    // custom motd icon (file path or player skin or none)
-    // custom motd playercount
-    // show some of the world
-    // show player when they spawn in
-    // entties?
-    
-    private final SettingGroup sg_Formatting = settings.createGroup("Formatting");
-    public enum FormattingMode {PER_STYLE, PER_CHARACTER, STRIP}
-    private final Setting<FormattingMode> s_Formatting_Mode = sg_Formatting.add(new EnumSetting.Builder<FormattingMode>().name("formatting-mode").defaultValue(FormattingMode.PER_CHARACTER).build());
+    private List<String> lastTabSnapshot = new ArrayList<>();
+
+    private final List<ViewerHandler> viewers =
+            Collections.synchronizedList(new ArrayList<>());
 
     public RemoteViewProxyServer() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Remote-View-Proxy", "Hosts a 1.12.2 Compatible Server on port 25565.");
+        super(RyanWare.CATEGORY_EXTRAS,
+            RyanWare.modulePrefix_extras + "Remote-View-Proxy",
+            "Hosts a 1.12.2 Compatible Server on port 25565.");
     }
 
-    ////////////////////////////////////////
+    // ---------------- SETTINGS ----------------
+
+    public enum FormattingMode {
+        PER_STYLE,
+        PER_CHARACTER,
+        STRIP
+    }
+
+    private final SettingGroup sg_Logging = settings.createGroup("Logging");
+
+    private final Setting<Boolean> s_Log_Connections = sg_Logging.add(new BoolSetting.Builder()
+        .name("log-connections")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Log_Disconnections = sg_Logging.add(new BoolSetting.Builder()
+        .name("log-disconnections")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Log_Incoming_Chat = sg_Logging.add(new BoolSetting.Builder()
+        .name("log-incoming-chat")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Log_Incoming_Commands = sg_Logging.add(new BoolSetting.Builder()
+        .name("log-incoming-commands")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final SettingGroup sg_Features = settings.createGroup("Features");
+
+    private final Setting<Boolean> s_Features_Send_Position_To_Viewers = sg_Features.add(new BoolSetting.Builder()
+        .name("send-position-to-viewers")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Features_Send_Chat_To_Viewers = sg_Features.add(new BoolSetting.Builder()
+        .name("send-chat-to-viewers")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Features_Send_Viewer_Chat = sg_Features.add(new BoolSetting.Builder()
+        .name("send-viewer-chat")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Features_Send_Viewer_Commands = sg_Features.add(new BoolSetting.Builder()
+        .name("send-viewer-commands")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Features_Forward_Tab_Completion = sg_Features.add(new BoolSetting.Builder()
+        .name("forward-tab-completion-(notify-only-at-this-point)")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> s_Features_Forward_Player_List = sg_Features.add(new BoolSetting.Builder()
+        .name("forward-player-list-(notify-only-at-this-point)")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final SettingGroup sg_Formatting = settings.createGroup("Formatting");
+
+    private final Setting<FormattingMode> s_Formatting_Mode =
+        sg_Formatting.add(new EnumSetting.Builder<FormattingMode>()
+            .name("formatting-mode")
+            .defaultValue(FormattingMode.PER_CHARACTER)
+            .build()
+        );
 
     @Override
     public void onActivate() {
@@ -145,7 +203,7 @@ public class RemoteViewProxyServer extends Module {
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent e) {
-        if (s_f_Send_Chat_To_Viewers.get()) {
+        if (s_Features_Send_Chat_To_Viewers.get()) {
             broadcastChat(toLegacyString(e.getMessage()));
         }
     }
@@ -193,7 +251,7 @@ public class RemoteViewProxyServer extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
 
-        if (!s_ftd_Forward_Player_List.get()) return;
+        if (!s_Features_Forward_Player_List.get()) return;
         if (mc.getNetworkHandler() == null) return;
 
         ClientPlayNetworkHandler networkHandler = mc.getNetworkHandler();
@@ -293,7 +351,7 @@ public class RemoteViewProxyServer extends Module {
                 float initialPitch = (client != null && client.player != null) ? client.player.getPitch() : 0;
 
                 sendPacket(0x2F, d -> {
-                    if(s_f_Send_Position_To_Viewers.get()) {
+                    if(s_Features_Send_Position_To_Viewers.get()) {
                         d.writeDouble(initialX);
                         d.writeDouble(initialY);
                         d.writeDouble(initialZ);
@@ -310,7 +368,7 @@ public class RemoteViewProxyServer extends Module {
                     writeVarInt(d, 999); // Teleport ID
                 });
 
-                if (s_l_Connections.get()) log("§a+ " + username);
+                if (s_Log_Connections.get()) log("§a+ " + username);
 
                 startPositionSync();
 
@@ -332,10 +390,10 @@ public class RemoteViewProxyServer extends Module {
                         else if (id == 0x02) {
                             String msg = readString(pin);
                             if (msg.startsWith("/")) {
-                                if (s_l_Incoming_Commands.get())
+                                if (s_Log_Incoming_Commands.get())
                                     log("§eCommand " + username + " " + msg);
 
-                                if (s_f_Send_Viewer_Commands.get()) {
+                                if (s_Features_Send_Viewer_Commands.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
                                             mc.player.networkHandler.sendChatCommand(msg.substring(1));
@@ -344,10 +402,10 @@ public class RemoteViewProxyServer extends Module {
                                 }
 
                             } else {
-                                if (s_l_Incoming_Chat.get())
+                                if (s_Log_Incoming_Chat.get())
                                     log("§eChat " + username + " " + msg);
 
-                                if (s_f_Send_Viewer_Chat.get()) {
+                                if (s_Features_Send_Viewer_Chat.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
                                             mc.player.networkHandler.sendChatMessage(msg);
@@ -357,7 +415,7 @@ public class RemoteViewProxyServer extends Module {
                             }
                         }
 
-                        else if (id == 0x01 && s_ftd_Forward_Tab_Completion.get()) {
+                        else if (id == 0x01 && s_Features_Forward_Tab_Completion.get()) {
                             String input = readString(pin);
                             log("§eSuggestion " + username + " " + input);
                         }
@@ -393,7 +451,7 @@ public class RemoteViewProxyServer extends Module {
                     if (client == null || client.player == null) return;
 
                     sendPacket(0x2F, d -> {
-                        if(s_f_Send_Position_To_Viewers.get()) {
+                        if(s_Features_Send_Position_To_Viewers.get()) {
                             d.writeDouble(client.player.getX());
                             d.writeDouble(client.player.getY());
                             d.writeDouble(client.player.getZ());
@@ -463,7 +521,7 @@ public class RemoteViewProxyServer extends Module {
 
             viewers.remove(this);
 
-            if (username != null && s_l_Disconnections.get()) {
+            if (username != null && s_Log_Disconnections.get()) {
                 log("§c- " + username);
             }
         }
