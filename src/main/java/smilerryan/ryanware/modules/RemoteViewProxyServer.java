@@ -74,7 +74,9 @@ public class RemoteViewProxyServer extends Module {
     public void onDeactivate() {
         INSTANCE = null;
 
-        for (ViewerHandler v : viewers) v.kick("Server Closed");
+        List<ViewerHandler> viewersCopy;
+        synchronized (viewers) {viewersCopy = new ArrayList<>(viewers);}
+        for (ViewerHandler v : viewersCopy) v.kick("Server Closed");
 
         try {
             if (serverSocket != null) serverSocket.close();
