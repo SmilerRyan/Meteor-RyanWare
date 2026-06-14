@@ -21,98 +21,46 @@ public class RemoteViewProxyServer extends Module {
 
     private ServerSocket serverSocket;
     private ExecutorService executor;
-
     private List<String> lastTabSnapshot = new ArrayList<>();
-
-    private final List<ViewerHandler> viewers =
-            Collections.synchronizedList(new ArrayList<>());
+    private final List<ViewerHandler> viewers = Collections.synchronizedList(new ArrayList<>());
+    public enum FormattingMode {PER_STYLE, PER_CHARACTER, STRIP}
 
     public RemoteViewProxyServer() {
-        super(RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "Remote-View-Proxy",
-            "Hosts a 1.12.2 Compatible Server on port 25565.");
-    }
-
-    // ---------------- SETTINGS ----------------
-
-    public enum FormattingMode {
-        PER_STYLE,
-        PER_CHARACTER,
-        STRIP
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Remote-View-Proxy", "Hosts a 1.12.2 Compatible Server on port 25565.");
     }
 
     private final SettingGroup sg_Logging = settings.createGroup("Logging");
-
-    private final Setting<Boolean> s_Log_Connections = sg_Logging.add(new BoolSetting.Builder()
-        .name("log-connections")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Log_Disconnections = sg_Logging.add(new BoolSetting.Builder()
-        .name("log-disconnections")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Log_Incoming_Chat = sg_Logging.add(new BoolSetting.Builder()
-        .name("log-incoming-chat")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Log_Incoming_Commands = sg_Logging.add(new BoolSetting.Builder()
-        .name("log-incoming-commands")
-        .defaultValue(false)
-        .build()
-    );
+    private final Setting<Boolean> s_Log_Connections = sg_Logging.add(new BoolSetting.Builder().name("log-connections").defaultValue(true).build());
+    private final Setting<Boolean> s_Log_Disconnections = sg_Logging.add(new BoolSetting.Builder().name("log-disconnections").defaultValue(true).build());
+    private final Setting<Boolean> s_Log_Incoming_Chat = sg_Logging.add(new BoolSetting.Builder().name("log-incoming-chat").defaultValue(true).build());
+    private final Setting<Boolean> s_Log_Incoming_Commands = sg_Logging.add(new BoolSetting.Builder().name("log-incoming-commands").defaultValue(true).build());
 
     private final SettingGroup sg_Features = settings.createGroup("Features");
+    private final Setting<Boolean> s_Features_Send_Chat_To_Viewers = sg_Features.add(new BoolSetting.Builder().name("send-chat-to-viewers").defaultValue(true).build());
+    private final Setting<Boolean> s_Features_Send_Position_To_Viewers = sg_Features.add(new BoolSetting.Builder().name("send-position-to-viewers").defaultValue(true).build());
+    private final Setting<Boolean> s_Features_Send_Viewer_Chat = sg_Features.add(new BoolSetting.Builder().name("send-viewer-chat").defaultValue(true).build());
+    private final Setting<Boolean> s_Features_Send_Viewer_Commands = sg_Features.add(new BoolSetting.Builder().name("send-viewer-commands").defaultValue(true).build());
 
-    private final Setting<Boolean> s_Features_Send_Position_To_Viewers = sg_Features.add(new BoolSetting.Builder()
-        .name("send-position-to-viewers")
-        .defaultValue(true)
-        .build()
-    );
+    private final SettingGroup sg_Strings = settings.createGroup("Strings");
+    private final Setting<String> s_Strings_prefix = sg_Strings.add(new StringSetting.Builder().name("prefix").defaultValue("§4RVPS§e> ").build());
+    private final Setting<String> s_Strings_chat_format = sg_Strings.add(new StringSetting.Builder().name("chat-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_command_format = sg_Strings.add(new StringSetting.Builder().name("command-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_suggestion_format = sg_Strings.add(new StringSetting.Builder().name("suggestion-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_name_joined_format = sg_Strings.add(new StringSetting.Builder().name("name-joined-format").defaultValue("§e{user} §ejoined the chat").build());
+    private final Setting<String> s_Strings_name_disconnected_format = sg_Strings.add(new StringSetting.Builder().name("name-disconnected-format").defaultValue("§e{user} §eleft the chat").build());
+    private final Setting<FormattingMode> s_Strings_Formatting_Mode = sg_Strings.add(new EnumSetting.Builder<FormattingMode>().name("formatting-mode").defaultValue(FormattingMode.PER_CHARACTER).build());
 
-    private final Setting<Boolean> s_Features_Send_Chat_To_Viewers = sg_Features.add(new BoolSetting.Builder()
-        .name("send-chat-to-viewers")
-        .defaultValue(true)
-        .build()
-    );
+    private final SettingGroup sg_Features_todo = settings.createGroup("Features to Do");
+    private final Setting<Boolean> s_ftd_Forward_Player_List = sg_Features_todo.add(new BoolSetting.Builder().name("forward-player-list").defaultValue(true).build());
+    private final Setting<Boolean> s_ftd_Forward_Tab_Completion = sg_Features_todo.add(new BoolSetting.Builder().name("forward-tab-completion").defaultValue(true).build());
+    // custom motd text (player name + server ip variables)
+    // custom motd icon (file path or player skin or none)
+    // custom motd playercount
+    // show some of the world
+    // show player when they spawn in
+    // entities?
 
-    private final Setting<Boolean> s_Features_Send_Viewer_Chat = sg_Features.add(new BoolSetting.Builder()
-        .name("send-viewer-chat")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Features_Send_Viewer_Commands = sg_Features.add(new BoolSetting.Builder()
-        .name("send-viewer-commands")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Features_Forward_Tab_Completion = sg_Features.add(new BoolSetting.Builder()
-        .name("forward-tab-completion-(notify-only-at-this-point)")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> s_Features_Forward_Player_List = sg_Features.add(new BoolSetting.Builder()
-        .name("forward-player-list-(notify-only-at-this-point)")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final SettingGroup sg_Formatting = settings.createGroup("Formatting");
-
-    private final Setting<FormattingMode> s_Formatting_Mode =
-        sg_Formatting.add(new EnumSetting.Builder<FormattingMode>()
-            .name("formatting-mode")
-            .defaultValue(FormattingMode.PER_CHARACTER)
-            .build()
-        );
+    ////////////////////////////////
 
     @Override
     public void onActivate() {
@@ -133,9 +81,6 @@ public class RemoteViewProxyServer extends Module {
 
         disconnectAll();
     }
-
-    // ---------------- FIXED LEGACY CONVERTER ----------------
-
 
     private Formatting getFormatting(TextColor color) {
         if (color == null) return null;
@@ -164,7 +109,7 @@ public class RemoteViewProxyServer extends Module {
 
     private String toLegacyString(Text text) {
         StringBuilder out = new StringBuilder();
-        FormattingMode mode = s_Formatting_Mode.get();
+        FormattingMode mode = s_Strings_Formatting_Mode.get();
 
         text.visit((style, string) -> {
 
@@ -251,7 +196,7 @@ public class RemoteViewProxyServer extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
 
-        if (!s_Features_Forward_Player_List.get()) return;
+        if (!s_ftd_Forward_Player_List.get()) return;
         if (mc.getNetworkHandler() == null) return;
 
         ClientPlayNetworkHandler networkHandler = mc.getNetworkHandler();
@@ -368,7 +313,7 @@ public class RemoteViewProxyServer extends Module {
                     writeVarInt(d, 999); // Teleport ID
                 });
 
-                if (s_Log_Connections.get()) log("§a+ " + username);
+                if (s_Log_Connections.get()) log(s_Strings_name_joined_format.get().replace("{user}",username));
 
                 startPositionSync();
 
@@ -391,8 +336,7 @@ public class RemoteViewProxyServer extends Module {
                             String msg = readString(pin);
                             if (msg.startsWith("/")) {
                                 if (s_Log_Incoming_Commands.get())
-                                    log("§eCommand " + username + " " + msg);
-
+                                    log(s_Strings_command_format.get().replace("{user}",username).replace("{msg}",msg));
                                 if (s_Features_Send_Viewer_Commands.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
@@ -403,7 +347,7 @@ public class RemoteViewProxyServer extends Module {
 
                             } else {
                                 if (s_Log_Incoming_Chat.get())
-                                    log("§eChat " + username + " " + msg);
+                                    log(s_Strings_chat_format.get().replace("{user}",username).replace("{msg}",msg));
 
                                 if (s_Features_Send_Viewer_Chat.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
@@ -415,9 +359,9 @@ public class RemoteViewProxyServer extends Module {
                             }
                         }
 
-                        else if (id == 0x01 && s_Features_Forward_Tab_Completion.get()) {
-                            String input = readString(pin);
-                            log("§eSuggestion " + username + " " + input);
+                        else if (id == 0x01 && s_ftd_Forward_Tab_Completion.get()) {
+                            String msg = readString(pin);
+                            log(s_Strings_suggestion_format.get().replace("{user}",username).replace("{msg}",msg));
                         }
 
                     } catch (Exception e) {
@@ -522,7 +466,7 @@ public class RemoteViewProxyServer extends Module {
             viewers.remove(this);
 
             if (username != null && s_Log_Disconnections.get()) {
-                log("§c- " + username);
+                log(s_Strings_name_disconnected_format.get().replace("{name}",username));
             }
         }
     }
@@ -568,7 +512,7 @@ public class RemoteViewProxyServer extends Module {
     }
 
     private void log(String m) {
-        String msg = "§6[§cRVPS§6] " + m;
+        String msg = s_Strings_prefix.get() + m;
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
