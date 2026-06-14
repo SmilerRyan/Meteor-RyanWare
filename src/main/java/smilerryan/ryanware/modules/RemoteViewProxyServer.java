@@ -43,11 +43,11 @@ public class RemoteViewProxyServer extends Module {
 
     private final SettingGroup sg_Strings = settings.createGroup("Strings");
     private final Setting<String> s_Strings_prefix = sg_Strings.add(new StringSetting.Builder().name("prefix").defaultValue("§4RVPS§e> ").build());
-    private final Setting<String> s_Strings_chat_format = sg_Strings.add(new StringSetting.Builder().name("chat-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
-    private final Setting<String> s_Strings_command_format = sg_Strings.add(new StringSetting.Builder().name("command-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
-    private final Setting<String> s_Strings_suggestion_format = sg_Strings.add(new StringSetting.Builder().name("suggestion-format").defaultValue("§r<§r{user}§r> §r{msg}").build());
-    private final Setting<String> s_Strings_name_joined_format = sg_Strings.add(new StringSetting.Builder().name("name-joined-format").defaultValue("§e{user} §ejoined the chat").build());
-    private final Setting<String> s_Strings_name_disconnected_format = sg_Strings.add(new StringSetting.Builder().name("name-disconnected-format").defaultValue("§e{user} §eleft the chat").build());
+    private final Setting<String> s_Strings_chat_format = sg_Strings.add(new StringSetting.Builder().name("chat-format").defaultValue("§r<§r{name}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_command_format = sg_Strings.add(new StringSetting.Builder().name("command-format").defaultValue("§r<§r{name}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_suggestion_format = sg_Strings.add(new StringSetting.Builder().name("suggestion-format").defaultValue("§r<§r{name}§r> §r{msg}").build());
+    private final Setting<String> s_Strings_name_joined_format = sg_Strings.add(new StringSetting.Builder().name("name-joined-format").defaultValue("§e{name} §ejoined the server").build());
+    private final Setting<String> s_Strings_name_disconnected_format = sg_Strings.add(new StringSetting.Builder().name("name-disconnected-format").defaultValue("§e{name} §eleft the server").build());
     private final Setting<FormattingMode> s_Strings_Formatting_Mode = sg_Strings.add(new EnumSetting.Builder<FormattingMode>().name("formatting-mode").defaultValue(FormattingMode.PER_CHARACTER).build());
 
     private final SettingGroup sg_Features_todo = settings.createGroup("Features to Do");
@@ -313,7 +313,7 @@ public class RemoteViewProxyServer extends Module {
                     writeVarInt(d, 999); // Teleport ID
                 });
 
-                if (s_Log_Connections.get()) log(s_Strings_name_joined_format.get().replace("{user}",username));
+                if (s_Log_Connections.get()) log(s_Strings_name_joined_format.get().replace("{name}",username));
 
                 startPositionSync();
 
@@ -336,7 +336,7 @@ public class RemoteViewProxyServer extends Module {
                             String msg = readString(pin);
                             if (msg.startsWith("/")) {
                                 if (s_Log_Incoming_Commands.get())
-                                    log(s_Strings_command_format.get().replace("{user}",username).replace("{msg}",msg));
+                                    log(s_Strings_command_format.get().replace("{name}",username).replace("{msg}",msg));
                                 if (s_Features_Send_Viewer_Commands.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
@@ -347,7 +347,7 @@ public class RemoteViewProxyServer extends Module {
 
                             } else {
                                 if (s_Log_Incoming_Chat.get())
-                                    log(s_Strings_chat_format.get().replace("{user}",username).replace("{msg}",msg));
+                                    log(s_Strings_chat_format.get().replace("{name}",username).replace("{msg}",msg));
 
                                 if (s_Features_Send_Viewer_Chat.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
@@ -361,7 +361,7 @@ public class RemoteViewProxyServer extends Module {
 
                         else if (id == 0x01 && s_ftd_Forward_Tab_Completion.get()) {
                             String msg = readString(pin);
-                            log(s_Strings_suggestion_format.get().replace("{user}",username).replace("{msg}",msg));
+                            log(s_Strings_suggestion_format.get().replace("{name}",username).replace("{msg}",msg));
                         }
 
                     } catch (Exception e) {
