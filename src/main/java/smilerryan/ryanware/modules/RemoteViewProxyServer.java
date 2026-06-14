@@ -64,6 +64,7 @@ public class RemoteViewProxyServer extends Module {
 
     @Override
     public void onActivate() {
+        viewers.clear();
         INSTANCE = this;
         executor = Executors.newCachedThreadPool();
         executor.execute(this::startServer);
@@ -73,13 +74,13 @@ public class RemoteViewProxyServer extends Module {
     public void onDeactivate() {
         INSTANCE = null;
 
+        for (ViewerHandler v : viewers) v.kick("Server Closed");
+
         try {
             if (serverSocket != null) serverSocket.close();
         } catch (IOException ignored) {}
 
         if (executor != null) executor.shutdownNow();
-
-        disconnectAll();
     }
 
     private Formatting getFormatting(TextColor color) {
@@ -168,13 +169,6 @@ public class RemoteViewProxyServer extends Module {
                 executor.execute(handler);
             }
         } catch (IOException ignored) {}
-    }
-
-    private void disconnectAll() {
-        synchronized (viewers) {
-            for (ViewerHandler v : viewers) v.disconnect();
-            viewers.clear();
-        }
     }
 
     private void broadcastChat(String message) {
@@ -373,6 +367,13 @@ public class RemoteViewProxyServer extends Module {
             } finally {
                 disconnect();
             }
+        }
+
+        public void kick(String reason) {
+            try {
+                sendPacket(0x1A, d -> writeString(d, "{\"text\":\"" + escape(reason) + "\"}"));
+            } catch (IOException ignored) {}
+            disconnect();
         }
 
         public void sendChat(String json) {
