@@ -225,6 +225,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
         Modules.get().add(new TextOnly_AI_Chat());
+        Modules.get().add(new PacketRecorderReplayer());
 
         // Register commands
         Commands.add(new Command_addText());
