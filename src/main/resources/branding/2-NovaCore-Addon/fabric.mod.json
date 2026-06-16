@@ -19,6 +19,7 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "",
     "ryanware:addon-name": "NovaCore",
+    "ryanware:command-prefix": "",
     "ryanware:module-prefix-extras": "NovaWIP-",
     "ryanware:module-prefix-standard": "Nova-",
     "ryanware:cat-name-extras": "NovaWIP",

@@ -39,6 +39,7 @@ public class RyanWare extends MeteorAddon {
     public static String catName_extras = "";
     public static String catName_standard = "";
 
+    public static String commandPrefix = "";
     public static String modulePrefix_extras = "";
     public static String modulePrefix_standard = "";
 
@@ -68,6 +69,9 @@ public class RyanWare extends MeteorAddon {
                     }
                     if (meta.getCustomValue("ryanware:module-prefix-extras") != null) {
                         modulePrefix_extras = meta.getCustomValue("ryanware:module-prefix-extras").getAsString();
+                    }
+                    if (meta.getCustomValue("ryanware:command-prefix") != null) {
+                        commandPrefix = meta.getCustomValue("ryanware:command-prefix").getAsString();
                     }
                     if (meta.getCustomValue("ryanware:module-prefix-standard") != null) {
                         modulePrefix_standard = meta.getCustomValue("ryanware:module-prefix-standard").getAsString();

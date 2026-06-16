@@ -15,7 +15,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 public class Command_TAMsg extends Command {
     
     public Command_TAMsg() {
-        super("ta-msg", "Sends a fake TotalAnarchy-style message: PMs, public chat, join, leave, death coords, or teleport messages.");
+        super(smilerryan.ryanware.RyanWare.commandPrefix + "ta-msg", "Sends a fake TotalAnarchy-style message: PMs, public chat, join, leave, death coords, or teleport messages.");
     }
 
     @Override

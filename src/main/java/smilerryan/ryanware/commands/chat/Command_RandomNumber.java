@@ -14,7 +14,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 public class Command_RandomNumber extends Command {
 
     public Command_RandomNumber() {
-        super("RandomNumber", "Generates random numbers in a specified range.");
+        super(smilerryan.ryanware.RyanWare.commandPrefix + "RandomNumber", "Generates random numbers in a specified range.");
     }
 
     @Override

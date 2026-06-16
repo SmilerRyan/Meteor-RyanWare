@@ -25,7 +25,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 public class Command_Note extends Command {
 
     public Command_Note() {
-        super("note", "Manage notes with customizable paths.");
+        super(smilerryan.ryanware.RyanWare.commandPrefix + "note", "Manage notes with customizable paths.");
     }
 
     private String getCurrentPath() {

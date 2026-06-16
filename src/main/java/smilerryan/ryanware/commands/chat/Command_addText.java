@@ -12,7 +12,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 public class Command_addText extends Command {
 
     public Command_addText() {
-        super("addText", "Add any text you provide to your chat.");
+        super(smilerryan.ryanware.RyanWare.commandPrefix + "addText", "Add any text you provide to your chat.");
     }
 
     @Override

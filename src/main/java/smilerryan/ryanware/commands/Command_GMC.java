@@ -10,7 +10,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 public class Command_GMC extends Command {
 
     public Command_GMC() {
-        super("gmc", "Toggles between Creative and Survival mode.");
+        super(smilerryan.ryanware.RyanWare.commandPrefix + "gmc", "Toggles between Creative and Survival mode.");
     }
 
     @Override

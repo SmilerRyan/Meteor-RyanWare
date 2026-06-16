@@ -22,6 +22,7 @@
     "meteor-client:color": "229,255,0",
     "github:sha": "",
     "ryanware:addon-name": "RyanWare ChatGPT Client",
+    "ryanware:command-prefix": "",
     "ryanware:module-prefix-extras": "ChatGPT-Plus-",
     "ryanware:module-prefix-standard": "ChatGPT-",
     "ryanware:cat-name-extras": "ChatGPT Plus",
