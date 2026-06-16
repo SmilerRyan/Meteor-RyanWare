@@ -110,8 +110,13 @@ public class SpeechToText extends Module {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Speech-To-Text", "Records mic audio and processes it.");
     }
 
+    Boolean ready = true;
+
     @Override
     public void onActivate() {
+        if (!ready) {toggle(); return;}
+        ready = false;
+
         long myGen = ++generationId;
 
         overlayText = "Recording…";
@@ -162,11 +167,8 @@ public class SpeechToText extends Module {
 
         if (!exe.exists()) {
             info("Speech Processor not found.");
-            return;
-        }
-
-        if (!exe.exists()) {
             if (myGen == generationId) overlayText = "Processor Missing";
+            ready = true;
             return;
         }
 
@@ -207,9 +209,11 @@ public class SpeechToText extends Module {
 
             sendOutput(finalText);
             overlayText = "";
+            ready = true;
         }
         catch (Exception e) {
             if (myGen == generationId) overlayText = "Processing Error";
+            ready = true;
         }
     }
 
