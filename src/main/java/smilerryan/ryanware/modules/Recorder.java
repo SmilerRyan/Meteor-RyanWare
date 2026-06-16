@@ -73,8 +73,17 @@ public class Recorder extends Module {
             String timestamp = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(new Date());
             outputFile = new File(dir, timestamp + ".ts");
 
+            String ffmpegPath = "./meteor-client/ryanware/ffmpeg";
+
+            File ffmpegFile = new File(ffmpegPath);
+            if (!ffmpegFile.exists()) {
+                info("ffmpeg distribution not found at: " + ffmpegPath);
+                if (this.isActive()) this.toggle();
+                return;
+            }
+
             ProcessBuilder builder = new ProcessBuilder(
-                "ffmpeg",
+                ffmpegPath + "/ffmpeg.exe",
                 // "-y",
                 "-f", "gdigrab",
                 "-framerate", "" + fps.get(),
