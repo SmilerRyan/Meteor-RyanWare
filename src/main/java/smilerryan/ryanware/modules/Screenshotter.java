@@ -58,12 +58,21 @@ public class Screenshotter extends Module {
                     File parent = output.getParentFile();
                     if (parent != null && !parent.exists()) parent.mkdirs();
 
+                    String ffmpegPath = "./meteor-client/ryanware/ffmpeg";
+
+                    File ffmpegFile = new File(ffmpegPath);
+                    if (!ffmpegFile.exists()) {
+                        info("ffmpeg distribution not found at: " + ffmpegPath);
+                        if (this.isActive()) this.toggle();
+                        return;
+                    }
+
                     if (beepMode.get() == BeepMode.BEFORE || beepMode.get() == BeepMode.BOTH) {
                         playBeep();
                     }
 
                     ProcessBuilder pb = new ProcessBuilder(
-                        "ffmpeg",
+                        ffmpegPath + "/ffmpeg.exe",
                         "-f", "gdigrab",
                         "-i", "desktop",
                         "-vframes", "1",
