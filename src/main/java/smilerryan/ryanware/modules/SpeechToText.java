@@ -21,13 +21,13 @@ public class SpeechToText extends Module {
     // === Paths ===
     private final Setting<String> recordingsFolder = sgGeneral.add(new StringSetting.Builder()
         .name("recordings-folder")
-        .defaultValue("./stt")
+        .defaultValue("./meteor-client/ryanware/speech-to-text/recordings")
         .build()
     );
 
     private final Setting<String> sttExePath = sgGeneral.add(new StringSetting.Builder()
         .name("stt-processor")
-        .defaultValue("./stt/_process.bat")
+        .defaultValue("./meteor-client/ryanware/speech-to-text/processor/_process.bat")
         .build()
     );
 
@@ -159,6 +159,12 @@ public class SpeechToText extends Module {
 
     private void runSTT(long myGen) {
         File exe = new File(sttExePath.get());
+
+        if (!exe.exists()) {
+            info("Speech Processor not found.");
+            return;
+        }
+
         if (!exe.exists()) {
             if (myGen == generationId) overlayText = "Processor Missing";
             return;
