@@ -21,13 +21,13 @@ public class SpeechToText extends Module {
     // === Paths ===
     private final Setting<String> recordingsFolder = sgGeneral.add(new StringSetting.Builder()
         .name("recordings-folder")
-        .defaultValue("./meteor-client/ryanware/speech-to-text/recordings")
+        .defaultValue("./meteor-client/ryanware/")
         .build()
     );
 
     private final Setting<String> sttExePath = sgGeneral.add(new StringSetting.Builder()
         .name("stt-processor")
-        .defaultValue("./meteor-client/ryanware/speech-to-text/processor/_process.bat")
+        .defaultValue("./meteor-client/ryanware/speech-to-text/_process.bat")
         .build()
     );
 
