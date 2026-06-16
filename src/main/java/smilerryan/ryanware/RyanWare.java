@@ -23,7 +23,8 @@ import smilerryan.ryanware.modules_standard.chat.edits.*;
 import smilerryan.ryanware.modules_standard.chat.ollama.*;
 import smilerryan.ryanware.commands.*;
 import smilerryan.ryanware.commands.chat.*;
-
+import meteordevelopment.orbit.EventBus;
+import meteordevelopment.meteorclient.MeteorClient;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -231,12 +232,17 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TextOnly_AI_Chat());
         Modules.get().add(new PacketRecorderReplayer());
 
-        // Register commands
+        // Register commands without extras
         Commands.add(new Command_addText());
         Commands.add(new Command_GMC());
         Commands.add(new Command_Note());
         Commands.add(new Command_RandomNumber());
         Commands.add(new Command_TAMsg());
+
+        // Command: autoLogin
+        var command_autoLogin = new command_autoLogin();
+        Commands.add(command_autoLogin);
+        MeteorClient.EVENT_BUS.subscribe(command_autoLogin);
         
     }
 
