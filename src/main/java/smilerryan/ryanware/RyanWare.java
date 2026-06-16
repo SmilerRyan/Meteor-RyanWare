@@ -244,6 +244,11 @@ public class RyanWare extends MeteorAddon {
         Commands.add(command_autoLogin);
         MeteorClient.EVENT_BUS.subscribe(command_autoLogin);
         
+        // Command: reply
+        var command_reply = new command_reply();
+        Commands.add(command_reply);
+        MeteorClient.EVENT_BUS.subscribe(command_reply);
+        
     }
 
     @Override
