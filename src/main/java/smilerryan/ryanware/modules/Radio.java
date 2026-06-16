@@ -62,6 +62,16 @@ public class Radio extends Module {
 
     @Override
     public void onActivate() {
+
+        String ffmpegPath = "./meteor-client/ryanware/ffmpeg";
+
+        File ffmpegFile = new File(ffmpegPath);
+        if (!ffmpegFile.exists()) {
+            info("ffmpeg distribution not found at: " + ffmpegPath);
+            if (this.isActive()) this.toggle();
+            return;
+        }
+        
         stopRequested = false;
         currentUrl = getActiveUrl();
         lastVolume = volume.get();
