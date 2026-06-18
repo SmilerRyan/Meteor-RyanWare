@@ -125,4 +125,15 @@ public class Settings extends Module {
             .build()
     );
 
+    // Tab List
+    private final SettingGroup sg_TabList = settings.createGroup("Tab List");
+
+    public final Setting<Boolean> s_TabList_showPingAsNumber = sg_TabList.add(
+        new BoolSetting.Builder()
+            .name("show-ping-as-number")
+            .description("Shows player's pings as a number instead of the bars.")
+            .defaultValue(true)
+            .build()
+    );
+
 }

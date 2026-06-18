@@ -9,7 +9,8 @@
     "TitleScreenCreditsMixin",
     "ChatScreenMixin",
     "TextFieldWidgetAccessor",
-    "MixinLocatorBarRenderer"
+    "MixinLocatorBarRenderer",
+    "PlayerListHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
