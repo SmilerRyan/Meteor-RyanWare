@@ -114,7 +114,7 @@ public class SpeechToText extends Module {
 
     @Override
     public void onActivate() {
-        if (!ready) {toggle(); return;}
+        // if (!ready) {toggle(); return;}
         ready = false;
 
         long myGen = ++generationId;
