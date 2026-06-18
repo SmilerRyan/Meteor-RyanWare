@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "ryanware",
-  "version": "2.2",
-  "name": "RyanWare ChatGPT Client",
+  "version": "${version}",
+  "name": "RyanWare",
   "icon": "icons/knowledge_book.png",
-  "description": "Just another Addon for the Meteor Client.",
-  "authors": ["SmilerRyan", "ChatGPT"],
+  "description": "An addon for the Meteor Client, mostly made with AI.",
+  "authors": ["SmilerRyan","Various AI Providers"],
   "contact": {
     "repo": "https://github.com/smilerryan/meteor-ryanware"
   },
@@ -21,12 +21,12 @@
   "custom": {
     "meteor-client:color": "229,255,0",
     "github:sha": "",
-    "ryanware:addon-name": "RyanWare ChatGPT Client",
+    "ryanware:addon-name": "RyanWare",
     "ryanware:command-prefix": "",
-    "ryanware:module-prefix-extras": "ChatGPT-Plus-",
-    "ryanware:module-prefix-standard": "ChatGPT-",
-    "ryanware:cat-name-extras": "ChatGPT Plus",
-    "ryanware:cat-name-standard": "ChatGPT",
+    "ryanware:module-prefix-extras": "RyanWare-Plus-",
+    "ryanware:module-prefix-standard": "RyanWare-",
+    "ryanware:cat-name-extras": "RyanWare Extras",
+    "ryanware:cat-name-standard": "RyanWare",
     "ryanware:icon-extras": "ENCHANTED_BOOK",
     "ryanware:icon-standard": "KNOWLEDGE_BOOK"
   },

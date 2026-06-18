@@ -5,7 +5,7 @@
   <img src="src/main/resources/icons/johny_pork.jpg" width="85" alt="Johny Pork Icon"/>
 </p>
 
-<h1 align="center">RyanWare ChatGPT Client</h1>
+<h1 align="center">RyanWare Meteor Addon</h1>
 <p align="center">A powerful addon for Meteor Client designed to make things easy</p>
 
 <p align="center">
