@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "ryanware",
+  "version": "${version}",
+  "name": "RyanWare",
+  "icon": "icons/knowledge_book.png",
+  "description": "An addon for the Meteor Client, mostly made with AI.",
+  "authors": ["SmilerRyan","Various AI Providers"],
+  "contact": {
+    "repo": "https://github.com/smilerryan/meteor-ryanware"
+  },
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "smilerryan.ryanware.RyanWare"
+    ]
+  },
+  "mixins": [
+    "ryanware.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "229,255,0",
+    "github:sha": "",
+    "ryanware:addon-name": "RyanWare",
+    "ryanware:command-prefix": "",
+    "ryanware:module-prefix-extras": "RyanWare-Plus-",
+    "ryanware:module-prefix-standard": "RyanWare-",
+    "ryanware:cat-name-extras": "RyanWare Extras",
+    "ryanware:cat-name-standard": "RyanWare",
+    "ryanware:icon-extras": "ENCHANTED_BOOK",
+    "ryanware:icon-standard": "KNOWLEDGE_BOOK"
+  },
+  "depends": {
+    "java": ">=17",
+    "minecraft": "1.21.11"
+  },
+  "jars": [
+    {"file": "meteor-client-1.21.11-82.jar"}
+  ]
+}

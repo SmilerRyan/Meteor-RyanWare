@@ -39,9 +39,43 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.release = 21
 }
 
-jar {
-    from(sourceSets.main.allJava)
+remapJar {}
+
+tasks.withType(Jar).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    entryCompression ZipEntryCompression.STORED
+}
+
+tasks.register("addonJar", Jar) {
+    group = "build"
+    archiveClassifier.set("addon")
+    dependsOn(remapJar)
+    from(zipTree(remapJar.archiveFile))
+    from("src/main/resources/fabric.mod.json-addon") {
+        rename { "fabric.mod.json" }
+    }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register("standaloneJar", Jar) {
+    group = "build"
+    archiveClassifier.set("standalone")
+    dependsOn(remapJar)
+
+    from(zipTree(remapJar.archiveFile))
+    from("src/main/resources/fabric.mod.json-standalone") {
+        rename { "fabric.mod.json" }
+    }
+    from(configurations.runtimeClasspath.find { it.name.contains("meteor-client") }) {
+        into("/")
+        rename { "meteor-client-1.21.11-82.jar" }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named("build") {
+    dependsOn("addonJar", "standaloneJar")
 }
 
 tasks.register("deployAndRun", Exec) {
@@ -50,7 +84,7 @@ tasks.register("deployAndRun", Exec) {
     dependsOn(tasks.named("build"))
 
     doFirst {
-        def jarFile = file("build/libs/${project.archives_base_name}-${version}.jar")
+        def jarFile = file("build/libs/${project.archives_base_name}-${version}-standalone.jar")
         def modsDir = file("C:/Apps/Games/Minecraft/App/UserData/instances/z 1.21.11 RyanWare/minecraft/mods")
         project.copy {
             from(jarFile)
