@@ -22,7 +22,7 @@
 
 **RyanWare** is a large **addon** that adds dozens of modules, commands, and utilities for you to use on **Meteor Client**.
 
-⚠️ This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to load.
+This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to be run.
 
 This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
 Using this addon on any version that is not the latest should load, but it isn't supported.
@@ -36,16 +36,16 @@ Using it's features on servers that give you any advanage could be considered ch
 <b id="installation"></b>
 ## Installation
 
-### Option A: Install seperately as a Meteor Addon
-1. Install Meteor Client 1.21.11 (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>)
+### Option A: Install seperately as an Addon
+1. Install Meteor Client, currently (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>) works best.
 2. Build the RyanWare `.jar` from source or <a href="RyanWare-addon.jar">download it from GitHub</a> directly.
-3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder
-4. Launch with Fabric
+3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder.
+4. Launch the game with Fabric.
 
-### Option B: Install Standalone (With Meteor Client Included)
+### Option B: Install Standalone (With Meteor Client 1.21.11 included)
 1. Download the standalone version from GitHub: <a href="RyanWare-standalone.jar">RyanWare-standalone.jar</a>
-2. Put `RyanWare-standalone.jar` in your `.minecraft/mods` folder
-3. Launch with Fabric 1.21.11
+2. Put `RyanWare-standalone.jar` in your `.minecraft/mods` folder.
+3. Launch the game using Fabric 1.21.11 (required).
 
 ---
 
@@ -62,8 +62,8 @@ The build script will use the ``gradle-8.13`` and ``jdk-21.0.11`` directories in
 Output:
 
 ```
-./build/libs/meteor-RyanWare-0.1.jar
-./build/libs/RyanWare-XXXX-XX-XX-XX-XX-XX.jar
+./build/libs/meteor-RyanWare-0.1-addon.jar
+./build/libs/meteor-RyanWare-0.1-standalone.jar
 ```
 
 ---
@@ -83,4 +83,4 @@ Credits:
 * Meteor Development Team (For making Meteor Client and APIs) [<a href="https://github.com/MeteorDevelopment">Source</a>]
 * AntiCope for their Meteor Crash Addon (used as addon starting base) [<a href="https://github.com/AntiCope/meteor-crash-addon/tree/0d64cc11330447d2821747f0b7f7566d6192b258">Source</a>]
 * ChatGPT and other various AIs (For development on the RyanWare source code)
-* All RyanWare contributors (For testing, suggesting, or providing code)
+* All RyanWare contributors (For testing, suggesting, or providing code for this project)
