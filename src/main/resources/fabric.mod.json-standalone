@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "ryanware",
-  "version": "${version}",
-  "name": "RyanWare",
+  "version": "0.1",
+  "name": "RyanWare Standalone",
   "icon": "icons/knowledge_book.png",
   "description": "An addon for the Meteor Client, mostly made with AI.",
   "authors": ["SmilerRyan","Various AI Providers"],
