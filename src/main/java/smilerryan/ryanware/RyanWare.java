@@ -115,45 +115,35 @@ public class RyanWare extends MeteorAddon {
             hideTitleCredits = true;
         }
 
-        // Standard
-        Modules.get().add(new AntiClimb());
-        Modules.get().add(new lessCpuWhenIdle());
-        Modules.get().add(new AntiFancyChat());
-        Modules.get().add(new AutoRespawn());
-        Modules.get().add(new AutoOBSReplays());
-        Modules.get().add(new AutoRunFileOnChat());
-        Modules.get().add(new AutoWalkForwards());
-        Modules.get().add(new BungeeSpoofer());
-        Modules.get().add(new ChatIgnorer());
-        Modules.get().add(new ChatPlinger());
-        Modules.get().add(new ChatTranslator());
-        Modules.get().add(new CoordNotifier());
-        Modules.get().add(new CustomTabText());
-        Modules.get().add(new DeathCoords());
-        Modules.get().add(new DiscordChatLogger());
-        Modules.get().add(new DurabilityBlocker());
-        Modules.get().add(new f3_number_hider());
-        Modules.get().add(new Flight());
-        Modules.get().add(new ForceOpenTab());
-        Modules.get().add(new MorePing());
-        Modules.get().add(new NoAttackDamage());
-        Modules.get().add(new OllamaAnnoyer());
-        Modules.get().add(new OllamaChat());
-        Modules.get().add(new OllamaTranslator());
-        Modules.get().add(new PlayerTracers());
-        Modules.get().add(new Settings());
-        Modules.get().add(new SkinBlinker());
+        // Commands
+        Commands.add(new Command_GMC());
+        Commands.add(new Command_Note());
 
-        // Extras
-        Modules.get().add(new HideItemFrameItems());
+        // Commands - Chat
+        Commands.add(new Command_addText());
+        Commands.add(new Command_RandomNumber());
+        Commands.add(new Command_TAMsg());
+
+        // Commands - Chat - autoLogin
+        var command_autoLogin = new command_autoLogin();
+        Commands.add(command_autoLogin);
+        MeteorClient.EVENT_BUS.subscribe(command_autoLogin);      
+        
+        // Commands - Chat - reply
+        var command_reply = new command_reply();
+        Commands.add(command_reply);
+        MeteorClient.EVENT_BUS.subscribe(command_reply);
+
+        // Modules
         Modules.get().add(new _example());
+        Modules.get().add(new AirPunchSwap());
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
+        Modules.get().add(new AntiClimb());
         Modules.get().add(new AntiHack());
         Modules.get().add(new AntiTouch());
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new AtSomeone());
-        Modules.get().add(new AirPunchSwap());
         Modules.get().add(new Aura());
         Modules.get().add(new AutoChatScreenshotter());
         Modules.get().add(new AutoChestMover());
@@ -164,9 +154,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoItemFrameDupe());
         Modules.get().add(new AutoMineNearby());
-        Modules.get().add(new ExtraScreenshot());
-        Modules.get().add(new AutoResponder());;
-        Modules.get().add(new AutoTotem());
+        Modules.get().add(new AutoResponder());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoWalkHome());
         Modules.get().add(new BeehiveCoordLogger());
@@ -196,10 +184,11 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ErmActuallyCorrector());        
         Modules.get().add(new EventAnnouncer());
         Modules.get().add(new Excavator());
+        Modules.get().add(new ExtraScreenshot());
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceYLevel());
-        Modules.get().add(new FullBright());
+        Modules.get().add(new HideItemFrameItems());
         Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
@@ -209,6 +198,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoItemUsageCooldown());
         Modules.get().add(new PacketDelayer());
         Modules.get().add(new PacketLimiter());
+        Modules.get().add(new PacketRecorderReplayer());
         Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PlayerHider());
         Modules.get().add(new PlayerShapeESP());
@@ -229,26 +219,44 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TotemBypass());
         Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
+
+        // Modules Standard
+        Modules.get().add(new BungeeSpoofer());
+        Modules.get().add(new CoordNotifier());
+        Modules.get().add(new CustomTabText());
+        Modules.get().add(new DeathCoords());
+        Modules.get().add(new DurabilityBlocker());
+        Modules.get().add(new f3_number_hider());
+        Modules.get().add(new Flight());
+        Modules.get().add(new FullBright());
+        Modules.get().add(new lessCpuWhenIdle());
+        Modules.get().add(new MorePing());
+        Modules.get().add(new NoAttackDamage());
+        Modules.get().add(new PlayerTracers());
+        Modules.get().add(new Settings());
+
+        // Modules Standard - Chat 
+        Modules.get().add(new AutoRunFileOnChat());
+        Modules.get().add(new ChatPlinger());
+        Modules.get().add(new DiscordChatLogger());
         Modules.get().add(new TextOnly_AI_Chat());
-        Modules.get().add(new PacketRecorderReplayer());
-
-        // Register commands without extras
-        Commands.add(new Command_addText());
-        Commands.add(new Command_GMC());
-        Commands.add(new Command_Note());
-        Commands.add(new Command_RandomNumber());
-        Commands.add(new Command_TAMsg());
-
-        // Command: autoLogin
-        var command_autoLogin = new command_autoLogin();
-        Commands.add(command_autoLogin);
-        MeteorClient.EVENT_BUS.subscribe(command_autoLogin);
         
-        // Command: reply
-        var command_reply = new command_reply();
-        Commands.add(command_reply);
-        MeteorClient.EVENT_BUS.subscribe(command_reply);
-        
+        // Modules Standard - Automation
+        Modules.get().add(new AutoOBSReplays());
+        Modules.get().add(new AutoRespawn());
+        Modules.get().add(new AutoWalkForwards());
+        Modules.get().add(new ForceOpenTab());
+        Modules.get().add(new SkinBlinker());
+
+        // Modules Standard - Chat - Edits
+        Modules.get().add(new AntiFancyChat());
+        Modules.get().add(new ChatIgnorer());
+        Modules.get().add(new ChatTranslator());
+
+        // Modules Standard - Chat - Ollama
+        Modules.get().add(new OllamaAnnoyer());
+        Modules.get().add(new OllamaChat());
+        Modules.get().add(new OllamaTranslator());
     }
 
     @Override
