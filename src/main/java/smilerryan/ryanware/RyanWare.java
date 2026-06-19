@@ -189,6 +189,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceYLevel());
         Modules.get().add(new HideItemFrameItems());
+        Modules.get().add(new HideItemFrameMaps());
         Modules.get().add(new Lizard());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
