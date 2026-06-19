@@ -67,9 +67,8 @@ tasks.register("standaloneJar", Jar) {
     from("src/main/resources/fabric.mod.json-standalone") {
         rename { "fabric.mod.json" }
     }
-    from(configurations.runtimeClasspath.find { it.name.contains("meteor-client") }) {
+    from("meteor-client-1.21.11-82.jar") {
         into("/")
-        rename { "meteor-client-1.21.11-82.jar" }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
