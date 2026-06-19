@@ -39,10 +39,16 @@ Using it's features on servers that give you any advanage could be considered ch
 <b id="installation"></b>
 ## Installation
 
+### Option A: Install seperately as a Meteor Addon
 1. Install Meteor Client 1.21.11 (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>)
-2. Build the RyanWare `.jar` from source or <a href="RyanWare.jar">download it from GitHub</a> directly.
+2. Build the RyanWare `.jar` from source or <a href="RyanWare-addon.jar">download it from GitHub</a> directly.
 3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder
 4. Launch with Fabric
+
+### Option B: Install Standalone (With Meteor Client Included)
+1. Download the standalone version from GitHub: <a href="RyanWare-standalone.jar">RyanWare-standalone.jar</a>
+2. Put `RyanWare-standalone.jar` in your `.minecraft/mods` folder
+3. Launch with Fabric 1.21.11
 
 ---
 
