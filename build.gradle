@@ -55,6 +55,9 @@ tasks.register("addonJar", Jar) {
     from("src/main/resources/fabric.mod.json-addon") {
         rename { "fabric.mod.json" }
     }
+    from("knowledge_book.png") {
+        into("/")
+    }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
@@ -66,6 +69,9 @@ tasks.register("standaloneJar", Jar) {
     from(zipTree(remapJar.archiveFile))
     from("src/main/resources/fabric.mod.json-standalone") {
         rename { "fabric.mod.json" }
+    }
+    from("knowledge_book.png") {
+        into("/")
     }
     from("meteor-client-1.21.11-82.jar") {
         into("/")

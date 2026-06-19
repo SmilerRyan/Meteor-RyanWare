@@ -3,7 +3,7 @@
   "id": "ryanware",
   "version": "0.1",
   "name": "RyanWare Standalone",
-  "icon": "icons/knowledge_book.png",
+  "icon": "knowledge_book.png",
   "description": "An addon for the Meteor Client, mostly made with AI.",
   "authors": ["SmilerRyan","Various AI Providers"],
   "contact": {
