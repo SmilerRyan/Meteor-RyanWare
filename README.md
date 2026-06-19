@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">RyanWare Meteor Addon</h1>
-<p align="center">A powerful addon for Meteor Client designed to make things easy</p>
+<p align="center">A powerful addon for Meteor Client designed to make things easier</p>
 
 <p align="center">
   <b>Automation • Combat • Chat • Entertainment • AI • Utility • Experimental</b>
