@@ -27,13 +27,12 @@ public class ForceColoredChat extends Module {
     }
 
     private Text replaceColorCodes(Text text) {
-        String content = text.getString();
-        String replaced = colorCodePattern.matcher(content).replaceAll("§$1");
-        if (replaced.equals(content)) return text;
-        MutableText newText = Text.literal(replaced).setStyle(text.getStyle());
-        for (Text sibling : text.getSiblings()) {
-            newText.append(replaceColorCodes(sibling));
-        }
-        return newText;
+        MutableText result = Text.empty().setStyle(text.getStyle());
+        text.visit((style, string) -> {
+            String replaced = colorCodePattern.matcher(string).replaceAll("§$1");
+            result.append(Text.literal(replaced).setStyle(style));
+            return java.util.Optional.empty();
+        }, text.getStyle());
+        return result;
     }
 }
