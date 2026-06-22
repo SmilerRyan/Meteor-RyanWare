@@ -155,6 +155,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoItemFrameDupe());
         Modules.get().add(new AutoMineNearby());
         Modules.get().add(new AutoResponder());
+        Modules.get().add(new AutoStealDupes());
         Modules.get().add(new AutoTotem());
         Modules.get().add(new AutoWalkHome());
         Modules.get().add(new BeehiveCoordLogger());
