@@ -10,6 +10,7 @@ import net.minecraft.command.CommandSource;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 import meteordevelopment.orbit.EventBus;
 import meteordevelopment.meteorclient.MeteorClient;
 
@@ -42,9 +43,14 @@ public class command_autoLogin extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> b) {
-        b.then(argument("password/off", StringArgumentType.greedyString()).executes(c -> {
+        b.then(argument("password/off/open", StringArgumentType.greedyString()).executes(c -> {
 
-            String argument = StringArgumentType.getString(c, "password/off");
+            String argument = StringArgumentType.getString(c, "password/off/open");
+
+            if (argument.equals("open")) {
+                if (f.exists()) {Util.getOperatingSystem().open(f);}
+                return SINGLE_SUCCESS;
+            }
 
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc.player == null || mc.getCurrentServerEntry() == null) return SINGLE_SUCCESS;
