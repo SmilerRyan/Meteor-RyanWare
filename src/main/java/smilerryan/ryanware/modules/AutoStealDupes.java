@@ -8,8 +8,11 @@ import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.hit.BlockHitResult;
 import smilerryan.ryanware.RyanWare;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AutoStealDupes extends Module {
 
@@ -23,92 +26,83 @@ public class AutoStealDupes extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
+    private final Setting<Mode> mode = sgGeneral.add(new EnumSetting.Builder<Mode>()
+        .name("steal-mode")
+        .description("How to handle items.")
+        .defaultValue(Mode.PICKUP)
+        .build()
+    );
+    
+    private enum Mode {
+        PICKUP,
+        DROP
+    }
+ 
+    private final Setting<Boolean> oneStackPerTick = sgGeneral.add(new BoolSetting.Builder()
+        .name("one-stack-per-tick")
+        .defaultValue(true)
+        .build()
+    );
+
     private final Setting<Boolean> autoClose = sgGeneral.add(new BoolSetting.Builder()
         .name("auto-close")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
-
-    private final Setting<Boolean> autoReopen = sgGeneral.add(new BoolSetting.Builder()
-        .name("auto-close-then-reopen")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Boolean> bypassStealClose = sgGeneral.add(new BoolSetting.Builder()
-        .name("bypass-steal-and-auto-closing-while-sprinting")
-        .defaultValue(true)
-        .build()
-    );
-
-    private boolean sneakingSnapshot = false;
-    private boolean hasSnapshot = false;
-
-    @Override
-    public void onActivate() {
-        sneakingSnapshot = false;
-        hasSnapshot = false;
-    }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+    
         if (!(mc.currentScreen instanceof GenericContainerScreen containerScreen)) {
-            hasSnapshot = false;
             return;
         }
 
         if (mc.interactionManager == null || mc.player == null) return;
 
-        if (!hasSnapshot) {
-            sneakingSnapshot = mc.player.isSprinting();
-            hasSnapshot = true;
-        }
-
-        if (bypassStealClose.get() && hasSnapshot && sneakingSnapshot) return;
-
-        String screenTitle = containerScreen.getTitle().getString();
+        String screenTitle = containerScreen.getTitle().getString().toLowerCase().trim();
         ScreenHandler screenHandler = containerScreen.getScreenHandler();
 
-        int startSlot = -1;
-        int endSlot = -1;
+        Pattern DUPE_PATTERN = Pattern.compile("(?i)dupe (.*) to (.*)");
+        Matcher matcher = DUPE_PATTERN.matcher(screenTitle);
+        if (!matcher.matches()) return;
 
-        if (screenTitle.equalsIgnoreCase("dupe top to bottom")) {
-            startSlot = 27;
-            endSlot = 54;
-        } else if (screenTitle.equalsIgnoreCase("dupe bottom to top")) {
-            startSlot = 0;
-            endSlot = 26;
-        } else {
-            return;
+        String targetStr = matcher.group(2).trim();
+        List<Integer> targetSlots = new ArrayList<>();
+
+        switch (targetStr) {
+            case "top" -> {
+                for (int i = 0; i <= 26; i++) targetSlots.add(i);
+            }
+            case "bottom" -> {
+                for (int i = 27; i <= 53; i++) targetSlots.add(i);
+            }
+            default -> {
+                String[] parts = targetStr.split(",");
+                for (String part : parts) {
+                    try {
+                        int slot = Integer.parseInt(part.trim()) - 1;
+                        if (slot >= 0 && slot < screenHandler.slots.size()) {
+                            targetSlots.add(slot);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
         }
 
-        for (int slotIndex = startSlot; slotIndex < endSlot; slotIndex++) {
+        for (int slotIndex : targetSlots) {
             Slot slot = screenHandler.getSlot(slotIndex);
             if (slot == null || !slot.hasStack()) continue;
-
             mc.interactionManager.clickSlot(
-                screenHandler.syncId,
-                slotIndex,
-                0,
-                SlotActionType.QUICK_MOVE,
+                screenHandler.syncId,slotIndex,
+                (mode.get() == Mode.PICKUP ? 0 : 1),
+                (mode.get() == Mode.PICKUP ? SlotActionType.QUICK_MOVE : SlotActionType.THROW),
                 mc.player
             );
-
-            return;
+            if (oneStackPerTick.get()) return;            
         }
 
-        if (autoClose.get() || autoReopen.get()) {
+        if (autoClose.get()) {
             mc.player.closeHandledScreen();
-        }
-
-        if (autoReopen.get()) {
-            if (mc.crosshairTarget instanceof BlockHitResult bhr) {
-                mc.interactionManager.interactBlock(
-                    mc.player,
-                    mc.player.getActiveHand(),
-                    bhr
-                );
-            }
         }
     }
 }
