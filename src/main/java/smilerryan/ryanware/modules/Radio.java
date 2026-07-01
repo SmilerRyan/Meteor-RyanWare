@@ -154,7 +154,7 @@ public class Radio extends Module {
                 radioThread = null;
             }
             ProcessBuilder pb = new ProcessBuilder(
-                "ffplay",
+                "./meteor-client/ryanware/ffmpeg/ffplay",
                 "-nodisp",
                 "-autoexit",
                 "-loglevel", "error",
@@ -177,7 +177,7 @@ public class Radio extends Module {
         radioThread = CompletableFuture.runAsync(() -> {
             AudioFormat format = new AudioFormat(44100f, 16, 2, true, false);
             try {
-                ProcessBuilder pb = new ProcessBuilder("ffmpeg", "-hide_banner", "-loglevel", "error", "-i", url, "-vn", "-f", "s16le", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", "pipe:1");
+                ProcessBuilder pb = new ProcessBuilder("./meteor-client/ryanware/ffmpeg/ffmpeg", "-hide_banner", "-loglevel", "error", "-i", url, "-vn", "-f", "s16le", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", "pipe:1");
                 pb.redirectErrorStream(false);
                 ffmpegProcess = pb.start();
                 DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
