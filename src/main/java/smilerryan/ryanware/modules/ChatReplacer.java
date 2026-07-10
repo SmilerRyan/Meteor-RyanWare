@@ -1,11 +1,7 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
-import meteordevelopment.meteorclient.settings.StringListSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
@@ -15,6 +11,7 @@ import net.minecraft.text.TextColor;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -25,13 +22,21 @@ public class ChatReplacer extends Module {
     public enum Mode {
         NORMALIZE_ONLY,
         NORMALIZE_AND_REPLACE,
-        REPLACE_ONLY
+        REPLACE_ONLY,
+        NORMALIZE_AND_CUSTOM_PROCESS
     }
 
     private final Setting<Mode> mode = sgGeneral.add(new EnumSetting.Builder<Mode>()
         .name("mode")
-        .description("How chat messages are processed.")
         .defaultValue(Mode.REPLACE_ONLY)
+        .build()
+    );
+
+    private final Setting<String> externalCmd = sgGeneral.add(new StringSetting.Builder()
+        .name("external-command")
+        .description("The command to run (e.g., nodejs script.js).")
+        .defaultValue("node format.js")
+        .visible(() -> mode.get() == Mode.NORMALIZE_AND_CUSTOM_PROCESS)
         .build()
     );
 
@@ -44,8 +49,13 @@ public class ChatReplacer extends Module {
 
     private final Setting<List<String>> matchPatterns = sgGeneral.add(new StringListSetting.Builder()
         .name("match-patterns")
-        .description("Regex patterns to search for in chat messages.")
-        .defaultValue("RyanWare") // Example default
+        .defaultValue("RyanWare")
+        .build()
+    );
+
+    private final Setting<List<String>> replacements = sgGeneral.add(new StringListSetting.Builder()
+        .name("replacements")
+        .defaultValue()
         .build()
     );
 
@@ -56,95 +66,19 @@ public class ChatReplacer extends Module {
         .build()
     );
 
-    // List of replacement strings corresponding to patterns
-    private final Setting<List<String>> replacements = sgGeneral.add(new StringListSetting.Builder()
-        .name("replacements")
-        .description("Replacement strings for each pattern.")
-        .defaultValue()
-        .build()
-    );
+    private ExternalProcessManager processManager;
 
     public ChatReplacer() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Chat-Replacer", "Replaces matched words in chat with replacements or stars with optional legacy color code conversion."
-        );
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Chat-Replacer", "Replaces chat with built-in patterns or an external process.");
     }
 
-    private Formatting getFormatting(TextColor color) {
-        if (color == null) return null;
-
-        return switch (color.getName()) {
-            case "black" -> Formatting.BLACK;
-            case "dark_blue" -> Formatting.DARK_BLUE;
-            case "dark_green" -> Formatting.DARK_GREEN;
-            case "dark_aqua" -> Formatting.DARK_AQUA;
-            case "dark_red" -> Formatting.DARK_RED;
-            case "dark_purple" -> Formatting.DARK_PURPLE;
-            case "gold" -> Formatting.GOLD;
-            case "gray" -> Formatting.GRAY;
-            case "dark_gray" -> Formatting.DARK_GRAY;
-            case "blue" -> Formatting.BLUE;
-            case "green" -> Formatting.GREEN;
-            case "aqua" -> Formatting.AQUA;
-            case "red" -> Formatting.RED;
-            case "light_purple" -> Formatting.LIGHT_PURPLE;
-            case "yellow" -> Formatting.YELLOW;
-            case "white" -> Formatting.WHITE;
-            default -> null;
-        };
-    }
-
-    private String toLegacyString(Text text) {
-        StringBuilder out = new StringBuilder();
-
-        text.visit((style, string) -> {
-            // Start by appending the reset code to ensure no styles bleed from previous segments
-            StringBuilder segment = new StringBuilder("§r");
-
-            // Apply Color
-            TextColor color = style.getColor();
-            if (color != null) {
-                Formatting f = getFormatting(color);
-                if (f != null) segment.append("§").append(f.getCode());
-            }
-
-            // Apply Decorations
-            if (style.isBold()) segment.append("§l");
-            if (style.isItalic()) segment.append("§o");
-            if (style.isUnderlined()) segment.append("§n");
-            if (style.isStrikethrough()) segment.append("§m");
-            if (style.isObfuscated()) segment.append("§k");
-
-            out.append(segment).append(string);
-
-            return Optional.empty();
-        }, Style.EMPTY);
-
-        return out.toString();
-    }
-
-private String replaceText(String text) {
-    List<String> patterns = matchPatterns.get();
-    List<String> reps = replacements.get();
-
-    for (int i = 0; i < patterns.size(); i++) {
-        String target = patterns.get(i);
-        String replacement = (i < reps.size() && !reps.get(i).isEmpty()) ? reps.get(i) : (autoStars.get() ? "***" : "");
-
-        if (useRegex.get()) {
-            // Regex mode (Case-insensitive)
-            text = Pattern.compile(target, Pattern.CASE_INSENSITIVE)
-                .matcher(text)
-                .replaceAll(replacement);
-        } else {
-            // Literal mode
-            // We use a manual approach for case-insensitivity because 
-            // String.replace() is strictly case-sensitive.
-            text = text.replaceAll("(?i)" + Pattern.quote(target), replacement);
+    @Override
+    public void onDeactivate() {
+        if (processManager != null) {
+            processManager.stop();
+            processManager = null;
         }
     }
-
-    return text;
-}
 
     @EventHandler
     private void onReceiveMessage(ReceiveMessageEvent event) {
@@ -153,20 +87,95 @@ private String replaceText(String text) {
 
         switch (mode.get()) {
             case NORMALIZE_ONLY -> output = toLegacyString(event.getMessage());
-
-            case NORMALIZE_AND_REPLACE ->
-                output = replaceText(toLegacyString(event.getMessage()));
-
-            case REPLACE_ONLY ->
-                output = replaceText(original);
-
-            default -> {
-                return;
+            case NORMALIZE_AND_REPLACE -> output = replaceText(toLegacyString(event.getMessage()));
+            case REPLACE_ONLY -> output = replaceText(original);
+            case NORMALIZE_AND_CUSTOM_PROCESS -> {
+                if (processManager == null) processManager = new ExternalProcessManager(externalCmd.get());
+                output = processManager.send(toLegacyString(event.getMessage()));
             }
+            default -> { return; }
         }
 
         if (!output.equals(original) || mode.get() == Mode.NORMALIZE_ONLY) {
             event.setMessage(Text.literal(output));
         }
+    }
+
+    private String replaceText(String text) {
+        List<String> patterns = matchPatterns.get();
+        List<String> reps = replacements.get();
+        for (int i = 0; i < patterns.size(); i++) {
+            String target = patterns.get(i);
+            String replacement = (i < reps.size() && !reps.get(i).isEmpty()) ? reps.get(i) : (autoStars.get() ? "***" : "");
+            text = useRegex.get() ? text.replaceAll("(?i)" + target, replacement) : text.replaceAll("(?i)" + Pattern.quote(target), replacement);
+        }
+        return text;
+    }
+
+    private String toLegacyString(Text text) {
+        StringBuilder out = new StringBuilder();
+        text.visit((style, string) -> {
+            StringBuilder segment = new StringBuilder("§r");
+            TextColor color = style.getColor();
+            if (color != null) {
+                Formatting f = getFormatting(color);
+                if (f != null) segment.append("§").append(f.getCode());
+            }
+            if (style.isBold()) segment.append("§l");
+            if (style.isItalic()) segment.append("§o");
+            if (style.isUnderlined()) segment.append("§n");
+            if (style.isStrikethrough()) segment.append("§m");
+            if (style.isObfuscated()) segment.append("§k");
+            out.append(segment).append(string);
+            return Optional.empty();
+        }, Style.EMPTY);
+        return out.toString();
+    }
+
+    private Formatting getFormatting(TextColor color) {
+        if (color == null) return null;
+        return switch (color.getName()) {
+            case "black" -> Formatting.BLACK; case "dark_blue" -> Formatting.DARK_BLUE;
+            case "dark_green" -> Formatting.DARK_GREEN; case "dark_aqua" -> Formatting.DARK_AQUA;
+            case "dark_red" -> Formatting.DARK_RED; case "dark_purple" -> Formatting.DARK_PURPLE;
+            case "gold" -> Formatting.GOLD; case "gray" -> Formatting.GRAY;
+            case "dark_gray" -> Formatting.DARK_GRAY; case "blue" -> Formatting.BLUE;
+            case "green" -> Formatting.GREEN; case "aqua" -> Formatting.AQUA;
+            case "red" -> Formatting.RED; case "light_purple" -> Formatting.LIGHT_PURPLE;
+            case "yellow" -> Formatting.YELLOW; case "white" -> Formatting.WHITE;
+            default -> null;
+        };
+    }
+
+    private static class ExternalProcessManager {
+        private final String command;
+        private Process process;
+        private BufferedWriter writer;
+        private BufferedReader reader;
+
+        public ExternalProcessManager(String command) { this.command = command; }
+
+        private synchronized void ensureProcess() throws IOException {
+            if (process == null || !process.isAlive()) {
+                process = new ProcessBuilder(command.split(" ")).start();
+                writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            }
+        }
+
+        public synchronized String send(String input) {
+            try {
+                ensureProcess();
+                writer.write(input + "\n");
+                writer.flush();
+                String res = reader.readLine();
+                return (res != null) ? res : input;
+            } catch (IOException e) {
+                process = null;
+                return input;
+            }
+        }
+
+        public void stop() { if (process != null) process.destroy(); }
     }
 }
