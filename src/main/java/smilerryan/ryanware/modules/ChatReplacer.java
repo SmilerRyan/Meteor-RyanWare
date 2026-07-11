@@ -6,6 +6,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import smilerryan.ryanware.RyanWare;
 
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.text.Style;
@@ -34,8 +35,8 @@ public class ChatReplacer extends Module {
 
     private final Setting<String> externalCmd = sgGeneral.add(new StringSetting.Builder()
         .name("external-command")
-        .description("The command to run (e.g., nodejs script.js).")
-        .defaultValue("node format.js")
+        .description("The command to run. Use {SERVER} for the current server address.")
+        .defaultValue("cmd /c .\\meteor-client\\ryanware\\chat-replacer\\start.bat {SERVER}")
         .visible(() -> mode.get() == Mode.NORMALIZE_AND_CUSTOM_PROCESS)
         .build()
     );
@@ -90,7 +91,11 @@ public class ChatReplacer extends Module {
             case NORMALIZE_AND_REPLACE -> output = replaceText(toLegacyString(event.getMessage()));
             case REPLACE_ONLY -> output = replaceText(original);
             case NORMALIZE_AND_CUSTOM_PROCESS -> {
-                if (processManager == null) processManager = new ExternalProcessManager(externalCmd.get());
+                if (processManager == null) {
+                    String cmd = externalCmd.get().replace("{SERVER}", getServerIdentifier());
+                    processManager = new ExternalProcessManager(cmd);
+                }
+
                 output = processManager.send(toLegacyString(event.getMessage()));
             }
             default -> { return; }
@@ -99,6 +104,20 @@ public class ChatReplacer extends Module {
         if (!output.equals(original) || mode.get() == Mode.NORMALIZE_ONLY) {
             event.setMessage(Text.literal(output));
         }
+    }
+
+    private String getServerIdentifier() {
+        if (mc.isInSingleplayer()) return "singleplayer";
+
+        ServerInfo info = mc.getCurrentServerEntry();
+        if (info == null || info.address == null || info.address.isBlank())
+            return "unknown";
+
+        return info.address
+            .replace('.', '_')
+            .replace(':', '_')
+            .replace('/', '_')
+            .replace('\\', '_');
     }
 
     private String replaceText(String text) {
