@@ -21,12 +21,28 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
+
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
+
 public class ChatEncryption extends Module {
+
+    private boolean bypassCommandEncryption = false;
+
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
-    private final Setting<Boolean> enabledSend = sgGeneral.add(new BoolSetting.Builder()
-        .name("enabled-send")
+    private final Setting<Boolean> enabledSendChat = sgGeneral.add(new BoolSetting.Builder()
+        .name("enabled-send-chat")
         .description("Enables chat encryption.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> enabledSendCommands = sgGeneral.add(new BoolSetting.Builder()
+        .name("enabled-send-commands")
+        .description("Enables command encryption. specifically - /msg [name] [message] - /tell [name] [message] - /reply [message] - /r [message]")
         .defaultValue(true)
         .build()
     );
@@ -101,7 +117,7 @@ public class ChatEncryption extends Module {
 
     @EventHandler
     private void onSendMessage(SendMessageEvent event) {
-        if (!enabledSend.get() || event.message.startsWith("/")) return;
+        if (!enabledSendChat.get()) return;
 
         // Extract the original style from the message
         String encryptedMessage = switch (encryptionMode.get()) {
@@ -113,6 +129,76 @@ public class ChatEncryption extends Module {
 
         // Wrap the encrypted message with the prefix and suffix
         event.message = prefix.get() + encryptedMessage + suffix.get();
+    }
+
+    @EventHandler
+    private void onSendPacket(PacketEvent.Send event) {
+        if (!enabledSendCommands.get()) return;
+        if (bypassCommandEncryption) return;
+
+        Packet<?> packet = event.packet;
+        String command = null;
+
+        if (packet instanceof CommandExecutionC2SPacket cmdPacket) {
+            command = cmdPacket.command();
+        } else if (packet instanceof ChatCommandSignedC2SPacket signedPacket) {
+            command = signedPacket.command();
+        }
+
+        if (command == null) return;
+
+        String[] parts = command.split("\\s+", 3);
+        if (parts.length < 2) return;
+
+        String base = parts[0].toLowerCase();
+
+        if (!base.equals("msg") && !base.equals("tell") && !base.equals("reply") && !base.equals("r")) {
+            return;
+        }
+
+        String newCommand;
+
+        if (base.equals("msg") || base.equals("tell")) {
+            if (parts.length < 3) return; // no message
+
+            String target = parts[1];
+            String message = parts[2];
+
+            String encryptedMessage = switch (encryptionMode.get()) {
+                case NO_ENCRYPTION -> base64Encrypt(message);
+                case CAESAR -> base64Encrypt(caesarEncrypt(message, caesarOffset.get()));
+                case ROT13 -> base64Encrypt(rot13(message));
+                case AES -> aesEncrypt(message, aesPassphrase.get());
+            };
+
+            newCommand = base + " " + target + " " + prefix.get() + encryptedMessage + suffix.get();
+        } else {
+            // /reply or /r
+            if (parts.length < 2) return;
+
+            String message = parts[1];
+
+            String encryptedMessage = switch (encryptionMode.get()) {
+                case NO_ENCRYPTION -> base64Encrypt(message);
+                case CAESAR -> base64Encrypt(caesarEncrypt(message, caesarOffset.get()));
+                case ROT13 -> base64Encrypt(rot13(message));
+                case AES -> aesEncrypt(message, aesPassphrase.get());
+            };
+
+            newCommand = base + " " + prefix.get() + encryptedMessage + suffix.get();
+        }
+
+        event.cancel();
+       
+        if (mc.player == null) return;
+
+        try {
+            bypassCommandEncryption = true;
+            mc.player.networkHandler.sendChatCommand(newCommand);
+        } finally {
+            bypassCommandEncryption = false;
+        }
+
     }
 
     @EventHandler
