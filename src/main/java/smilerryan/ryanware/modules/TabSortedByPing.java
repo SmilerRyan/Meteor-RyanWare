@@ -49,6 +49,13 @@ public class TabSortedByPing extends Module {
         .build()
     );
 
+    private final Setting<Boolean> hideNormalPlayers = sgGeneral.add(new BoolSetting.Builder()
+        .name("hide-normal-players")
+        .description("Only show players matching one of the enabled highlight rules.")
+        .defaultValue(false)
+        .build()
+    );
+
     private final Setting<String> format = sgGeneral.add(new StringSetting.Builder()
         .name("format")
         .description("The layout of the line. Use {name} and {ping_pad} and {ping_raw} as placeholders.")
@@ -217,21 +224,24 @@ public class TabSortedByPing extends Module {
             }
         }
         
-        // Calculate dimensions for the background dynamically using formatted text
+        // Calculate dimensions for the background dynamically using formatted text   
         double maxWidth = 0;
+        int visiblePlayers = 0;
         for (PlayerListEntry entry : sortedPlayers) {
+            boolean matches = similarPlayers.contains(entry) || doubleHalfPlayers.contains(entry);
+            if (hideNormalPlayers.get() && !matches) continue;
             String line = formatEntry(entry, maxPingLength);
-            
-            // Find the longest line to determine background width
             double width = mc.textRenderer.getWidth(line) * scaleValue;
             if (width > maxWidth) maxWidth = width;
+            visiblePlayers++;
         }
-        
+        if (visiblePlayers == 0) return;
+
         // Draw background
         double padding = 5;
         double backgroundWidth = maxWidth + (padding * 2);
-        double backgroundHeight = (sortedPlayers.size() * lineHeight) + (padding * 2);
-        
+        double backgroundHeight = (visiblePlayers * lineHeight) + (padding * 2);
+
         event.drawContext.fill(
             (int)(x - padding), 
             (int)(y - padding), 
@@ -242,6 +252,9 @@ public class TabSortedByPing extends Module {
         
         // Draw each player entry
         for (PlayerListEntry entry : sortedPlayers) {
+            boolean matches = similarPlayers.contains(entry) || doubleHalfPlayers.contains(entry);
+            if (hideNormalPlayers.get() && !matches) continue;
+            
             String line = formatEntry(entry, maxPingLength);
             
             int colorToUse = textColor.get().getPacked();
