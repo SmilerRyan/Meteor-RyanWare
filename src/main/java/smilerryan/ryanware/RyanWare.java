@@ -203,6 +203,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PacketRecorderReplayer());
         Modules.get().add(new PlayerAlerter());
         Modules.get().add(new PlayerHider());
+        Modules.get().add(new PlayerList());
         Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
@@ -216,7 +217,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new SoundBlocker());
         Modules.get().add(new SpeechToText());
         Modules.get().add(new TabCompletePrivacy());
-        Modules.get().add(new TabSortedByPing());
         Modules.get().add(new TntCleaner());
         Modules.get().add(new TotemAutoLeave());
         Modules.get().add(new TotemBypass());

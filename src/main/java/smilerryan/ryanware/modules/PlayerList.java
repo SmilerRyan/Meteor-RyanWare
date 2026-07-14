@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TabSortedByPing extends Module {
+public class PlayerList extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgDoubleHalf = settings.createGroup("Double / Half Ping");
     private final SettingGroup sgSimilarPing = settings.createGroup("Similar Ping");
@@ -38,7 +38,7 @@ public class TabSortedByPing extends Module {
     private final Setting<SortMode> sortMode = sgGeneral.add(new EnumSetting.Builder<SortMode>()
         .name("sort-mode")
         .description("How to sort the players in the list.")
-        .defaultValue(SortMode.PingLowToHigh)
+        .defaultValue(SortMode.Name)
         .build()
     );
 
@@ -134,8 +134,8 @@ public class TabSortedByPing extends Module {
     private List<PlayerListEntry> sortedPlayers;
     private static final Color BACKGROUND_COLOR = new Color(0, 0, 0, 160); // Semi-transparent black background
 
-    public TabSortedByPing() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Tab-Sorted-By-Ping", "Custom tab list that can be sorted by ping.");
+    public PlayerList() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Player-List", "Custom player list, sortable by name, ping and detect similar or double/half pinging player patterns.");
     }
 
     @EventHandler
