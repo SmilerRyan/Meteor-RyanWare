@@ -59,7 +59,7 @@ public class PlayerList extends Module {
     private final Setting<String> format = sgGeneral.add(new StringSetting.Builder()
         .name("format")
         .description("The layout of the line. Use {name} and {ping_pad} and {ping_raw} as placeholders.")
-        .defaultValue("{ping_pad} {name}")
+        .defaultValue("{name}")
         .build()
     );
 
@@ -102,7 +102,7 @@ public class PlayerList extends Module {
     private final Setting<Boolean> similarPingEnable = sgSimilarPing.add(new BoolSetting.Builder()
         .name("enable")
         .description("Color players with similar pings.")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
 
