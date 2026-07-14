@@ -29,11 +29,23 @@ public class TabSortedByPing extends Module {
         PingHighToLow
     }
 
+    public enum HighlightPriority {
+        SimilarPingFirst,
+        DoubleHalfFirst
+    }
+
     // --- General Settings ---
     private final Setting<SortMode> sortMode = sgGeneral.add(new EnumSetting.Builder<SortMode>()
         .name("sort-mode")
         .description("How to sort the players in the list.")
         .defaultValue(SortMode.PingLowToHigh)
+        .build()
+    );
+
+    private final Setting<HighlightPriority> highlightPriority = sgGeneral.add(new EnumSetting.Builder<HighlightPriority>()
+        .name("highlight-priority")
+        .description("Which highlight takes priority when a player matches multiple rules.")
+        .defaultValue(HighlightPriority.DoubleHalfFirst)
         .build()
     );
 
@@ -65,7 +77,7 @@ public class TabSortedByPing extends Module {
     private final Setting<Integer> doubleHalfAmount = sgDoubleHalf.add(new IntSetting.Builder()
         .name("tolerance")
         .description("Allowed difference from an exact double/half relationship (0 is exact).")
-        .defaultValue(1)
+        .defaultValue(0)
         .min(0)
         .sliderMax(10)
         .build()
@@ -233,14 +245,25 @@ public class TabSortedByPing extends Module {
         for (PlayerListEntry entry : sortedPlayers) {
             String line = formatEntry(entry, maxPingLength);
             
-            // Priority Order: Double Match > Similar Match > Normal
-            int colorToUse;
-            if (doubleHalfPlayers.contains(entry)) {
-                colorToUse = doubleHalfColor.get().getPacked();
-            } else if (similarPlayers.contains(entry)) {
-                colorToUse = similarPingColor.get().getPacked();
-            } else {
-                colorToUse = textColor.get().getPacked();
+            int colorToUse = textColor.get().getPacked();
+
+            switch (highlightPriority.get()) {
+                case SimilarPingFirst:
+                    if (similarPlayers.contains(entry)) {
+                        colorToUse = similarPingColor.get().getPacked();
+                    } else if (doubleHalfPlayers.contains(entry)) {
+                        colorToUse = doubleHalfColor.get().getPacked();
+                    }
+                    break;
+
+                case DoubleHalfFirst:
+                default:
+                    if (doubleHalfPlayers.contains(entry)) {
+                        colorToUse = doubleHalfColor.get().getPacked();
+                    } else if (similarPlayers.contains(entry)) {
+                        colorToUse = similarPingColor.get().getPacked();
+                    }
+                    break;
             }
             
             // Push matrices using JOML's updated 2D Matrix API
