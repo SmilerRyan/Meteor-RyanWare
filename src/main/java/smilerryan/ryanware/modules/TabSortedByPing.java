@@ -21,13 +21,41 @@ public class TabSortedByPing extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgSimilarPing = settings.createGroup("Similar Ping");
 
+    public enum SortMode {
+        Name,
+        PingLowToHigh,
+        PingHighToLow
+    }
+
+    // --- General Settings ---
+    private final Setting<SortMode> sortMode = sgGeneral.add(new EnumSetting.Builder<SortMode>()
+        .name("sort-mode")
+        .description("How to sort the players in the list.")
+        .defaultValue(SortMode.PingLowToHigh)
+        .build()
+    );
+
+    private final Setting<String> format = sgGeneral.add(new StringSetting.Builder()
+        .name("format")
+        .description("The layout of the line. Use {name} and {ping} as placeholders.")
+        .defaultValue("{ping}ms - {name}")
+        .build()
+    );
+
     private final Setting<Double> scale = sgGeneral.add(new DoubleSetting.Builder()
         .name("scale")
         .description("The scale factor of the text.")
-        .defaultValue(2.5)
-        .min(0.5)
-        .max(5.0)
-        .sliderMax(5.0)
+        .defaultValue(0.67)
+        .min(0.1)
+        .max(10.0)
+        .sliderMax(10.0)
+        .build()
+    );
+
+    private final Setting<SettingColor> textColor = sgGeneral.add(new ColorSetting.Builder()
+        .name("text-color")
+        .description("The color for normal players.")
+        .defaultValue(new SettingColor(255, 255, 255, 255))
         .build()
     );
 
@@ -35,7 +63,7 @@ public class TabSortedByPing extends Module {
     private final Setting<Boolean> similarPingEnable = sgSimilarPing.add(new BoolSetting.Builder()
         .name("enable")
         .description("Color players with similar pings.")
-        .defaultValue(false)
+        .defaultValue(true)
         .build()
     );
 
@@ -44,20 +72,19 @@ public class TabSortedByPing extends Module {
         .description("Maximum ping difference to be considered similar.")
         .defaultValue(0)
         .min(0)
-        .sliderMax(100)
+        .sliderMax(500)
         .build()
     );
 
     private final Setting<SettingColor> similarPingColor = sgSimilarPing.add(new ColorSetting.Builder()
         .name("color")
         .description("The color for players with similar pings.")
-        .defaultValue(new SettingColor(255, 0, 0, 255))
+        .defaultValue(new SettingColor(128, 128, 128, 255))
         .build()
     );
 
     private List<PlayerListEntry> sortedPlayers;
     private static final Color BACKGROUND_COLOR = new Color(0, 0, 0, 160); // Semi-transparent black background
-    private static final Color TEXT_COLOR = new Color(255, 255, 255); // White text
 
     public TabSortedByPing() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Tab-Sorted-By-Ping", "Custom tab list sorted by ping with numbers.");
@@ -67,8 +94,23 @@ public class TabSortedByPing extends Module {
     private void onTick(TickEvent.Post event) {
         if (mc.getNetworkHandler() == null) return;
         ClientPlayNetworkHandler networkHandler = mc.getNetworkHandler();
+        
+        Comparator<PlayerListEntry> comparator;
+        switch (sortMode.get()) {
+            case Name:
+                comparator = Comparator.comparing(entry -> entry.getProfile().name(), String.CASE_INSENSITIVE_ORDER);
+                break;
+            case PingHighToLow:
+                comparator = Comparator.comparingInt(PlayerListEntry::getLatency).reversed();
+                break;
+            case PingLowToHigh:
+            default:
+                comparator = Comparator.comparingInt(PlayerListEntry::getLatency);
+                break;
+        }
+
         sortedPlayers = networkHandler.getPlayerList().stream()
-            .sorted(Comparator.comparingInt(PlayerListEntry::getLatency))
+            .sorted(comparator)
             .collect(Collectors.toList());
     }
 
@@ -93,7 +135,7 @@ public class TabSortedByPing extends Module {
         }
         int maxPingLength = String.valueOf(maxPing).length();
 
-        // Track players with similar pings for rendering custom colors (O(N^2) optimized pre-pass)
+        // Track players with similar pings for rendering custom colors
         Set<PlayerListEntry> similarPlayers = new HashSet<>();
         if (similarPingEnable.get()) {
             int amount = similarPingAmount.get();
@@ -136,12 +178,12 @@ public class TabSortedByPing extends Module {
         // Draw each player entry
         for (PlayerListEntry entry : sortedPlayers) {
             String line = formatEntry(entry, maxPingLength);
-            int colorToUse = similarPlayers.contains(entry) ? similarPingColor.get().getPacked() : TEXT_COLOR.getPacked();
+            int colorToUse = similarPlayers.contains(entry) ? similarPingColor.get().getPacked() : textColor.get().getPacked();
             
             // Push matrices using JOML's updated 2D Matrix API
             event.drawContext.getMatrices().pushMatrix();
             
-            // Use 2D scaling (no Z-axis required in Matrix3x2f)
+            // Use 2D scaling
             event.drawContext.getMatrices().scale((float) scaleValue, (float) scaleValue);
             
             // Draw text
@@ -154,7 +196,7 @@ public class TabSortedByPing extends Module {
                 true
             );
             
-            // Pop the matrix using JOML's updated 2D Matrix API
+            // Pop the matrix
             event.drawContext.getMatrices().popMatrix();
             
             y += lineHeight;
@@ -168,6 +210,9 @@ public class TabSortedByPing extends Module {
         // Always left pads with spaces up to maxPingLength (e.g. "  5" or "120")
         String paddedPing = String.format("%" + maxPingLength + "d", ping);
         
-        return String.format("%sms - %s", paddedPing, name);
+        // Replace custom formatting tags dynamically
+        return format.get()
+            .replace("{name}", name)
+            .replace("{ping}", paddedPing);
     }
 }
