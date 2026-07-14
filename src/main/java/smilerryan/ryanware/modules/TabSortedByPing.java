@@ -19,8 +19,9 @@ import java.util.stream.Collectors;
 
 public class TabSortedByPing extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
-    private final SettingGroup sgSimilarPing = settings.createGroup("Similar Ping");
     private final SettingGroup sgDoubleHalf = settings.createGroup("Double / Half Ping");
+    private final SettingGroup sgSimilarPing = settings.createGroup("Similar Ping");
+    private final SettingGroup sgOthers = settings.createGroup("Everyone else");
 
     public enum SortMode {
         Name,
@@ -52,38 +53,7 @@ public class TabSortedByPing extends Module {
         .sliderMax(10.0)
         .build()
     );
-
-    private final Setting<SettingColor> textColor = sgGeneral.add(new ColorSetting.Builder()
-        .name("text-color")
-        .description("The color for normal players.")
-        .defaultValue(new SettingColor(255, 255, 255, 255))
-        .build()
-    );
-
-    // --- Similar Ping Settings ---
-    private final Setting<Boolean> similarPingEnable = sgSimilarPing.add(new BoolSetting.Builder()
-        .name("enable")
-        .description("Color players with similar pings.")
-        .defaultValue(true)
-        .build()
-    );
-
-    private final Setting<Integer> similarPingAmount = sgSimilarPing.add(new IntSetting.Builder()
-        .name("amount")
-        .description("Maximum ping difference to be considered similar.")
-        .defaultValue(1)
-        .min(0)
-        .sliderMax(500)
-        .build()
-    );
-
-    private final Setting<SettingColor> similarPingColor = sgSimilarPing.add(new ColorSetting.Builder()
-        .name("color")
-        .description("The color for players with similar pings.")
-        .defaultValue(new SettingColor(255, 255, 0, 255))
-        .build()
-    );
-
+    
     // --- Double / Half Ping Settings ---
     private final Setting<Boolean> doubleHalfEnable = sgDoubleHalf.add(new BoolSetting.Builder()
         .name("enable")
@@ -108,11 +78,46 @@ public class TabSortedByPing extends Module {
         .build()
     );
 
+    
+    // --- Similar Ping Settings ---
+    private final Setting<Boolean> similarPingEnable = sgSimilarPing.add(new BoolSetting.Builder()
+        .name("enable")
+        .description("Color players with similar pings.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Integer> similarPingAmount = sgSimilarPing.add(new IntSetting.Builder()
+        .name("amount")
+        .description("Maximum ping difference to be considered similar.")
+        .defaultValue(1)
+        .min(0)
+        .sliderMax(500)
+        .build()
+    );
+
+    // --- Everyone else Settings ---
+    private final Setting<SettingColor> similarPingColor = sgSimilarPing.add(new ColorSetting.Builder()
+        .name("color")
+        .description("The color for players with similar pings.")
+        .defaultValue(new SettingColor(255, 255, 0, 255))
+        .build()
+    );
+
+
+    private final Setting<SettingColor> textColor = sgOthers.add(new ColorSetting.Builder()
+        .name("text-color")
+        .description("The color for normal players.")
+        .defaultValue(new SettingColor(255, 255, 255, 255))
+        .build()
+    );
+
+
     private List<PlayerListEntry> sortedPlayers;
     private static final Color BACKGROUND_COLOR = new Color(0, 0, 0, 160); // Semi-transparent black background
 
     public TabSortedByPing() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Tab-Sorted-By-Ping", "Custom tab list sorted by ping with numbers.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Tab-Sorted-By-Ping", "Custom tab list that can be sorted by ping.");
     }
 
     @EventHandler
