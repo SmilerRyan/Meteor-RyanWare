@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class TabSortedByPing extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgSimilarPing = settings.createGroup("Similar Ping");
+    private final SettingGroup sgDoubleHalf = settings.createGroup("Double / Half Ping");
 
     public enum SortMode {
         Name,
@@ -37,8 +38,8 @@ public class TabSortedByPing extends Module {
 
     private final Setting<String> format = sgGeneral.add(new StringSetting.Builder()
         .name("format")
-        .description("The layout of the line. Use {name} and {ping} as placeholders.")
-        .defaultValue("{ping}ms - {name}")
+        .description("The layout of the line. Use {name} and {ping_pad} and {ping_raw} as placeholders.")
+        .defaultValue("{ping_pad} {name}")
         .build()
     );
 
@@ -70,7 +71,7 @@ public class TabSortedByPing extends Module {
     private final Setting<Integer> similarPingAmount = sgSimilarPing.add(new IntSetting.Builder()
         .name("amount")
         .description("Maximum ping difference to be considered similar.")
-        .defaultValue(0)
+        .defaultValue(1)
         .min(0)
         .sliderMax(500)
         .build()
@@ -79,7 +80,31 @@ public class TabSortedByPing extends Module {
     private final Setting<SettingColor> similarPingColor = sgSimilarPing.add(new ColorSetting.Builder()
         .name("color")
         .description("The color for players with similar pings.")
-        .defaultValue(new SettingColor(128, 128, 128, 255))
+        .defaultValue(new SettingColor(255, 255, 0, 255))
+        .build()
+    );
+
+    // --- Double / Half Ping Settings ---
+    private final Setting<Boolean> doubleHalfEnable = sgDoubleHalf.add(new BoolSetting.Builder()
+        .name("enable")
+        .description("Color players whose ping is roughly double or half of another player's ping.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Integer> doubleHalfAmount = sgDoubleHalf.add(new IntSetting.Builder()
+        .name("tolerance")
+        .description("Allowed difference from an exact double/half relationship (0 is exact).")
+        .defaultValue(1)
+        .min(0)
+        .sliderMax(10)
+        .build()
+    );
+
+    private final Setting<SettingColor> doubleHalfColor = sgDoubleHalf.add(new ColorSetting.Builder()
+        .name("color")
+        .description("The color for players with double/half pings of others.")
+        .defaultValue(new SettingColor(255, 128, 0, 255)) // Default orange
         .build()
     );
 
@@ -135,7 +160,7 @@ public class TabSortedByPing extends Module {
         }
         int maxPingLength = String.valueOf(maxPing).length();
 
-        // Track players with similar pings for rendering custom colors
+        // Track players with similar pings
         Set<PlayerListEntry> similarPlayers = new HashSet<>();
         if (similarPingEnable.get()) {
             int amount = similarPingAmount.get();
@@ -147,6 +172,30 @@ public class TabSortedByPing extends Module {
                     if (Math.abs(p1.getLatency() - p2.getLatency()) <= amount) {
                         similarPlayers.add(p1);
                         similarPlayers.add(p2);
+                    }
+                }
+            }
+        }
+
+        // Track players with double or half pings
+        Set<PlayerListEntry> doubleHalfPlayers = new HashSet<>();
+        if (doubleHalfEnable.get()) {
+            int tolerance = doubleHalfAmount.get();
+            int size = sortedPlayers.size();
+            for (int i = 0; i < size; i++) {
+                PlayerListEntry p1 = sortedPlayers.get(i);
+                int lat1 = p1.getLatency();
+                for (int j = i + 1; j < size; j++) {
+                    PlayerListEntry p2 = sortedPlayers.get(j);
+                    int lat2 = p2.getLatency();
+
+                    // Avoid matches where both players have 0 ping
+                    if (lat1 == 0 && lat2 == 0) continue;
+
+                    // Checks: Is lat1 roughly double lat2? OR is lat2 roughly double lat1?
+                    if (Math.abs(lat1 - 2 * lat2) <= tolerance || Math.abs(lat2 - 2 * lat1) <= tolerance) {
+                        doubleHalfPlayers.add(p1);
+                        doubleHalfPlayers.add(p2);
                     }
                 }
             }
@@ -178,7 +227,16 @@ public class TabSortedByPing extends Module {
         // Draw each player entry
         for (PlayerListEntry entry : sortedPlayers) {
             String line = formatEntry(entry, maxPingLength);
-            int colorToUse = similarPlayers.contains(entry) ? similarPingColor.get().getPacked() : textColor.get().getPacked();
+            
+            // Priority Order: Double Match > Similar Match > Normal
+            int colorToUse;
+            if (doubleHalfPlayers.contains(entry)) {
+                colorToUse = doubleHalfColor.get().getPacked();
+            } else if (similarPlayers.contains(entry)) {
+                colorToUse = similarPingColor.get().getPacked();
+            } else {
+                colorToUse = textColor.get().getPacked();
+            }
             
             // Push matrices using JOML's updated 2D Matrix API
             event.drawContext.getMatrices().pushMatrix();
@@ -207,12 +265,13 @@ public class TabSortedByPing extends Module {
         String name = entry.getProfile().name();
         int ping = entry.getLatency();
         
-        // Always left pads with spaces up to maxPingLength (e.g. "  5" or "120")
-        String paddedPing = String.format("%" + maxPingLength + "d", ping);
+        // Always left pads with zeros up to maxPingLength (e.g. "005" or "120")
+        String paddedPing = String.format("%0" + maxPingLength + "d", ping);
         
         // Replace custom formatting tags dynamically
         return format.get()
             .replace("{name}", name)
-            .replace("{ping}", paddedPing);
+            .replace("{ping_pad}", paddedPing)
+            .replace("{ping_raw}", Integer.toString(ping));
     }
 }
