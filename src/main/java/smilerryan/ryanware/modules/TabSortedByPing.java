@@ -70,7 +70,7 @@ public class TabSortedByPing extends Module {
     private final Setting<Boolean> doubleHalfEnable = sgDoubleHalf.add(new BoolSetting.Builder()
         .name("enable")
         .description("Color players whose ping is roughly double or half of another player's ping.")
-        .defaultValue(true)
+        .defaultValue(false)
         .build()
     );
 
@@ -102,21 +102,20 @@ public class TabSortedByPing extends Module {
     private final Setting<Integer> similarPingAmount = sgSimilarPing.add(new IntSetting.Builder()
         .name("amount")
         .description("Maximum ping difference to be considered similar.")
-        .defaultValue(1)
+        .defaultValue(0)
         .min(0)
         .sliderMax(500)
         .build()
     );
 
-    // --- Everyone else Settings ---
     private final Setting<SettingColor> similarPingColor = sgSimilarPing.add(new ColorSetting.Builder()
         .name("color")
         .description("The color for players with similar pings.")
-        .defaultValue(new SettingColor(255, 255, 0, 255))
+        .defaultValue(new SettingColor(255, 128, 0, 255))
         .build()
     );
 
-
+    // --- Everyone else Settings ---
     private final Setting<SettingColor> textColor = sgOthers.add(new ColorSetting.Builder()
         .name("text-color")
         .description("The color for normal players.")
