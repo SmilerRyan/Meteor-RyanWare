@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -45,8 +45,8 @@ public class TabCompletePrivacy extends Module {
 
     public TabCompletePrivacy() {
         super(
-            RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "Tab-Complete-Privacy",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Tab-Complete-Privacy",
             "Blocks tab completion packets containing private or dangerous input."
         );
     }

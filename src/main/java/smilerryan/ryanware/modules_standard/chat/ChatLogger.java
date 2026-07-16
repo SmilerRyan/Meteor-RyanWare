@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard.chat;
 
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.events.game.SendMessageEvent;
@@ -40,8 +40,8 @@ public class ChatLogger extends Module {
 
     public ChatLogger() {
         super(
-            RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "ChatLogger",
+            RyanWare.CATEGORY_STANDARD,
+            RyanWare.modulePrefix_standard + "Chat-Logger",
             "Logs incoming and outgoing chat with session support."
         );
     }

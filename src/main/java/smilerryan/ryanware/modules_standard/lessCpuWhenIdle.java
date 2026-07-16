@@ -43,7 +43,7 @@ public class lessCpuWhenIdle extends Module {
     private long lastCallTime = 0;
 
     public lessCpuWhenIdle() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Less-CPU-When-Idle", "Reduces CPU load by calling GLFW.glfwWaitEvents() to reduce cpu for input events automatically.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Less-CPU-When-Idle", "Reduces CPU load by calling GLFW.glfwWaitEvents() to reduce cpu for input events automatically.");
     }
 
     @EventHandler

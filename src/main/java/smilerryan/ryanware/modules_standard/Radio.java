@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
@@ -34,7 +34,7 @@ public class Radio extends Module {
         .name("Custom URL")
         .description("URL or local audio file path.")
         .defaultValue("")
-        .visible(() -> radioChannel.get() == Radios.Custom)
+        .visible(() -> radioChannel.get() == Radios.Custom) 
         .build()
     );
 
@@ -57,7 +57,7 @@ public class Radio extends Module {
     private PlaybackMode lastMode = null;
 
     public Radio() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Radio", "It's an in-game radio!");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Radio", "An in-game music streamer for radio.");
     }
 
     @Override

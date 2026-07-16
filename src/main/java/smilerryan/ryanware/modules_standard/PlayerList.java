@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard;
 
 import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -135,7 +135,7 @@ public class PlayerList extends Module {
     private static final Color BACKGROUND_COLOR = new Color(0, 0, 0, 160); // Semi-transparent black background
 
     public PlayerList() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Player-List", "Custom player list, sortable by name, ping and detect similar or double/half pinging player patterns.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Player-List", "Custom player list, sortable by name, ping and detect similar or double/half pinging player patterns.");
     }
 
     @EventHandler

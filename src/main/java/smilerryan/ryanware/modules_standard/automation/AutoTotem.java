@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules_standard.automation;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.EnumSetting;
@@ -43,7 +43,7 @@ public class AutoTotem extends Module {
     private int disconnectDelay = -1; // ticks until disconnect, -1 = none
 
     public AutoTotem() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoTotem", "Always equips the largest totem stacks, consolidates them, and can hold one in both hands.");
+        super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "AutoTotem", "Always equips the largest totem stacks, consolidates them, and can hold one in both hands.");
     }
 
     @Override
