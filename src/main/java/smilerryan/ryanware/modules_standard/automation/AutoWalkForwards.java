@@ -34,7 +34,9 @@ public class AutoWalkForwards extends Module {
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.options == null) return;
         mc.options.forwardKey.setPressed(true);
-        if (autoJump.get()) mc.options.jumpKey.setPressed(true);
+        if (autoJump.get()) {
+            mc.options.jumpKey.setPressed(!mc.options.sneakKey.isPressed());
+        }
     }
 
 }
