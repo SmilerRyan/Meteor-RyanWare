@@ -16,7 +16,7 @@ public class SendChat {
 
     public static void chat(String message) {
         if (MeteorClient.mc.player == null || MeteorClient.mc.player.networkHandler == null) return;
-        smilerryan.ryanware.utils.SendChat.chat(message);
+        mc.player.networkHandler.sendChatMessage(message);
     }
 
     public static void command(String command) {
@@ -24,7 +24,7 @@ public class SendChat {
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
-        smilerryan.ryanware.utils.SendChat.command(command);
+        mc.player.networkHandler.sendChatCommand(command);
     }
 
 }
