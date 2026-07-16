@@ -1,10 +1,11 @@
 package smilerryan.ryanware.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.player.FindItemResult;
+import meteordevelopment.meteorclient.utils.player.InvUtils;
+import meteordevelopment.meteorclient.utils.world.BlockUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.RespawnAnchorBlock;
@@ -19,8 +20,18 @@ public class AutoAnchor extends Module {
 
     private final Setting<Boolean> fill = sgGeneral.add(new BoolSetting.Builder()
         .name("auto-fill")
-        .description("Automatically fills respawn anchors with glowstone.")
+        .description("Automatically interacts with anchors using Glowstone.")
         .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Integer> fillTo = sgGeneral.add(new IntSetting.Builder()
+        .name("fill-to")
+        .description("The number of charges to fill the anchor to.")
+        .defaultValue(1)
+        .min(1)
+        .max(4)
+        .sliderRange(1, 4)
         .build()
     );
 
@@ -30,6 +41,14 @@ public class AutoAnchor extends Module {
         .defaultValue(false)
         .build()
     );
+
+    private final Setting<Boolean> autoBlock = sgGeneral.add(new BoolSetting.Builder()
+        .name("auto-block-before-exploding")
+        .description("Places an Obsidian block in front of you for protection.")
+        .defaultValue(false)
+        .build()
+    );
+    
 
     public AutoAnchor() {
         super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Auto-Anchor", "Automatically fills or explodes respawn anchors.");
@@ -42,25 +61,23 @@ public class AutoAnchor extends Module {
 
         int currentCharges = mc.world.getBlockState(hit.getBlockPos()).get(RespawnAnchorBlock.CHARGES);
 
-        // Logic for Filling
-        if (fill.get() && currentCharges < 4) {
-            Hand hand = getGlowstoneHand();
-            if (hand != null) {
-                mc.interactionManager.interactBlock(mc.player, hand, hit);
-                return; // Return to avoid conflicting interactions
+        if (fill.get() && currentCharges < fillTo.get()) {
+            FindItemResult glowstone = InvUtils.findInHotbar(Items.GLOWSTONE);
+            if (glowstone.found()) {
+                InvUtils.swap(glowstone.slot(), false);
+                mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit);
+                return;
             }
         }
 
-        // Logic for Exploding
         if (explode.get() && currentCharges > 0) {
-            // Interact with empty hand to trigger the explosion
+            if (autoBlock.get()) {
+                FindItemResult obsidian = InvUtils.findInHotbar(Items.OBSIDIAN);
+                if (obsidian.found()) {
+                    BlockUtils.place(hit.getBlockPos().offset(hit.getSide()), obsidian, false, 0, true, false);
+                }
+            }
             mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit);
         }
-    }
-
-    private Hand getGlowstoneHand() {
-        if (mc.player.getMainHandStack().isOf(Items.GLOWSTONE)) return Hand.MAIN_HAND;
-        if (mc.player.getOffHandStack().isOf(Items.GLOWSTONE)) return Hand.OFF_HAND;
-        return null;
     }
 }
