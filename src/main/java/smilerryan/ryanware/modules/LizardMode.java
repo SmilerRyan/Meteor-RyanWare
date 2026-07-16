@@ -122,7 +122,7 @@ public class LizardMode extends Module {
     }
 
     public LizardMode() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "LizardMode", "Randomly flashes LIZARD text, plays lizard.wav, and/or sends messages.");
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Lizard-Mode", "Randomly flashes LIZARD text, plays lizard.wav, and/or sends messages.");
     }
 
     @EventHandler

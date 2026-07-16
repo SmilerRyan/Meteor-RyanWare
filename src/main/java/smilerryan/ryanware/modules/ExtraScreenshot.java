@@ -49,7 +49,7 @@ public class ExtraScreenshot extends Module {
 
     public ExtraScreenshot() {
         super(RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "ExtraScreenshot",
+            RyanWare.modulePrefix_extras + "Extra-Screenshot",
             "Do extra things every time you take a screenshot.");
     }
 

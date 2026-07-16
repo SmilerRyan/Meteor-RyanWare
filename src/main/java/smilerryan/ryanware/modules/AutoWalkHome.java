@@ -35,7 +35,7 @@ public class AutoWalkHome extends Module {
     public AutoWalkHome() {
         super(
             RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "AutoWalkHome",
+            RyanWare.modulePrefix_extras + "Auto-Walk-Home",
             "Walks to a position when no players are in render distance."
         );
     }
