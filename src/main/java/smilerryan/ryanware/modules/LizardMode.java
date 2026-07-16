@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Lizard extends Module {
+public class LizardMode extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     public enum ColorMode { Green, Rainbow }
@@ -121,8 +121,8 @@ public class Lizard extends Module {
         }
     }
 
-    public Lizard() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Lizard", "Randomly flashes LIZARD text, plays lizard.wav, and/or sends messages.");
+    public LizardMode() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "LizardMode", "Randomly flashes LIZARD text, plays lizard.wav, and/or sends messages.");
     }
 
     @EventHandler
