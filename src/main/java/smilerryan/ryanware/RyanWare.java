@@ -189,6 +189,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new FocusCommands());
         Modules.get().add(new ForceColoredChat());
         Modules.get().add(new ForceYLevel());
+        Modules.get().add(new FullScreenCapture());
         Modules.get().add(new HideItemFrameItems());
         Modules.get().add(new HideItemFrameMaps());
         Modules.get().add(new LizardMode());
@@ -212,7 +213,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new RemoteViewProxyServer());
         Modules.get().add(new RemoteViewWebServer());
         Modules.get().add(new RemoveNewBlocks());
-        Modules.get().add(new FullScreenCapture());
         Modules.get().add(new ScreenRecorder());
         Modules.get().add(new SoundBlocker());
         Modules.get().add(new SpeechToText());
