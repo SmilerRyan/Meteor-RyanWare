@@ -1,4 +1,4 @@
-package smilerryan.ryanware.modules;
+package smilerryan.ryanware.modules.crystal_anchor_etc;
 
 import smilerryan.ryanware.RyanWare;
 import meteordevelopment.meteorclient.events.world.TickEvent;

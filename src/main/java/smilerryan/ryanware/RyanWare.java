@@ -16,6 +16,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smilerryan.ryanware.modules.*;
+import smilerryan.ryanware.modules.crystal_anchor_etc.*;
 import smilerryan.ryanware.modules_standard.*;
 import smilerryan.ryanware.modules_standard.automation.*;
 import smilerryan.ryanware.modules_standard.chat.*;
@@ -144,7 +145,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
-        Modules.get().add(new AutoAnchor());
         Modules.get().add(new AutoChatScreenshotter());
         Modules.get().add(new AutoChestMover());
         Modules.get().add(new AutoClickPlayers());
@@ -173,10 +173,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new CommandRedirector());
         Modules.get().add(new CompletionCrash());
         Modules.get().add(new CringeDetector());
-        Modules.get().add(new CrystalAura());
-        Modules.get().add(new CrystalAura2());
-        Modules.get().add(new CrystalAura3());
-        Modules.get().add(new CrystalKillAura());
         Modules.get().add(new CustomCrosshair());
         Modules.get().add(new DeathCommands());
         Modules.get().add(new ElytraCreativeFly());
@@ -225,6 +221,13 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new TotemBypass());
         Modules.get().add(new UserLookups());
         Modules.get().add(new WorldDownloader());
+
+        // Modules - Crystal, Anchor, etc
+        Modules.get().add(new AutoAnchor());
+        Modules.get().add(new CrystalAura());
+        Modules.get().add(new CrystalAura2());
+        Modules.get().add(new CrystalAura3());
+        Modules.get().add(new CrystalKillAura());
 
         // Modules Standard
         Modules.get().add(new BungeeSpoofer());
