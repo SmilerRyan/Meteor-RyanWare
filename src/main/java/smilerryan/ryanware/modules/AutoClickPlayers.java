@@ -81,7 +81,7 @@ public class AutoClickPlayers extends Module {
 
     public AutoClickPlayers() {
         super(RyanWare.CATEGORY_EXTRAS,
-            RyanWare.modulePrefix_extras + "AutoClickPlayers",
+            RyanWare.modulePrefix_extras + "Auto-Click-Players",
             "Automatically clicks on players you are looking at.");
     }
 
