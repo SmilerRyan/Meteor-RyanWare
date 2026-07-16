@@ -12,19 +12,19 @@ import smilerryan.ryanware.RyanWare;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AntiHack extends Module {
+public class ModuleDisabler extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     // User picks modules to whitelist from all loaded modules
     private final Setting<List<Module>> whitelist = sgGeneral.add(new ModuleListSetting.Builder()
         .name("whitelist")
-        .description("Modules that will not be disabled by AntiHack.")
+        .description("Modules that will not be disabled by Module Disabler.")
         .defaultValue(new ArrayList<>())
         .build()
     );
 
-    public AntiHack() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AntiHack", "Literally stops you from hacking, forces everything except the allowed modules off.");
+    public ModuleDisabler() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Module-Disabler", "Automatically disables any enabled module that isn't in the whitelist every tick.");
     }
 
     @EventHandler

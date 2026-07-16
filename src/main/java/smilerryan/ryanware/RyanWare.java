@@ -140,7 +140,6 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AntiBlockBreak());
         Modules.get().add(new AntiBlockPlace());
         Modules.get().add(new AntiClimb());
-        Modules.get().add(new AntiHack());
         Modules.get().add(new AntiTouch());
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new AtSomeone());
@@ -195,6 +194,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new LizardMode());
         Modules.get().add(new LookDownDropper());
         Modules.get().add(new MaxMaceKill());
+        Modules.get().add(new ModuleDisabler());
         Modules.get().add(new ModuleMenu());
         Modules.get().add(new NewChunks());
         Modules.get().add(new NoBlockDamage());
