@@ -144,6 +144,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AternosOnliner());
         Modules.get().add(new AtSomeone());
         Modules.get().add(new Aura());
+        Modules.get().add(new AutoAnchor());
         Modules.get().add(new AutoChatScreenshotter());
         Modules.get().add(new AutoChestMover());
         Modules.get().add(new AutoClickPlayers());
