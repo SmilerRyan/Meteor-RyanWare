@@ -18,7 +18,7 @@ import smilerryan.ryanware.RyanWare;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BellAura extends Module {
+public class AutoRingBells extends Module {
 
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     
@@ -41,8 +41,8 @@ public class BellAura extends Module {
         All
     }
 
-    public BellAura() {
-        super(smilerryan.ryanware.RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "bell-aura", "Automatically looks at and clicks the nearest bell.");
+    public AutoRingBells() {
+        super(smilerryan.ryanware.RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Auto-Ring-Bells", "Automatically looks at and clicks the nearest or all bells.");
     }
 
     @EventHandler
