@@ -97,11 +97,7 @@ public class OllamaAnnoyer extends Module {
             String response = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), promptTemplate.get().replace("{input}", raw), this);
             if (response == null || response.isEmpty() || response.contains(ignoreOutKeyword.get())) return;
 
-            if (response.startsWith("/")) {
-                mc.execute(() -> mc.player.networkHandler.sendChatCommand(response.substring(1)));
-            } else {
-                mc.execute(() -> mc.player.networkHandler.sendChatMessage(response));
-            }
+            smilerryan.ryanware.utils.SendChat.any(response);
         }, "OllamaAnnoyerThread").start();
     }
 

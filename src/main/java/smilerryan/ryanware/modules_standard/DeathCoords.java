@@ -129,11 +129,7 @@ public class DeathCoords extends Module {
                 String msg = format(raw, lastDeathX, lastDeathY, lastDeathZ);
 
                 if (!msg.isEmpty()) {
-                    if (msg.startsWith("/")) {
-                        mc.player.networkHandler.sendChatCommand(msg.substring(1));
-                    } else {
-                        mc.player.networkHandler.sendChatMessage(msg);
-                    }
+                    smilerryan.ryanware.utils.SendChat.any(msg);
                 }
 
                 leakIndex++;

@@ -194,7 +194,7 @@ public class ChatEncryption extends Module {
 
         try {
             bypassCommandEncryption = true;
-            mc.player.networkHandler.sendChatCommand(newCommand);
+            smilerryan.ryanware.utils.SendChat.command(newCommand);
         } finally {
             bypassCommandEncryption = false;
         }

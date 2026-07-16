@@ -65,11 +65,7 @@ public class TextOnly_AI_Chat extends Module {
                 String response = prefix.get() + new String(new java.net.URL(requestUrl).openStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
                 mc.execute(() -> {
                     if (mc.getNetworkHandler() != null && !response.isEmpty()) {
-                        if (response.startsWith("/")) {
-                            mc.getNetworkHandler().sendChatCommand(response.substring(1));
-                        } else {
-                            mc.getNetworkHandler().sendChatMessage(response);
-                        }
+                        smilerryan.ryanware.utils.SendChat.any(response);
                     }
                 });
             } catch (Exception e) {

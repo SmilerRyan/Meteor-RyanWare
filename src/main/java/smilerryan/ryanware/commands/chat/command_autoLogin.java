@@ -36,7 +36,7 @@ public class command_autoLogin extends Command {
         String key = mc.getCurrentServerEntry().address + "|" + mc.getSession().getUsername() + "|";
         for (String line : smilerryan.ryanware.commands.chat.command_autoLogin.load()) {
             if (line.startsWith(key)) {
-                mc.player.networkHandler.sendChatCommand("login " + line.replace(key,""));
+                smilerryan.ryanware.utils.SendChat.command("login " + line.replace(key,""));
             }
         }
     }

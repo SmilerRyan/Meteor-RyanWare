@@ -97,7 +97,7 @@ public class CommandAura extends Module {
 
     private void sendCommand(PlayerEntity target, String command) {
         String commandText = command.replace("{PLAYER}", target.getName().getString());
-        mc.player.networkHandler.sendChatCommand(commandText.substring(1)); // Remove the leading slash
+        smilerryan.ryanware.utils.SendChat.command(commandText.substring(1)); // Remove the leading slash
     }
 
     @Override

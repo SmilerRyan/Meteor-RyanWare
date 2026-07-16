@@ -87,11 +87,7 @@ public class ErmActuallyCorrector extends Module {
             .replace("[S]", sender)
             .replace("[C]", corrected);
 
-        if (msg.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(msg.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(msg);
-        }
+        smilerryan.ryanware.utils.SendChat.any(msg);
 
         lastCorrected.put(sender, now);
     }

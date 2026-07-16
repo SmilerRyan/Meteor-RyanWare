@@ -68,11 +68,7 @@ public class CoordNotifier extends Module {
                     .replace("[nz]", String.valueOf(new_z))
                     .replace("[tag]", coordLeakTag.get());
 
-                if (cmd.startsWith("/")) {
-                    MeteorClient.mc.player.networkHandler.sendChatCommand(cmd.substring(1));
-                } else {
-                    MeteorClient.mc.player.networkHandler.sendChatMessage(cmd);
-                }
+                smilerryan.ryanware.utils.SendChat.any(cmd);
             });
         }
     }

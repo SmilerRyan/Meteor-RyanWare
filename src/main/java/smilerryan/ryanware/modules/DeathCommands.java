@@ -83,11 +83,7 @@ public class DeathCommands extends Module {
             if (deathDelayTicks == 0) {
 
                 if (mc.player != null && mc.player.networkHandler != null) {
-                    if (pendingMessage.startsWith("/")) {
-                        mc.player.networkHandler.sendChatCommand(pendingMessage.substring(1));
-                    } else {
-                        mc.player.networkHandler.sendChatMessage(pendingMessage);
-                    }
+                    smilerryan.ryanware.utils.SendChat.any(pendingMessage);
                 }
                 pendingMessage = null;
                 deathDelayTicks = -1;

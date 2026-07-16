@@ -159,16 +159,12 @@ public class AutoResponder extends Module {
         if (responseToSend != null) {
             info(responseToSend);
 
-            if (responseToSend.startsWith("/")) {
-                mc.player.networkHandler.sendChatCommand(responseToSend.substring(1));
-            } else {
-                mc.player.networkHandler.sendChatMessage(responseToSend);
-            }
+            smilerryan.ryanware.utils.SendChat.any(responseToSend);
 
             // if (responseToSend.startsWith("/")) {
             //     MinecraftClient.getInstance().player.networkHandler.sendCommand(responseToSend.substring(1));
             // } else {
-            //     MinecraftClient.getInstance().getNetworkHandler().sendChatMessage(responseToSend);
+            //     smilerryan.ryanware.utils.SendChat.chat(responseToSend);
             // }
         }
     }

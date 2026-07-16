@@ -81,6 +81,6 @@ public class AtSomeone extends Module {
             }
         }
 
-        mc.player.networkHandler.sendChatMessage(reply.toString());
+        smilerryan.ryanware.utils.SendChat.chat(reply.toString());
     }
 }

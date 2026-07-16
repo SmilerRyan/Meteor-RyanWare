@@ -115,11 +115,7 @@ public class AternosOnliner extends Module {
                 lastSuffix = null;
             }
 
-            if (msg.startsWith("/")) {
-                mc.player.networkHandler.sendChatCommand(msg.substring(1));
-            } else {
-                mc.player.networkHandler.sendChatMessage(msg);
-            }
+            smilerryan.ryanware.utils.SendChat.any(msg);
         }
     }
 

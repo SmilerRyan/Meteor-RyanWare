@@ -56,7 +56,7 @@ public class OllamaTranslator extends Module {
             new Thread(() -> {
                 String response = Ollama.queryOllama(Modules.get().get(Settings.class).s_Ollama_Url.get(), model.get(), fullPrompt, this);
                 sendingTranslatedChat = true;
-                mc.getNetworkHandler().sendChatMessage(response);
+                smilerryan.ryanware.utils.SendChat.chat(response);
                 sendingTranslatedChat = false;
             }, "Ollama-Translator-Worker").start();
         } else {

@@ -63,7 +63,7 @@ public class PublicChatTags extends Module {
             if (modified.startsWith("/")) {
                 event.cancel();
                 String rawCommand = modified.substring(1);
-                mc.player.networkHandler.sendChatCommand(rawCommand);
+                smilerryan.ryanware.utils.SendChat.command(rawCommand);
             } else {
                 event.message = modified;
             }

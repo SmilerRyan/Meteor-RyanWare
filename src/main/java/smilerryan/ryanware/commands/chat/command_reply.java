@@ -53,7 +53,7 @@ public class command_reply extends Command {
 
                 String text = StringArgumentType.getString(context, "text");
 
-                MinecraftClient.getInstance().player.networkHandler.sendChatCommand(
+                smilerryan.ryanware.utils.SendChat.command(
                     "tell " + lastWhisperer + " " + text
                 );
 

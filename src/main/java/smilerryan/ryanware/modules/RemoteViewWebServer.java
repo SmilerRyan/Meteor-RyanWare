@@ -300,7 +300,8 @@ public class RemoteViewWebServer extends Module {
 
             if (postData.startsWith("message=")) {
                 String message = URLDecoder.decode(postData.substring("message=".length()), "UTF-8");
-                sendChatMessage(message);
+                if (MeteorClient.mc.player == null || MeteorClient.mc.getNetworkHandler() == null) return;
+                smilerryan.ryanware.utils.SendChat.any(message);
             }
         }
 
@@ -464,15 +465,6 @@ public class RemoteViewWebServer extends Module {
         return bufferedImage;
     }
 
-    private void sendChatMessage(String message) {
-        if (MeteorClient.mc.player == null || MeteorClient.mc.getNetworkHandler() == null) return;
-
-        if (message.startsWith("/")) {
-            MeteorClient.mc.getNetworkHandler().sendChatCommand(message.substring(1));
-        } else {
-            MeteorClient.mc.getNetworkHandler().sendChatMessage(message);
-        }
-    }
 
     private void sendHtmlResponse(OutputStream out, String html) throws IOException {
         String header = "HTTP/1.1 200 OK\r\n" +

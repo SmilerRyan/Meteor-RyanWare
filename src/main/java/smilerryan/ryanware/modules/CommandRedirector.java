@@ -59,11 +59,7 @@ public class CommandRedirector extends Module {
         event.cancel();
         redirecting = true;
 
-        if (redirected.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(redirected.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(redirected);
-        }
+        smilerryan.ryanware.utils.SendChat.any(redirected);
 
         redirecting = false;
         if (debugLogging.get()) info("\n-> " + msg + "\n-> " + redirected);
@@ -90,11 +86,7 @@ public class CommandRedirector extends Module {
         event.cancel();
         redirecting = true;
 
-        if (redirected.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(redirected.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(redirected);
-        }
+        smilerryan.ryanware.utils.SendChat.any(redirected);
 
         redirecting = false;
         if (debugLogging.get()) info("\n-> " + command + "\n-> " + redirected);

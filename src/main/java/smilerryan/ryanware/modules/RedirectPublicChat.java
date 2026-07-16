@@ -68,11 +68,7 @@ public class RedirectPublicChat extends Module {
             String next = messageQueue.poll();
             if (next != null && mc.player != null) {
                 sending = true;
-                if (next.startsWith("/")) {
-                    mc.player.networkHandler.sendChatCommand(next.substring(1));
-                } else {
-                    mc.player.networkHandler.sendChatMessage(next);
-                }
+                smilerryan.ryanware.utils.SendChat.any(next);
                 sending = false;
             }
         }

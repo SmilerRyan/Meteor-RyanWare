@@ -38,11 +38,7 @@ public class FocusCommands extends Module {
             for (String cmd : block.split(";")) {
                 String trimmed = cmd.trim();
                 if (!trimmed.isEmpty()) {
-                    if (trimmed.startsWith("/")) {
-                        mc.getNetworkHandler().sendChatCommand(trimmed.substring(1));
-                    } else {
-                        mc.getNetworkHandler().sendChatMessage(trimmed);
-                    }
+                    smilerryan.ryanware.utils.SendChat.any(trimmed);
                 }
             }
             lastFocused = focused;

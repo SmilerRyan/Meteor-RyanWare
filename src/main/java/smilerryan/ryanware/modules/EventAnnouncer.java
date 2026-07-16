@@ -223,8 +223,6 @@ public class EventAnnouncer extends Module {
     // Helper function to send message or run as command
     private void sendMessage(String msg) {
         if (mc.player == null) return;
-
-        if (msg.startsWith("/")) mc.player.networkHandler.sendChatCommand(msg.substring(1));
-        else mc.player.networkHandler.sendChatMessage(msg);
+        smilerryan.ryanware.utils.SendChat.any(msg);
     }
 }

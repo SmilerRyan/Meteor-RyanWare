@@ -145,10 +145,6 @@ public class TotemAutoLeave extends Module {
     private void sendCommand(String raw) {
         String cmd = raw.trim();
         if (cmd.isEmpty()) return;
-        if (cmd.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(cmd.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(cmd);
-        }
+        smilerryan.ryanware.utils.SendChat.any(cmd);
     }
 }

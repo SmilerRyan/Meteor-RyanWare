@@ -207,11 +207,7 @@ public class AutoGroom extends Module {
 
         msg = msg.trim().replace("{player}", target.getName().getString());
 
-        if (msg.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(msg.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(msg);
-        }
+        smilerryan.ryanware.utils.SendChat.any(msg);
 
         msgIndex = (msgIndex + 1) % msgs.size();
     }

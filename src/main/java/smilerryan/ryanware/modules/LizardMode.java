@@ -142,7 +142,7 @@ public class LizardMode extends Module {
                     // === CHAT ===
                     if (autoChat.get() && !chatMessages.get().isEmpty()) {
                         String msg = chatMessages.get().get(random.nextInt(chatMessages.get().size()));
-                        MinecraftClient.getInstance().player.networkHandler.sendChatMessage(msg);
+                        smilerryan.ryanware.utils.SendChat.any(msg);
                     }
 
                     lastTrigger = now;

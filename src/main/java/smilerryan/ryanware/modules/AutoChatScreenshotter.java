@@ -122,11 +122,7 @@ public class AutoChatScreenshotter extends Module {
         mc.execute(() -> {
             if (mc.player == null) return;
 
-            if (responseMessage.get().startsWith("/")) {
-                mc.player.networkHandler.sendChatCommand(responseMessage.get().substring(1));
-            } else {
-                mc.player.networkHandler.sendChatMessage(responseMessage.get());
-            }
+            smilerryan.ryanware.utils.SendChat.any(responseMessage.get());
         });
     }
 

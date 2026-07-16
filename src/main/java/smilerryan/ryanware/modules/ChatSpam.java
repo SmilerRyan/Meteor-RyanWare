@@ -65,11 +65,7 @@ public class ChatSpam extends Module {
 
         String msg = list.get(index);
 
-        if (msg.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(msg.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(msg);
-        }
+        smilerryan.ryanware.utils.SendChat.any(msg);
 
         index++;
         ticksLeft = delay.get();

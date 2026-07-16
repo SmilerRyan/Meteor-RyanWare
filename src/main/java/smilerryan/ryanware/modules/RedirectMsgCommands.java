@@ -72,10 +72,6 @@ public class RedirectMsgCommands extends Module {
         event.cancel();
         String newCommand = template.replace("{user}", target).replace("{message}", message);
         if (mc.player == null) return;
-        if (newCommand.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(newCommand.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(newCommand);
-        }
+        smilerryan.ryanware.utils.SendChat.any(newCommand);
     }
 }

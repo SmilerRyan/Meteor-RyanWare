@@ -128,7 +128,7 @@ public class ClearLag extends Module {
             if (debug.get()) {
                 info("Run: " + cmd.toString());
             } else {
-                mc.player.networkHandler.sendChatCommand(cmd.substring(1));                
+                smilerryan.ryanware.utils.SendChat.command(cmd.substring(1));                
             }
         } else {
             if (debug.get()) {

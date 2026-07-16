@@ -336,7 +336,7 @@ public class RemoteViewProxyServer extends Module {
                                 if (s_Features_Send_Viewer_Commands.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
-                                            mc.player.networkHandler.sendChatCommand(msg.substring(1));
+                                            smilerryan.ryanware.utils.SendChat.command(msg.substring(1));
                                         }
                                     });
                                 }
@@ -348,7 +348,7 @@ public class RemoteViewProxyServer extends Module {
                                 if (s_Features_Send_Viewer_Chat.get()) {
                                     MinecraftClient.getInstance().execute(() -> {
                                         if (mc.player != null && mc.player.networkHandler != null) {
-                                            mc.player.networkHandler.sendChatMessage(msg);
+                                            smilerryan.ryanware.utils.SendChat.chat(msg);
                                         }
                                     });
                                 }

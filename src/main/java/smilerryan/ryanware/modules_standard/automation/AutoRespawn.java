@@ -62,11 +62,7 @@ public class AutoRespawn extends Module {
         if (waitingForCommands && commandIndex < commandQueue.size()) {
             String command = commandQueue.get(commandIndex);
             if (command != null && !command.isBlank()) {
-                if (command.startsWith("/")) {
-                    mc.player.networkHandler.sendChatCommand(command.substring(1));
-                } else {
-                    mc.player.networkHandler.sendChatMessage(command);
-                }
+                smilerryan.ryanware.utils.SendChat.any(command);
             }
             commandIndex++;
             if (commandIndex >= commandQueue.size()) {

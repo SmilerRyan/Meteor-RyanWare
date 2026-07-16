@@ -222,11 +222,7 @@ public class SpeechToText extends Module {
 
         String msg = prefix.get() + text;
 
-        if (msg.startsWith("/")) {
-            mc.player.networkHandler.sendChatCommand(msg.substring(1));
-        } else {
-            mc.player.networkHandler.sendChatMessage(msg);
-        }
+        smilerryan.ryanware.utils.SendChat.any(msg);
     }
 
     @EventHandler

@@ -168,11 +168,7 @@ public class OllamaChat extends Module {
                 // If the line was forced or direct
                 if ( forceSend || directSendNoPrefix.get() ) {
                     // Send chat or command
-                    if (message.startsWith("/")) {
-                        mc.player.networkHandler.sendChatCommand(message.substring(1));
-                    } else {
-                        mc.player.networkHandler.sendChatMessage(message);
-                    }
+                    smilerryan.ryanware.utils.SendChat.any(message);
                 } else {
                     // Show in chat if enabled
                     if (viewAllResponses.get()) {
