@@ -203,6 +203,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PacketLimiter());
         Modules.get().add(new PacketRecorderReplayer());
         Modules.get().add(new PlayerAlerter());
+        Modules.get().add(new PlayerCoordsTracker());
         Modules.get().add(new PlayerHider());
         Modules.get().add(new PlayerList());
         Modules.get().add(new PlayerShapeESP());
