@@ -15,7 +15,7 @@ import java.util.*;
 
 import smilerryan.ryanware.RyanWare;
 
-public class AutoMineNearby extends Module {
+public class AutoMineNearbyBlocks extends Module {
 
     private final Setting<Double> searchDistance = settings.getDefaultGroup().add(new DoubleSetting.Builder()
         .name("search-distance")
@@ -58,8 +58,8 @@ public class AutoMineNearby extends Module {
     private final Queue<BlockPos> targets = new ArrayDeque<>();
     private final Random rand = new Random();
 
-    public AutoMineNearby() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "AutoMineNearby", "Fast legit auto mines nearby visible selected blocks.");
+    public AutoMineNearbyBlocks() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Auto-Mine-Nearby-Blocks", "Fast legit auto mines nearby visible selected blocks.");
     }
 
     @EventHandler
