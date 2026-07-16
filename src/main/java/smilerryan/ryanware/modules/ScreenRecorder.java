@@ -10,7 +10,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Recorder extends Module {
+public class ScreenRecorder extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("General");
 
     private final Setting<String> folder = sgGeneral.add(new StringSetting.Builder()
@@ -59,8 +59,8 @@ public class Recorder extends Module {
     private OutputStream ffmpegInput;
     private File outputFile;
 
-    public Recorder() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Recorder", "Records the desktop using ffmpeg (no dependencies).");
+    public ScreenRecorder() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Screen-Recorder", "Records the desktop using ffmpeg (no dependencies).");
     }
 
     @Override

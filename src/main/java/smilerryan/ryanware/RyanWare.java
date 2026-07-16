@@ -207,7 +207,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new PlayerShapeESP());
         Modules.get().add(new PublicChatTags());
         Modules.get().add(new Radio());
-        Modules.get().add(new Recorder());
+        Modules.get().add(new ScreenRecorder());
         Modules.get().add(new RedirectMsgCommands());
         Modules.get().add(new RedirectPublicChat());
         Modules.get().add(new RemoteViewProxyServer());
