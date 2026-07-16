@@ -7,7 +7,7 @@ import smilerryan.ryanware.RyanWare;
 import java.io.File;
 import javax.sound.sampled.*;
 
-public class Screenshotter extends Module {
+public class FullScreenCapture extends Module {
     private final SettingGroup sgGeneral = settings.createGroup("General");
 
     private final Setting<String> saveTo = sgGeneral.add(new StringSetting.Builder()
@@ -35,8 +35,8 @@ public class Screenshotter extends Module {
     private volatile boolean running = false;
     private Thread screenshotThread;
 
-    public Screenshotter() {
-        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Screenshotter",
+    public FullScreenCapture() {
+        super(RyanWare.CATEGORY_EXTRAS, RyanWare.modulePrefix_extras + "Full-Screen-Capture",
             "Takes screenshots of ALL monitors using ffmpeg with an optional interval and beep sound.");
     }
 
