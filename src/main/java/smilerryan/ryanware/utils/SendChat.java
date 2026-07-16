@@ -16,15 +16,16 @@ public class SendChat {
 
     public static void chat(String message) {
         if (MeteorClient.mc.player == null || MeteorClient.mc.player.networkHandler == null) return;
-        mc.player.networkHandler.sendChatMessage(message);
+        MeteorClient.mc.player.networkHandler.sendChatMessage(message);
     }
 
     public static void command(String command) {
         if (MeteorClient.mc.player == null || MeteorClient.mc.player.networkHandler == null) return;
+
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
-        mc.player.networkHandler.sendChatCommand(command);
-    }
 
+        MeteorClient.mc.player.networkHandler.sendChatCommand(command);
+    }
 }
