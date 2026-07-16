@@ -39,7 +39,7 @@ public class TabCompletePrivacy extends Module {
     private final Setting<String> blockedSymbols = sgGeneral.add(new StringSetting.Builder()
         .name("blocked-symbols")
         .description("Block tab completion if any of these symbols exist.")
-        .defaultValue("@[]{}")
+        .defaultValue("@[]{}=")
         .build()
     );
 
