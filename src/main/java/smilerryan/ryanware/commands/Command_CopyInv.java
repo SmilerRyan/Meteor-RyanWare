@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
 
@@ -36,7 +37,6 @@ public class Command_CopyInv extends Command {
             "Save/load/delete inventory snapshots."
         );
     }
-
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
@@ -94,18 +94,15 @@ public class Command_CopyInv extends Command {
 
         File file = new File(DIR, name + ".nbt");
 
-
         try {
 
             NbtCompound root = new NbtCompound();
             NbtList list = new NbtList();
 
-
             RegistryOps<NbtElement> ops = RegistryOps.of(
                 NbtOps.INSTANCE,
                 mc.player.getRegistryManager()
             );
-
 
             for (int i = 0; i < mc.player.getInventory().size(); i++) {
 
@@ -115,7 +112,6 @@ public class Command_CopyInv extends Command {
 
                 slot.putInt("Slot", i);
 
-
                 ItemStack.CODEC.encodeStart(
                     ops,
                     stack
@@ -123,21 +119,17 @@ public class Command_CopyInv extends Command {
                     slot.put("Item", nbt)
                 );
 
-
                 list.add(slot);
             }
-
 
             root.put("Inventory", list);
 
             NbtIo.write(root, file.toPath());
 
-
             mc.player.sendMessage(
                 Text.of("§aSaved inventory as '" + name + "'"),
                 false
             );
-
 
         } catch (IOException e) {
 
@@ -145,8 +137,6 @@ public class Command_CopyInv extends Command {
                 Text.of("§cFailed to save inventory."),
                 false
             );
-
-            e.printStackTrace();
         }
     }
 
@@ -207,21 +197,39 @@ public class Command_CopyInv extends Command {
 
                 NbtElement itemNbt = slot.get("Item");
 
-                if (itemNbt != null) {
-                    ItemStack.CODEC.parse(
-                        ops,
-                        itemNbt
-                    ).result().ifPresent(stack -> {
 
-                        mc.player.getInventory()
-                            .setStack(index, stack);
+                if (itemNbt == null)
+                    continue;
 
-                    });
+
+                ItemStack stack = ItemStack.CODEC.parse(
+                    ops,
+                    itemNbt
+                ).result().orElse(ItemStack.EMPTY);
+
+
+                if (stack.isEmpty())
+                    continue;
+
+
+                mc.player.getInventory().setStack(index, stack);
+
+
+                if (mc.player.getAbilities().creativeMode) {
+
+                    mc.getNetworkHandler().sendPacket(
+                        new CreativeInventoryActionC2SPacket(
+                            index,
+                            stack
+                        )
+                    );
                 }
             }
 
 
+            mc.player.getInventory().markDirty();
             mc.player.playerScreenHandler.sendContentUpdates();
+            mc.player.currentScreenHandler.sendContentUpdates();
 
 
             mc.player.sendMessage(
