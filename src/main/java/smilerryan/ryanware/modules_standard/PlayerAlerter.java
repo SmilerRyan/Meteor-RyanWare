@@ -88,18 +88,11 @@ public class PlayerAlerter extends Module {
         .build()
     );
 
-    private final Setting<Integer> tabDelay = sgTab.add(new IntSetting.Builder()
-        .name("tab-leave-delay-ms")
+    private final Setting<Integer> tabFlashDelay = sgTab.add(new IntSetting.Builder()
+        .name("tab-flash-delay-ms")
         .defaultValue(500)
         .min(0)
         .sliderMax(2000)
-        .build()
-    );
-
-    private final Setting<Boolean> tabShowReenter = sgTab.add(new BoolSetting.Builder()
-        .name("tab-show-reenter")
-        .defaultValue(false)
-        .description("If true, shows 'Re-entered tab' when a player comes back within delay.")
         .build()
     );
 
@@ -207,33 +200,20 @@ public class PlayerAlerter extends Module {
                 if (tabIgnoreFriends.get() && isFriend(name)) continue;
                 if (tabIgnoreFakePlayers.get() && isFakePlayer(name)) continue;
 
-                // if we previously thought they left, and they re-appeared:
-                if (tabLeftTimes.containsKey(name)) {
-                    long leftTime = tabLeftTimes.get(name);
-                    // re-enter within delay
-                    if (now - leftTime < tabDelay.get()) {
-                        if (tabShowReenter.get()) {
-                            notify(tabChat.get(), tabSound.get(), true, false,
-                                "Re-entered tab: " + name);
-                        }
-                        // they rejoined; remove left timestamp and mark present
-                        tabLeftTimes.remove(name);
-                        inTab.add(name);
-                        continue;
-                    } else {
-                        // left long enough ago — treat as flash if desired (kept behavior)
-                        notify(tabChat.get(), tabSound.get(), false, true,
-                            "flashed tab: " + name);
-                        tabLeftTimes.remove(name);
-                        inTab.add(name);
-                        continue;
-                    }
-                }
+                // Player joined or returned (flash detection)
+                if (!inTab.contains(name) || tabLeftTimes.containsKey(name)) {
+                    if (tabLeftTimes.containsKey(name)) {
+                        long leftTime = tabLeftTimes.remove(name);
 
-                // normal join (not tracked as inTab)
-                if (!inTab.contains(name)) {
-                    notify(tabChat.get(), tabSound.get(), true, false,
-                        "Entered tab: " + name);
+                        if (now - leftTime < tabFlashDelay.get()) {
+                            notify(tabChat.get(), tabSound.get(), false, true, "Flashed tab: " + name);
+                        } else {
+                            notify(tabChat.get(), tabSound.get(), true, false, "Entered tab: " + name);
+                        }
+                    } else {
+                        notify(tabChat.get(), tabSound.get(), true, false, "Entered tab: " + name);
+                    }
+
                     inTab.add(name);
                 }
             }
@@ -243,25 +223,21 @@ public class PlayerAlerter extends Module {
                 if (!tab.contains(name)) {
                     // mark left time (if not already)
                     tabLeftTimes.putIfAbsent(name, now);
-                    // remove from inTab now so future re-joins are detected
-                    inTab.remove(name);
+
+                    if (now - tabLeftTimes.get(name) >= tabFlashDelay.get()) {
+                        inTab.remove(name);
+                        tabLeftTimes.remove(name);
+                        notify(tabChat.get(), tabSound.get(), false, false, "Left tab: " + name);
+                    }
                 }
             }
 
             // confirm leaves after delay
             Iterator<Map.Entry<String, Long>> it = tabLeftTimes.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<String, Long> e = it.next();
-                String name = e.getKey();
-                long leftTime = e.getValue();
-
-                if (now - leftTime >= tabDelay.get()) {
-                    // time passed => confirm left
+                Map.Entry<String, Long> entry = it.next();
+                if (now - entry.getValue() >= tabFlashDelay.get()) {
                     it.remove();
-                    if (!(tabIgnoreFriends.get() && isFriend(name))) {
-                        notify(tabChat.get(), tabSound.get(), false, false,
-                            "Left tab: " + name);
-                    }
                 }
             }
         }
