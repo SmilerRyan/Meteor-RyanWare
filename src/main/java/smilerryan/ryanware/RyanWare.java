@@ -248,6 +248,7 @@ public class RyanWare extends MeteorAddon {
         // Modules Standard - Chat 
         Modules.get().add(new AutoRunFileOnChat());
         Modules.get().add(new ChatPlinger());
+        Modules.get().add(new ChatRepeater());
         Modules.get().add(new DiscordChatLogger());
         Modules.get().add(new TextOnly_AI_Chat());
         Modules.get().add(new TextOnly_AI_Chat_2());
