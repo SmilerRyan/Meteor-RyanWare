@@ -75,7 +75,7 @@ public class TextOnly_AI_Chat_2 extends Module {
         boolean triggered = false;
 
         for (String trigger : triggerWords.get()) {
-            if (msg.toLowerCase(Locale.ROOT).contains(trigger.toLowerCase(Locale.ROOT))) {
+            if (msg.contains(trigger)) {
                 triggered = true;
                 break;
             }
