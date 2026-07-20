@@ -37,6 +37,13 @@ public class OllamaChat extends Module {
         .build()
     );
 
+    private final Setting<String> forceOutputPrefix = sgGeneral.add(new StringSetting.Builder()
+        .name("forced-output-prefix")
+        .description("The prefix that will be added automatically to ALL ai output, leave empty for none.")
+        .defaultValue("")
+        .build()
+    );
+
     private final Setting<Boolean> directSendNoPrefix = sgGeneral.add(new BoolSetting.Builder()
         .name("direct-send-without-prefix")
         .description("If enabled, responses without commands are sent directly to chat as if typed by you without a prefix.")
@@ -167,8 +174,10 @@ public class OllamaChat extends Module {
                 
                 // If the line was forced or direct
                 if ( forceSend || directSendNoPrefix.get() ) {
-                    // Send chat or command
-                    smilerryan.ryanware.utils.SendChat.any(message);
+                    final String output = forceOutputPrefix.get() + message;
+                    mc.execute(() -> {
+                        smilerryan.ryanware.utils.SendChat.any(output);
+                    });
                 } else {
                     // Show in chat if enabled
                     if (viewAllResponses.get()) {
