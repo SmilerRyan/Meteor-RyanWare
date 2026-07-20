@@ -166,6 +166,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new ChatLogger());
         Modules.get().add(new ChatReplacer());
         Modules.get().add(new ChatSpam());        
+        Modules.get().add(new ChatSpeaker());        
         Modules.get().add(new ChunkBlockESP());
         Modules.get().add(new ClearLag());
         Modules.get().add(new Clicker());
