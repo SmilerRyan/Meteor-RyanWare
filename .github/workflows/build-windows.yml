@@ -22,7 +22,6 @@ jobs:
         run: |
           set NO_PAUSE=1
           call "#install_build_tools.bat"
-          set JAVA_HOME=%CD%\jdk-21.0.11
           call "#build.bat"
           
           mkdir dist
