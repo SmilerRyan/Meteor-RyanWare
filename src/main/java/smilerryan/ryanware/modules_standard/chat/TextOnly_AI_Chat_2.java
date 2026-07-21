@@ -46,6 +46,13 @@ public class TextOnly_AI_Chat_2 extends Module {
         .build()
     );
 
+    private final Setting<String> forcedPrefix = sgGeneral.add(new StringSetting.Builder()
+        .name("force-all-output-with-prefix")
+        .description("Force all ouput that gets sent to have this prefix.")
+        .defaultValue("")
+        .build()
+    );
+
     private static final int MAX_HISTORY = 100;
 
     private final Deque<String> history = new ArrayDeque<>();
@@ -122,7 +129,7 @@ public class TextOnly_AI_Chat_2 extends Module {
 
             if (line.isEmpty()) continue;
 
-            String message = line;
+            String message = forcedPrefix.get() + line;
 
             mc.execute(() -> {
                 if (mc.getNetworkHandler() != null) {
