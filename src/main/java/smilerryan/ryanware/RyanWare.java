@@ -154,6 +154,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new AutoGroom());
         Modules.get().add(new AutoHighwayBuilder());
         Modules.get().add(new AutoItemFrameDupe());
+        Modules.get().add(new AutoKillAnnouncer());
         Modules.get().add(new AutoMineNearbyBlocks());
         Modules.get().add(new AutoResponder());
         Modules.get().add(new AutoRingBells());
