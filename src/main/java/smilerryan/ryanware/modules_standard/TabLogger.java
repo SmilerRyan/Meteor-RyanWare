@@ -77,22 +77,29 @@ public class TabLogger extends Module {
         boolean modified = false;
 
         for (PlayerSnapshot snapshot : snapshots) {
-            boolean uuidFound = false;
             boolean uuidAndNameFound = false;
 
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i);
                 String[] parts = line.split(",", -1);
 
-                if (parts.length >= 2 && parts[0].equalsIgnoreCase(snapshot.uuid)) {
-                    uuidFound = true;
+                if (parts.length >= 2 && parts[0].equalsIgnoreCase(snapshot.uuid) && parts[1].equalsIgnoreCase(snapshot.name)) {
+                    uuidAndNameFound = true;
 
-                    if (parts[1].equalsIgnoreCase(snapshot.name)) {
-                        uuidAndNameFound = true;
+                    int lastPing = -1;
+                    if (parts.length >= 3) {
+                        try {
+                            lastPing = Integer.parseInt(parts[parts.length - 1]);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+
+                    if (lastPing != snapshot.ping) {
                         lines.set(i, line + "," + snapshot.ping);
                         modified = true;
-                        break;
                     }
+
+                    break;
                 }
             }
 
