@@ -246,6 +246,7 @@ public class RyanWare extends MeteorAddon {
         Modules.get().add(new NoAttackDamage());
         Modules.get().add(new PlayerTracers());
         Modules.get().add(new Settings());
+        Modules.get().add(new TabLogger());
 
         // Modules Standard - Chat 
         Modules.get().add(new AutoRunFileOnChat());
