@@ -17,9 +17,12 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.settings.SettingGroup;
+
 public class TabLogger extends Module {
 
-    // Single-thread background executor to handle non-blocking disk I/O sequentially
     private final ExecutorService logExecutor = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "TabLogger-Thread");
         t.setDaemon(true);
@@ -31,6 +34,15 @@ public class TabLogger extends Module {
     public TabLogger() {
         super(RyanWare.CATEGORY_STANDARD, RyanWare.modulePrefix_standard + "Tab-Logger", "Logs the tab list to text file.");
     }
+
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+
+    private final Setting<Boolean> ignoreZeroPing = sgGeneral.add(new BoolSetting.Builder()
+        .name("ignore-zero-ping")
+        .description("Ignore players with 0 ping.")
+        .defaultValue(true)
+        .build()
+    );
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
@@ -47,6 +59,7 @@ public class TabLogger extends Module {
             if (uuid.isEmpty() || name.isEmpty()) continue;
 
             int ping = entry.getLatency();
+            if (ignoreZeroPing.get() && ping == 0) continue;
             currentSnapshots.add(new PlayerSnapshot(uuid, name, ping));
         }
 
