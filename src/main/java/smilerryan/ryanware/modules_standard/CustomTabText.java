@@ -74,6 +74,13 @@ public class CustomTabText extends Module {
             "Customize tab overlay header and footer.");
     }
 
+    @Override
+    public void onActivate() {
+        serverHeader = null;
+        serverFooter = null;
+        forceUpdateTabText();
+    }
+
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof PlayerListHeaderS2CPacket packet) {
