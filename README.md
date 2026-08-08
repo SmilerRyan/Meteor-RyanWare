@@ -3,6 +3,7 @@
 </p>
 
 <h1 align="center">RyanWare Meteor Addon</h1>
+<h1 align="center">WARNING: This is a fairly depreciated addon, so the readme might not be fully accurate</h1>
 <p align="center">A powerful addon for Meteor Client designed to make things easier</p>
 
 <p align="center">
@@ -24,7 +25,7 @@
 
 This is **NOT** a standalone client, this is built **on top of** Meteor Client, and it is required for this addon to be run.
 
-This addon is aimed for the latest version of Minecraft + Meteor Client, not older versions.<br>
+This addon is aimed for the 1.21.11 Minecraft + Meteor Client, not older versions.<br>
 Using this addon on any version that is not the latest should load, but it isn't supported.
 
 Many modules are experimental, educational or server dependent.<br>
@@ -36,9 +37,9 @@ Using it's features on servers that give you any advanage could be considered ch
 <b id="installation"></b>
 ## Installation
 
-### Option A: Install seperately as an Addon
-1. Install Meteor Client, currently (<a href="meteor-client-1.21.11-82.jar">meteor-client-1.21.11-82.jar</a>) works best.
-2. Build the RyanWare `.jar` from source or <a href="RyanWare-addon.jar">download it from GitHub</a> directly.
+### Option A: Install separately as an Addon
+1. Download the newest version from /builds
+2. Unwrap if needed
 3. Put Meteor Client and RyanWare in your `.minecraft/mods` folder.
 4. Launch the game with Fabric.
 
