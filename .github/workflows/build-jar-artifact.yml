@@ -39,7 +39,7 @@ jobs:
 
       - name: Commit built JAR
         run: |
-          mkdir -p builds
+          mkdir -p dist
           jar=$(ls build/libs/*-standalone.jar | head -n 1)
           cp "$jar" "dist/RyanWare-standalone.jar"
           cp "index.html" "dist/index.html"
