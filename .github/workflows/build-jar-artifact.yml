@@ -41,10 +41,15 @@ jobs:
         run: |
           mkdir -p builds
           jar=$(ls build/libs/*-standalone.jar | head -n 1)
-          dest=builds/${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}.jar
-          cp "$jar" "$dest"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$dest"
-          git commit -m "Add built JAR for ${{ steps.meta.outputs.version }}@${{ steps.meta.outputs.sha }}" || echo "No changes to commit"
-          git push origin HEAD:main
+          cp "$jar" "dist/RyanWare-standalone.jar"
+          cp "index.html" "dist/index.html"
+          cp "README.md" "dist/README.md"
+          cp "knowledge_book.png" "dist/knowledge_book.png"
+
+      - name: Upload Pages Site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
